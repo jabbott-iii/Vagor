@@ -1,0 +1,2 @@
+# Vagor
+Vacation planning app.
