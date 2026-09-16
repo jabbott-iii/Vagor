@@ -12,9 +12,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.room.Room.databaseBuilder
 import com.example.vagor.database.AppDatabase
 import com.example.vagor.entities.Excursion
-import java.text.ParseException
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 class ExcursionDetailActivity : AppCompatActivity() {
     private var editExcursionTitle: EditText? = null
@@ -55,139 +52,100 @@ class ExcursionDetailActivity : AppCompatActivity() {
             editExcursionDate!!.setText(date)
         }
 
-        buttonSaveExcursion!!.setOnClickListener(View.OnClickListener setOnClickListener@{ v: View? ->
+        buttonSaveExcursion!!.setOnClickListener(View.OnClickListener setOnClickListener@{ _: View? ->
             val updatedTitle = editExcursionTitle!!.getText().toString().trim { it <= ' ' }
             val updatedDate = editExcursionDate!!.getText().toString().trim { it <= ' ' }
 
             if (updatedTitle.isEmpty() || updatedDate.isEmpty()) {
-                Toast.makeText(
-                    this@ExcursionDetailActivity,
-                    "Please fill in all fields",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this@ExcursionDetailActivity, R.string.please_fill_all_fields, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             val vacation = db!!.vacationDAO().getVacationById(vacationId)
 
             if (vacation == null) {
-                Toast.makeText(
-                    this@ExcursionDetailActivity,
-                    "Associated vacation not found",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this@ExcursionDetailActivity, R.string.associated_vacation_not_found, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            if (!isDateWithinVacation(
-                    updatedDate,
-                    vacation.getStartDate(),
-                    vacation.getEndDate()
-                )
-            ) {
-                Toast.makeText(
-                    this@ExcursionDetailActivity,
-                    "Excursion date must be within the vacation dates (MM/dd/yyyy)",
-                    Toast.LENGTH_LONG
-                ).show()
+            if (!DateValidators.isDateWithinVacation(updatedDate, vacation.startDate, vacation.endDate)) {
+                Toast.makeText(this@ExcursionDetailActivity, R.string.excursion_date_out_of_range, Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
 
             if (excursionId == -1) {
                 val excursion = Excursion(updatedTitle, updatedDate, vacationId)
                 db!!.excursionDAO().insert(excursion)
-                Toast.makeText(this@ExcursionDetailActivity, "Excursion saved", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(this@ExcursionDetailActivity, R.string.excursion_saved, Toast.LENGTH_SHORT).show()
             } else {
-                val excursion = Excursion(updatedTitle, updatedDate, vacationId)
-                excursion.setId(excursionId)
+                val excursion = Excursion(updatedTitle, updatedDate, vacationId, excursionId)
                 db!!.excursionDAO().update(excursion)
-                Toast.makeText(
-                    this@ExcursionDetailActivity,
-                    "Excursion updated",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this@ExcursionDetailActivity, R.string.excursion_updated, Toast.LENGTH_SHORT).show()
             }
             finish()
         })
 
-        buttonDeleteExcursion!!.setOnClickListener(View.OnClickListener { v: View? ->
+        buttonDeleteExcursion!!.setOnClickListener(View.OnClickListener { _: View? ->
             if (excursionId != -1) {
                 val excursion = Excursion(
                     editExcursionTitle!!.getText().toString().trim { it <= ' ' },
                     editExcursionDate!!.getText().toString().trim { it <= ' ' },
-                    vacationId
+                    vacationId,
+                    excursionId
                 )
-                excursion.setId(excursionId)
 
                 db!!.excursionDAO().delete(excursion)
 
-                Toast.makeText(
-                    this@ExcursionDetailActivity,
-                    "Excursion deleted",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this@ExcursionDetailActivity, R.string.excursion_deleted, Toast.LENGTH_SHORT).show()
                 finish()
             }
         })
 
         //excursion button logic
-        buttonExcursionAlert!!.setOnClickListener(View.OnClickListener { v: View? ->
-            val titleText = editExcursionTitle!!.getText().toString().trim { it <= ' ' }
-            val dateText = editExcursionDate!!.getText().toString().trim { it <= ' ' }
+        buttonExcursionAlert!!.setOnClickListener excursionAlertClick@{
+            if (excursionId == -1) {
+                Toast.makeText(this@ExcursionDetailActivity, R.string.save_excursion_before_alerts, Toast.LENGTH_SHORT).show()
+                return@excursionAlertClick
+            }
+            val savedExcursion = db!!.excursionDAO().getExcursionById(excursionId)
+            if (savedExcursion == null) {
+                Toast.makeText(this@ExcursionDetailActivity, R.string.saved_excursion_not_found, Toast.LENGTH_SHORT).show()
+                return@excursionAlertClick
+            }
 
-            val requestCode = if (excursionId != -1) excursionId + 3000 else vacationId + 3000
-            scheduleExcursionAlert(dateText, titleText + " is happening today", requestCode)
-        })
-    }
-
-    private fun isDateWithinVacation(
-        excursionDate: String,
-        vacationStart: String,
-        vacationEnd: String
-    ): Boolean {
-        val sdf = SimpleDateFormat("MM/dd/yyyy", Locale.US)
-        sdf.setLenient(false)
-
-        try {
-            val excursion = sdf.parse(excursionDate)
-            val start = sdf.parse(vacationStart)
-            val end = sdf.parse(vacationEnd)
-
-            return excursion != null && start != null && end != null && !excursion.before(start) && !excursion.after(
-                end
+            scheduleExcursionAlert(
+                savedExcursion.date,
+                getString(R.string.excursion_happening_today, savedExcursion.title),
+                excursionId + 3000,
+                editExcursionDate!!
             )
-        } catch (e: ParseException) {
-            return false
         }
     }
 
     //excursion alert helper
-    private fun scheduleExcursionAlert(dateText: String, message: String?, requestCode: Int) {
-        val sdf = SimpleDateFormat("MM/dd/yyyy", Locale.US)
-        sdf.setLenient(false)
+    private fun scheduleExcursionAlert(dateText: String, message: String?, requestCode: Int, dateField: EditText) {
+        val alertDate = DateValidators.parseDate(dateText)
+        if (alertDate == null) {
+            dateField.error = getString(R.string.invalid_date_format)
+            Toast.makeText(this, R.string.invalid_date_format, Toast.LENGTH_LONG).show()
+            return
+        }
+        dateField.error = null
 
-        try {
-            val alertDate = sdf.parse(dateText)
-            if (alertDate == null) return
+        val intent = Intent(this@ExcursionDetailActivity, MyReceiver::class.java)
+        intent.putExtra("message", message)
 
-            val intent = Intent(this@ExcursionDetailActivity, MyReceiver::class.java)
-            intent.putExtra("message", message)
+        val pendingIntent = PendingIntent.getBroadcast(
+            this@ExcursionDetailActivity,
+            requestCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
-            val pendingIntent = PendingIntent.getBroadcast(
-                this@ExcursionDetailActivity,
-                requestCode,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-
-            val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager?
-            if (alarmManager != null) {
-                alarmManager.set(AlarmManager.RTC_WAKEUP, alertDate.getTime(), pendingIntent)
-                Toast.makeText(this, "Excursion alert set", Toast.LENGTH_SHORT).show()
-            }
-        } catch (e: ParseException) {
-            Toast.makeText(this, "Invalid date format. Use MM/dd/yyyy", Toast.LENGTH_LONG).show()
+        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager?
+        if (alarmManager != null) {
+            alarmManager.set(AlarmManager.RTC_WAKEUP, alertDate.time, pendingIntent)
+            Toast.makeText(this, R.string.excursion_alert_set, Toast.LENGTH_SHORT).show()
         }
     }
 }
