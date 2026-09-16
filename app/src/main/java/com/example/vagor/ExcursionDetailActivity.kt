@@ -102,10 +102,10 @@ class ExcursionDetailActivity : AppCompatActivity() {
         })
 
         //excursion button logic
-        buttonExcursionAlert!!.setOnClickListener {
+        buttonExcursionAlert!!.setOnClickListener excursionAlertClick@{
             if (excursionId == -1) {
                 Toast.makeText(this@ExcursionDetailActivity, R.string.save_excursion_before_alerts, Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+                return@excursionAlertClick
             }
             val titleText = editExcursionTitle!!.getText().toString().trim { it <= ' ' }
             val dateText = editExcursionDate!!.getText().toString().trim { it <= ' ' }
