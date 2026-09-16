@@ -1,0 +1,145 @@
+name: CD
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        cache: gradle
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Make Gradle wrapper executable
+      run: chmod +x ./gradlew
+
+    - name: Build Release APK
+      run: ./gradlew assembleRelease --no-daemon
+
+    - name: Build Release Bundle
+      run: ./gradlew bundleRelease --no-daemon
+
+    - name: Sign Release APK
+      uses: r0adkll/sign-android-release@v1
+      id: sign_app
+      with:
+        releaseDirectory: app/build/outputs/apk/release
+        signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+        alias: ${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}
+        keyStorePassword: ${{ secrets.ANDROID_SIGNING_KEYSTORE_PASSWORD }}
+        keyPassword: ${{ secrets.ANDROID_SIGNING_KEY_PASSWORD }}
+      env:
+        BUILD_TOOLS_VERSION: "34.0.0"
+
+    - name: Rename Signed APK
+      run: |
+        mkdir -p release-artifacts
+        cp ${{ steps.sign_app.outputs.signedReleaseFile }} release-artifacts/app-release-signed.apk
+
+    - name: Generate Release Notes
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        echo "# Release Notes" > RELEASE_NOTES.md
+        git log $(git describe --tags --abbrev=0 HEAD~1)..HEAD --pretty=format:"%h - %s" >> RELEASE_NOTES.md
+
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: release-artifacts/app-release-signed.apk
+        body_path: RELEASE_NOTES.md
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Release Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-apk
+        path: release-artifacts/
+        retention-days: 90
+
+  deploy-google-play:
+    needs: build-release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    timeout-minutes: 30
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        cache: gradle
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Make Gradle wrapper executable
+      run: chmod +x ./gradlew
+
+    - name: Create Service Account JSON
+      run: |
+        echo '${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}' > service-account.json
+
+    - name: Build and Upload to Google Play (Internal Testing)
+      run: |
+        ./gradlew bundleRelease --no-daemon
+        ./gradlew publishBundle \
+          -PandroidPublisherCredentialsFile=service-account.json \
+          -PandroidPublisherTracks=internal \
+          --no-daemon
+      continue-on-error: true
+
+    - name: Clean up Service Account
+      if: always()
+      run: rm -f service-account.json
+
+  notify-deployment:
+    needs: [ build-release ]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Notify Slack - Deployment Status
+      uses: slackapi/slack-github-action@v1
+      with:
+        webhook-url: ${{ secrets.SLACK_WEBHOOK }}
+        payload: |
+          {
+            "text": "DenariiDolor Release Notification",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "${{ needs.build-release.result == 'success' && '✅' || '❌' }} *Release Build*: ${{ github.ref }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow>"
+                }
+              }
+            ]
+          }
+      continue-on-error: true
