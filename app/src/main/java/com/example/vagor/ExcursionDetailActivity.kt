@@ -102,13 +102,17 @@ class ExcursionDetailActivity : AppCompatActivity() {
         })
 
         //excursion button logic
-        buttonExcursionAlert!!.setOnClickListener(View.OnClickListener { _: View? ->
+        buttonExcursionAlert!!.setOnClickListener {
+            if (excursionId == -1) {
+                Toast.makeText(this@ExcursionDetailActivity, R.string.save_excursion_before_alerts, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             val titleText = editExcursionTitle!!.getText().toString().trim { it <= ' ' }
             val dateText = editExcursionDate!!.getText().toString().trim { it <= ' ' }
 
-            val requestCode = if (excursionId != -1) excursionId + 3000 else vacationId + 3000
+            val requestCode = excursionId + 3000
             scheduleExcursionAlert(dateText, getString(R.string.excursion_happening_today, titleText), requestCode)
-        })
+        }
     }
 
     //excursion alert helper

@@ -149,17 +149,25 @@ class VacationDetailActivity : AppCompatActivity() {
         })
 
         //alert button logic
-        buttonStartAlert!!.setOnClickListener(View.OnClickListener { _: View? ->
+        buttonStartAlert!!.setOnClickListener {
+            if (vacationId == -1) {
+                Toast.makeText(this@VacationDetailActivity, R.string.save_vacation_before_alerts, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             val titleText = editTitle!!.getText().toString().trim { it <= ' ' }
             val startDateText = editStartDate!!.getText().toString().trim { it <= ' ' }
             scheduleAlert(startDateText, getString(R.string.vacation_starting_today, titleText), vacationId + 1000)
-        })
+        }
 
-        buttonEndAlert!!.setOnClickListener(View.OnClickListener { _: View? ->
+        buttonEndAlert!!.setOnClickListener {
+            if (vacationId == -1) {
+                Toast.makeText(this@VacationDetailActivity, R.string.save_vacation_before_alerts, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             val titleText = editTitle!!.getText().toString().trim { it <= ' ' }
             val endDateText = editEndDate!!.getText().toString().trim { it <= ' ' }
             scheduleAlert(endDateText, getString(R.string.vacation_ending_today, titleText), vacationId + 2000)
-        })
+        }
     }
 
     //alarm helper
