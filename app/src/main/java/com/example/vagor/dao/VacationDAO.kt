@@ -10,16 +10,16 @@ import com.example.vagor.entities.Vacation
 @Dao
 interface VacationDAO {
     @Insert
-    fun insert(vacation: Vacation?)
+    fun insert(vacation: Vacation)
 
     @Update
-    fun update(vacation: Vacation?)
+    fun update(vacation: Vacation)
 
     @Delete
-    fun delete(vacation: Vacation?)
+    fun delete(vacation: Vacation)
 
-    @get:Query("SELECT * FROM vacations")
-    val allVacations: MutableList<Vacation?>?
+    @Query("SELECT * FROM vacations")
+    fun getAllVacations(): MutableList<Vacation>
 
     @Query("SELECT * FROM vacations WHERE id = :vacationId")
     fun getVacationById(vacationId: Int): Vacation?

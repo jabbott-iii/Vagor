@@ -36,20 +36,20 @@ class ExcursionListActivity : AppCompatActivity() {
             .allowMainThreadQueries()
             .build()
 
-        buttonAddExcursion!!.setOnClickListener(View.OnClickListener { v: View? ->
+        buttonAddExcursion!!.setOnClickListener(View.OnClickListener { _: View? ->
             val intent = Intent(this@ExcursionListActivity, ExcursionDetailActivity::class.java)
             intent.putExtra("vacationId", vacationId)
             startActivity(intent)
         })
 
         //Make excursion items clickable
-        excursionListView!!.setOnItemClickListener(OnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
-            val selectedExcursion = excursionObjects!!.get(position)
+        excursionListView!!.setOnItemClickListener(OnItemClickListener { _: AdapterView<*>?, _: View?, position: Int, _: Long ->
+            val selectedExcursion = excursionObjects!![position]
             val intent = Intent(this@ExcursionListActivity, ExcursionDetailActivity::class.java)
-            intent.putExtra("excursionId", selectedExcursion.getId())
-            intent.putExtra("title", selectedExcursion.getTitle())
-            intent.putExtra("date", selectedExcursion.getDate())
-            intent.putExtra("vacationId", selectedExcursion.getVacationId())
+            intent.putExtra("excursionId", selectedExcursion.id)
+            intent.putExtra("title", selectedExcursion.title)
+            intent.putExtra("date", selectedExcursion.date)
+            intent.putExtra("vacationId", selectedExcursion.vacationId)
             startActivity(intent)
         })
     }
@@ -64,7 +64,7 @@ class ExcursionListActivity : AppCompatActivity() {
         val excursionDisplayList: MutableList<String?> = ArrayList<String?>()
 
         for (excursion in excursionObjects!!) {
-            excursionDisplayList.add(excursion.getTitle() + " - " + excursion.getDate())
+            excursionDisplayList.add(excursion.title + " - " + excursion.date)
         }
 
         val adapter = ArrayAdapter<String?>(

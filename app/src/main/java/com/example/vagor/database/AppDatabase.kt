@@ -9,6 +9,6 @@ import com.example.vagor.entities.Vacation
 
 @Database(entities = [Vacation::class, Excursion::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun vacationDAO(): VacationDAO?
-    abstract fun excursionDAO(): ExcursionDAO?
+    abstract fun vacationDAO(): VacationDAO
+    abstract fun excursionDAO(): ExcursionDAO
 }

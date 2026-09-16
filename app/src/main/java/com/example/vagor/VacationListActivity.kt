@@ -34,21 +34,19 @@ class VacationListActivity : AppCompatActivity() {
             .allowMainThreadQueries()
             .build()
 
-        addButton!!.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(v: View?) {
-                val intent = Intent(this@VacationListActivity, VacationDetailActivity::class.java)
-                startActivity(intent)
-            }
+        addButton!!.setOnClickListener {
+            val intent = Intent(this@VacationListActivity, VacationDetailActivity::class.java)
+            startActivity(intent)
         })
 
-        vacationListView!!.setOnItemClickListener(OnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
-            val selectedVacation = vacationObjects!!.get(position)
+        vacationListView!!.setOnItemClickListener(OnItemClickListener { _: AdapterView<*>?, _: View?, position: Int, _: Long ->
+            val selectedVacation = vacationObjects!![position]
             val intent = Intent(this@VacationListActivity, VacationDetailActivity::class.java)
-            intent.putExtra("vacationId", selectedVacation.getId())
-            intent.putExtra("title", selectedVacation.getTitle())
-            intent.putExtra("hotel", selectedVacation.getHotel())
-            intent.putExtra("startDate", selectedVacation.getStartDate())
-            intent.putExtra("endDate", selectedVacation.getEndDate())
+            intent.putExtra("vacationId", selectedVacation.id)
+            intent.putExtra("title", selectedVacation.title)
+            intent.putExtra("hotel", selectedVacation.hotel)
+            intent.putExtra("startDate", selectedVacation.startDate)
+            intent.putExtra("endDate", selectedVacation.endDate)
             startActivity(intent)
         })
     }
@@ -63,7 +61,7 @@ class VacationListActivity : AppCompatActivity() {
         val vacationDisplayList: MutableList<String?> = ArrayList<String?>()
 
         for (vacation in vacationObjects!!) {
-            vacationDisplayList.add(vacation.getTitle() + " - " + vacation.getHotel())
+            vacationDisplayList.add(vacation.title + " - " + vacation.hotel)
         }
 
         val adapter = ArrayAdapter<String?>(
