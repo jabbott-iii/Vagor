@@ -4,7 +4,7 @@ Vagor is a Kotlin Android vacation planning app ported from `jabbott-iii/univers
 ## Build and run
 
 1. Open the repository root in Android Studio.
-2. Let Android Studio install the Android SDK packages requested by Gradle if prompted.
+2. Let Android Studio install Android SDK 35 and any other packages requested by Gradle if prompted.
 3. Build from Android Studio, or run:
    ```bash
    ./gradlew assembleDebug
