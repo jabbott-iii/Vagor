@@ -13,8 +13,12 @@ class DateValidatorsTest {
 
     @Test
     fun endDateMustNotPrecedeStartDate() {
-        assertTrue(DateValidators.isEndDateAfterOrEqualStartDate("09/16/2026", "09/16/2026"))
-        assertFalse(DateValidators.isEndDateAfterOrEqualStartDate("09/16/2026", "09/15/2026"))
+        val startDate = "09/16/2026"
+        val sameDayEndDate = "09/16/2026"
+        val earlierEndDate = "09/15/2026"
+
+        assertTrue(DateValidators.isEndDateAfterOrEqualStartDate(startDate, sameDayEndDate))
+        assertFalse(DateValidators.isEndDateAfterOrEqualStartDate(startDate, earlierEndDate))
     }
 
     @Test
