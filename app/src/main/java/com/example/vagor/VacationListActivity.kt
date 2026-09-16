@@ -64,7 +64,7 @@ class VacationListActivity : AppCompatActivity() {
             vacationDisplayList.add(vacation.title + " - " + vacation.hotel)
         }
 
-        val adapter = ArrayAdapter<String?>(
+        val adapter = ArrayAdapter<String>(
             this,
             android.R.layout.simple_list_item_1,
             vacationDisplayList

@@ -67,7 +67,7 @@ class ExcursionListActivity : AppCompatActivity() {
             excursionDisplayList.add(excursion.title + " - " + excursion.date)
         }
 
-        val adapter = ArrayAdapter<String?>(
+        val adapter = ArrayAdapter<String>(
             this,
             android.R.layout.simple_list_item_1,
             excursionDisplayList
