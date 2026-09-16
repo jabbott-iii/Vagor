@@ -19,7 +19,7 @@ interface ExcursionDAO {
     fun delete(excursion: Excursion)
 
     @Query("SELECT * FROM excursions WHERE vacationId = :vacationId")
-    fun getExcursionsForVacation(vacationId: Int): MutableList<Excursion>
+    fun getExcursionsForVacation(vacationId: Int): List<Excursion>
 
     @Query("SELECT COUNT(*) FROM excursions WHERE vacationId = :vacationId")
     fun getExcursionCountForVacation(vacationId: Int): Int

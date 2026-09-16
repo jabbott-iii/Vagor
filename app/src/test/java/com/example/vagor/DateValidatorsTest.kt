@@ -9,6 +9,7 @@ class DateValidatorsTest {
     fun validDateUsesExpectedPattern() {
         assertTrue(DateValidators.isValidDate("09/16/2026"))
         assertFalse(DateValidators.isValidDate("2026-09-16"))
+        assertFalse(DateValidators.isValidDate("02/30/2026"))
     }
 
     @Test

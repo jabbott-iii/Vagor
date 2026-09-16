@@ -19,7 +19,7 @@ interface VacationDAO {
     fun delete(vacation: Vacation)
 
     @Query("SELECT * FROM vacations")
-    fun getAllVacations(): MutableList<Vacation>
+    fun getAllVacations(): List<Vacation>
 
     @Query("SELECT * FROM vacations WHERE id = :vacationId")
     fun getVacationById(vacationId: Int): Vacation?

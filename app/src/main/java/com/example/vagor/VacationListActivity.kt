@@ -17,7 +17,7 @@ class VacationListActivity : AppCompatActivity() {
     private var addButton: Button? = null
     private var vacationListView: ListView? = null
     private var db: AppDatabase? = null
-    private var vacationObjects: MutableList<Vacation>? = null
+    private var vacationObjects: List<Vacation>? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,7 +58,7 @@ class VacationListActivity : AppCompatActivity() {
 
     private fun loadVacations() {
         vacationObjects = db!!.vacationDAO().getAllVacations()
-        val vacationDisplayList: MutableList<String?> = ArrayList<String?>()
+        val vacationDisplayList = ArrayList<String>()
 
         for (vacation in vacationObjects!!) {
             vacationDisplayList.add(vacation.title + " - " + vacation.hotel)

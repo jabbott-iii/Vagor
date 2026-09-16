@@ -18,7 +18,7 @@ class ExcursionListActivity : AppCompatActivity() {
     private var excursionListView: ListView? = null
     private var db: AppDatabase? = null
     private var vacationId = 0
-    private var excursionObjects: MutableList<Excursion>? = null
+    private var excursionObjects: List<Excursion>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,7 +61,7 @@ class ExcursionListActivity : AppCompatActivity() {
 
     private fun loadExcursions() {
         excursionObjects = db!!.excursionDAO().getExcursionsForVacation(vacationId)
-        val excursionDisplayList: MutableList<String?> = ArrayList<String?>()
+        val excursionDisplayList = ArrayList<String>()
 
         for (excursion in excursionObjects!!) {
             excursionDisplayList.add(excursion.title + " - " + excursion.date)
