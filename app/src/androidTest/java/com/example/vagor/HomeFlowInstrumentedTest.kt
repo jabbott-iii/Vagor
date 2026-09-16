@@ -19,18 +19,19 @@ class HomeFlowInstrumentedTest {
     @Test
     fun canCreateVacationFromHomeFlow() {
         val uniqueTitle = "Trip-${UUID.randomUUID().toString().take(8)}"
+        val hotelName = "Hotel Vagor"
 
         ActivityScenario.launch(HomeActivity::class.java).use {
             onView(withId(R.id.buttonGoToVacations)).perform(click())
             onView(withId(R.id.buttonAddVacation)).perform(click())
             onView(withId(R.id.editTitle)).perform(replaceText(uniqueTitle))
-            onView(withId(R.id.editHotel)).perform(replaceText("Hotel Vagor"))
+            onView(withId(R.id.editHotel)).perform(replaceText(hotelName))
             onView(withId(R.id.editStartDate)).perform(replaceText("09/16/2026"))
             onView(withId(R.id.editEndDate)).perform(replaceText("09/18/2026"))
             closeSoftKeyboard()
             onView(withId(R.id.buttonSave)).perform(click())
 
-            onView(withText(uniqueTitle)).check(matches(isDisplayed()))
+            onView(withText("$uniqueTitle - $hotelName")).check(matches(isDisplayed()))
         }
     }
 }
