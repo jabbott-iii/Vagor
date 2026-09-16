@@ -33,6 +33,7 @@
     <string name="vacation_deleted">Vacation deleted</string>
     <string name="save_vacation_first">Save the vacation before adding excursions</string>
     <string name="save_vacation_before_alerts">Save the vacation before setting alerts</string>
+    <string name="saved_vacation_not_found">Saved vacation not found</string>
     <string name="share_vacation_details">Share vacation details</string>
     <string name="vacation_share_template">Vacation Title: %1$s\nHotel: %2$s\nStart Date: %3$s\nEnd Date: %4$s</string>
     <string name="vacation_starting_today">%1$s is starting today</string>
@@ -47,4 +48,5 @@
     <string name="excursion_alert_set">Excursion alert set</string>
     <string name="excursion_happening_today">%1$s is happening today</string>
     <string name="save_excursion_before_alerts">Save the excursion before setting alerts</string>
+    <string name="saved_excursion_not_found">Saved excursion not found</string>
 </resources>

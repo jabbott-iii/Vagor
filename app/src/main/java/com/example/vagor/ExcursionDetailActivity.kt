@@ -107,21 +107,30 @@ class ExcursionDetailActivity : AppCompatActivity() {
                 Toast.makeText(this@ExcursionDetailActivity, R.string.save_excursion_before_alerts, Toast.LENGTH_SHORT).show()
                 return@excursionAlertClick
             }
-            val titleText = editExcursionTitle!!.getText().toString().trim { it <= ' ' }
-            val dateText = editExcursionDate!!.getText().toString().trim { it <= ' ' }
+            val savedExcursion = db!!.excursionDAO().getExcursionById(excursionId)
+            if (savedExcursion == null) {
+                Toast.makeText(this@ExcursionDetailActivity, R.string.saved_excursion_not_found, Toast.LENGTH_SHORT).show()
+                return@excursionAlertClick
+            }
 
-            val requestCode = excursionId + 3000
-            scheduleExcursionAlert(dateText, getString(R.string.excursion_happening_today, titleText), requestCode)
+            scheduleExcursionAlert(
+                savedExcursion.date,
+                getString(R.string.excursion_happening_today, savedExcursion.title),
+                excursionId + 3000,
+                editExcursionDate!!
+            )
         }
     }
 
     //excursion alert helper
-    private fun scheduleExcursionAlert(dateText: String, message: String?, requestCode: Int) {
+    private fun scheduleExcursionAlert(dateText: String, message: String?, requestCode: Int, dateField: EditText) {
         val alertDate = DateValidators.parseDate(dateText)
         if (alertDate == null) {
+            dateField.error = getString(R.string.invalid_date_format)
             Toast.makeText(this, R.string.invalid_date_format, Toast.LENGTH_LONG).show()
             return
         }
+        dateField.error = null
 
         val intent = Intent(this@ExcursionDetailActivity, MyReceiver::class.java)
         intent.putExtra("message", message)

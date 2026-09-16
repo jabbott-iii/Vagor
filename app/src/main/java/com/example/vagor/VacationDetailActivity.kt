@@ -154,9 +154,17 @@ class VacationDetailActivity : AppCompatActivity() {
                 Toast.makeText(this@VacationDetailActivity, R.string.save_vacation_before_alerts, Toast.LENGTH_SHORT).show()
                 return@startAlertClick
             }
-            val titleText = editTitle!!.getText().toString().trim { it <= ' ' }
-            val startDateText = editStartDate!!.getText().toString().trim { it <= ' ' }
-            scheduleAlert(startDateText, getString(R.string.vacation_starting_today, titleText), vacationId + 1000)
+            val savedVacation = db!!.vacationDAO().getVacationById(vacationId)
+            if (savedVacation == null) {
+                Toast.makeText(this@VacationDetailActivity, R.string.saved_vacation_not_found, Toast.LENGTH_SHORT).show()
+                return@startAlertClick
+            }
+            scheduleAlert(
+                savedVacation.startDate,
+                getString(R.string.vacation_starting_today, savedVacation.title),
+                vacationId + 1000,
+                editStartDate!!
+            )
         }
 
         buttonEndAlert!!.setOnClickListener endAlertClick@{
@@ -164,19 +172,29 @@ class VacationDetailActivity : AppCompatActivity() {
                 Toast.makeText(this@VacationDetailActivity, R.string.save_vacation_before_alerts, Toast.LENGTH_SHORT).show()
                 return@endAlertClick
             }
-            val titleText = editTitle!!.getText().toString().trim { it <= ' ' }
-            val endDateText = editEndDate!!.getText().toString().trim { it <= ' ' }
-            scheduleAlert(endDateText, getString(R.string.vacation_ending_today, titleText), vacationId + 2000)
+            val savedVacation = db!!.vacationDAO().getVacationById(vacationId)
+            if (savedVacation == null) {
+                Toast.makeText(this@VacationDetailActivity, R.string.saved_vacation_not_found, Toast.LENGTH_SHORT).show()
+                return@endAlertClick
+            }
+            scheduleAlert(
+                savedVacation.endDate,
+                getString(R.string.vacation_ending_today, savedVacation.title),
+                vacationId + 2000,
+                editEndDate!!
+            )
         }
     }
 
     //alarm helper
-    private fun scheduleAlert(dateText: String, message: String?, requestCode: Int) {
+    private fun scheduleAlert(dateText: String, message: String?, requestCode: Int, dateField: EditText) {
         val alertDate = DateValidators.parseDate(dateText)
         if (alertDate == null) {
+            dateField.error = getString(R.string.invalid_date_format)
             Toast.makeText(this, R.string.invalid_date_format, Toast.LENGTH_LONG).show()
             return
         }
+        dateField.error = null
 
         val intent = Intent(this@VacationDetailActivity, MyReceiver::class.java)
         intent.putExtra("message", message)

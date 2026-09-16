@@ -21,6 +21,9 @@ interface ExcursionDAO {
     @Query("SELECT * FROM excursions WHERE vacationId = :vacationId")
     fun getExcursionsForVacation(vacationId: Int): List<Excursion>
 
+    @Query("SELECT * FROM excursions WHERE id = :excursionId")
+    fun getExcursionById(excursionId: Int): Excursion?
+
     @Query("SELECT COUNT(*) FROM excursions WHERE vacationId = :vacationId")
     fun getExcursionCountForVacation(vacationId: Int): Int
 }
