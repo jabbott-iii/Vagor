@@ -25,6 +25,7 @@ object DateValidators {
         val start = parseDate(vacationStart)
         val end = parseDate(vacationEnd)
         return excursion != null && start != null && end != null &&
+            !end.before(start) &&
             !excursion.before(start) && !excursion.after(end)
     }
 

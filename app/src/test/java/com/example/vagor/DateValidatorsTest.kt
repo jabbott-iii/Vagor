@@ -25,5 +25,6 @@ class DateValidatorsTest {
     fun excursionDateMustStayInsideVacationWindow() {
         assertTrue(DateValidators.isDateWithinVacation("09/17/2026", "09/16/2026", "09/18/2026"))
         assertFalse(DateValidators.isDateWithinVacation("09/19/2026", "09/16/2026", "09/18/2026"))
+        assertFalse(DateValidators.isDateWithinVacation("09/17/2026", "09/18/2026", "09/16/2026"))
     }
 }
