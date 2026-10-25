@@ -1,7 +1,5 @@
 package com.example.vagor
 
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -23,8 +21,6 @@ class VacationDetailActivity : AppCompatActivity() {
     private var buttonDelete: Button? = null
     private var buttonViewExcursions: Button? = null
     private var buttonShare: Button? = null
-    private var buttonStartAlert: Button? = null
-    private var buttonEndAlert: Button? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,8 +35,6 @@ class VacationDetailActivity : AppCompatActivity() {
         buttonDelete = findViewById<Button>(R.id.buttonDelete)
         buttonViewExcursions = findViewById<Button>(R.id.buttonViewExcursions)
         buttonShare = findViewById<Button>(R.id.buttonShare)
-        buttonStartAlert = findViewById<Button>(R.id.buttonStartAlert)
-        buttonEndAlert = findViewById<Button>(R.id.buttonEndAlert)
 
         val vacationId = getIntent().getIntExtra("vacationId", -1)
         val title = getIntent().getStringExtra("title")
@@ -88,11 +82,13 @@ class VacationDetailActivity : AppCompatActivity() {
 
             if (vacationId == -1) {
                 val vacation = Vacation(updatedTitle, updatedHotel, updatedStartDate, updatedEndDate)
-                db!!.vacationDAO().insert(vacation)
+                val newId = db!!.vacationDAO().insert(vacation).toInt()
+                ReminderScheduler.scheduleVacation(this@VacationDetailActivity, vacation.copy(id = newId))
                 Toast.makeText(this@VacationDetailActivity, R.string.vacation_saved, Toast.LENGTH_SHORT).show()
             } else {
                 val vacation = Vacation(updatedTitle, updatedHotel, updatedStartDate, updatedEndDate, vacationId)
                 db!!.vacationDAO().update(vacation)
+                ReminderScheduler.scheduleVacation(this@VacationDetailActivity, vacation)
                 Toast.makeText(this@VacationDetailActivity, R.string.vacation_updated, Toast.LENGTH_SHORT).show()
             }
             finish()
@@ -117,6 +113,7 @@ class VacationDetailActivity : AppCompatActivity() {
                 )
 
                 db!!.vacationDAO().delete(vacation)
+                ReminderScheduler.cancelVacation(this@VacationDetailActivity, vacationId)
 
                 Toast.makeText(this@VacationDetailActivity, R.string.vacation_deleted, Toast.LENGTH_SHORT).show()
                 finish()
@@ -135,81 +132,26 @@ class VacationDetailActivity : AppCompatActivity() {
 
         //share button logic
         buttonShare!!.setOnClickListener(View.OnClickListener { _: View? ->
-            val shareText = getString(
+            val vacationText = getString(
                 R.string.vacation_share_template,
                 editTitle!!.getText().toString().trim { it <= ' ' },
                 editHotel!!.getText().toString().trim { it <= ' ' },
                 editStartDate!!.getText().toString().trim { it <= ' ' },
                 editEndDate!!.getText().toString().trim { it <= ' ' }
             )
+            val excursions = if (vacationId == -1) emptyList() else db!!.excursionDAO().getExcursionsForVacation(vacationId)
+            val shareText = if (excursions.isEmpty()) {
+                vacationText
+            } else {
+                val excursionLines = excursions
+                    .sortedBy { DateValidators.parseDate(it.date) }
+                    .joinToString("\n") { getString(R.string.excursion_share_line, it.title, it.date) }
+                getString(R.string.vacation_share_with_excursions, vacationText, excursionLines)
+            }
             val shareIntent = Intent(Intent.ACTION_SEND)
             shareIntent.setType("text/plain")
             shareIntent.putExtra(Intent.EXTRA_TEXT, shareText)
             startActivity(Intent.createChooser(shareIntent, getString(R.string.share_vacation_details)))
         })
-
-        //alert button logic
-        buttonStartAlert!!.setOnClickListener startAlertClick@{
-            if (vacationId == -1) {
-                Toast.makeText(this@VacationDetailActivity, R.string.save_vacation_before_alerts, Toast.LENGTH_SHORT).show()
-                return@startAlertClick
-            }
-            val savedVacation = db!!.vacationDAO().getVacationById(vacationId)
-            if (savedVacation == null) {
-                Toast.makeText(this@VacationDetailActivity, R.string.saved_vacation_not_found, Toast.LENGTH_SHORT).show()
-                return@startAlertClick
-            }
-            scheduleAlert(
-                savedVacation.startDate,
-                getString(R.string.vacation_starting_today, savedVacation.title),
-                vacationId + 1000,
-                editStartDate!!
-            )
-        }
-
-        buttonEndAlert!!.setOnClickListener endAlertClick@{
-            if (vacationId == -1) {
-                Toast.makeText(this@VacationDetailActivity, R.string.save_vacation_before_alerts, Toast.LENGTH_SHORT).show()
-                return@endAlertClick
-            }
-            val savedVacation = db!!.vacationDAO().getVacationById(vacationId)
-            if (savedVacation == null) {
-                Toast.makeText(this@VacationDetailActivity, R.string.saved_vacation_not_found, Toast.LENGTH_SHORT).show()
-                return@endAlertClick
-            }
-            scheduleAlert(
-                savedVacation.endDate,
-                getString(R.string.vacation_ending_today, savedVacation.title),
-                vacationId + 2000,
-                editEndDate!!
-            )
-        }
-    }
-
-    //alarm helper
-    private fun scheduleAlert(dateText: String, message: String?, requestCode: Int, dateField: EditText) {
-        val alertDate = DateValidators.parseDate(dateText)
-        if (alertDate == null) {
-            dateField.error = getString(R.string.invalid_date_format)
-            Toast.makeText(this, R.string.invalid_date_format, Toast.LENGTH_LONG).show()
-            return
-        }
-        dateField.error = null
-
-        val intent = Intent(this@VacationDetailActivity, MyReceiver::class.java)
-        intent.putExtra("message", message)
-
-        val pendingIntent = PendingIntent.getBroadcast(
-            this@VacationDetailActivity,
-            requestCode,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager?
-        if (alarmManager != null) {
-            alarmManager.set(AlarmManager.RTC_WAKEUP, alertDate.time, pendingIntent)
-            Toast.makeText(this, R.string.alert_set, Toast.LENGTH_SHORT).show()
-        }
     }
 }

@@ -1,6 +1,9 @@
 package com.example.vagor
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
@@ -8,7 +11,11 @@ import android.widget.AdapterView.OnItemClickListener
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.room.Room.databaseBuilder
 import com.example.vagor.database.AppDatabase
 import com.example.vagor.entities.Vacation
@@ -18,7 +25,13 @@ class VacationListActivity : AppCompatActivity() {
     private var vacationListView: ListView? = null
     private var db: AppDatabase? = null
     private var vacationObjects: List<Vacation>? = null
-
+    private var notificationsChecked = false
+    private val requestNotificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (!granted) {
+                Toast.makeText(this, R.string.reminders_need_notifications, Toast.LENGTH_LONG).show()
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +50,7 @@ class VacationListActivity : AppCompatActivity() {
         addButton!!.setOnClickListener {
             val intent = Intent(this@VacationListActivity, VacationDetailActivity::class.java)
             startActivity(intent)
-        })
+        }
 
         vacationListView!!.setOnItemClickListener(OnItemClickListener { _: AdapterView<*>?, _: View?, position: Int, _: Long ->
             val selectedVacation = vacationObjects!![position]
@@ -54,6 +67,23 @@ class VacationListActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         loadVacations()
+        checkNotifications()
+    }
+
+    // Every saved vacation gets reminders, so ask for notifications once there is one.
+    private fun checkNotifications() {
+        if (notificationsChecked || vacationObjects.isNullOrEmpty()) return
+        notificationsChecked = true
+        ReminderScheduler.ensureChannel(this)
+        if (NotificationManagerCompat.from(this).areNotificationsEnabled()) return
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            Toast.makeText(this, R.string.reminders_need_notifications, Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun loadVacations() {

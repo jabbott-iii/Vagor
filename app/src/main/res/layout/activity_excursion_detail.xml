@@ -43,10 +43,10 @@
         android:text="@string/delete_excursion" />
 
     <Button
-        android:id="@+id/buttonExcursionAlert"
+        android:id="@+id/buttonShareExcursion"
         android:layout_width="272dp"
         android:layout_height="86dp"
         android:layout_marginTop="8dp"
-        android:text="@string/set_excursion_alert" />
+        android:text="@string/share_excursion" />
 
 </LinearLayout>

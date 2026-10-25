@@ -10,7 +10,7 @@ import com.example.vagor.entities.Vacation
 @Dao
 interface VacationDAO {
     @Insert
-    fun insert(vacation: Vacation)
+    fun insert(vacation: Vacation): Long
 
     @Update
     fun update(vacation: Vacation)

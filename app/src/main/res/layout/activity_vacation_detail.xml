@@ -78,18 +78,4 @@
         android:layout_marginTop="8dp"
         android:text="@string/share_vacation" />
 
-    <Button
-        android:id="@+id/buttonStartAlert"
-        android:layout_width="146dp"
-        android:layout_height="51dp"
-        android:layout_marginTop="8dp"
-        android:text="@string/set_start_alert" />
-
-    <Button
-        android:id="@+id/buttonEndAlert"
-        android:layout_width="135dp"
-        android:layout_height="62dp"
-        android:layout_marginTop="8dp"
-        android:text="@string/set_end_alert" />
-
 </LinearLayout>

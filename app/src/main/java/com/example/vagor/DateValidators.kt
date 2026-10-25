@@ -2,6 +2,7 @@ package com.example.vagor
 
 import java.text.ParseException
 import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.util.Date
 import java.util.Locale
 
@@ -33,5 +34,15 @@ object DateValidators {
         parser().parse(dateText)
     } catch (_: ParseException) {
         null
+    }
+
+    fun parseLocalDate(dateText: String): LocalDate? {
+        val parser = parser()
+        val date = try {
+            parser.parse(dateText)
+        } catch (_: ParseException) {
+            return null
+        }
+        return date.toInstant().atZone(parser.timeZone.toZoneId()).toLocalDate()
     }
 }

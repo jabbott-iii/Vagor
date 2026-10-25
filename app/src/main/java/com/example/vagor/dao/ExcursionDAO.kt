@@ -10,13 +10,16 @@ import com.example.vagor.entities.Excursion
 @Dao
 interface ExcursionDAO {
     @Insert
-    fun insert(excursion: Excursion)
+    fun insert(excursion: Excursion): Long
 
     @Update
     fun update(excursion: Excursion)
 
     @Delete
     fun delete(excursion: Excursion)
+
+    @Query("SELECT * FROM excursions")
+    fun getAllExcursions(): List<Excursion>
 
     @Query("SELECT * FROM excursions WHERE vacationId = :vacationId")
     fun getExcursionsForVacation(vacationId: Int): List<Excursion>

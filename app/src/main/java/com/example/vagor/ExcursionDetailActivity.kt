@@ -1,7 +1,5 @@
 package com.example.vagor
 
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -20,7 +18,7 @@ class ExcursionDetailActivity : AppCompatActivity() {
     private var db: AppDatabase? = null
     private var vacationId = 0
     private var buttonDeleteExcursion: Button? = null
-    private var buttonExcursionAlert: Button? = null
+    private var buttonShareExcursion: Button? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +29,7 @@ class ExcursionDetailActivity : AppCompatActivity() {
         editExcursionDate = findViewById<EditText>(R.id.editExcursionDate)
         buttonSaveExcursion = findViewById<Button>(R.id.buttonSaveExcursion)
         buttonDeleteExcursion = findViewById<Button>(R.id.buttonDeleteExcursion)
-        buttonExcursionAlert = findViewById<Button>(R.id.buttonExcursionAlert)
+        buttonShareExcursion = findViewById<Button>(R.id.buttonShareExcursion)
 
         vacationId = getIntent().getIntExtra("vacationId", -1)
 
@@ -75,11 +73,13 @@ class ExcursionDetailActivity : AppCompatActivity() {
 
             if (excursionId == -1) {
                 val excursion = Excursion(updatedTitle, updatedDate, vacationId)
-                db!!.excursionDAO().insert(excursion)
+                val newId = db!!.excursionDAO().insert(excursion).toInt()
+                ReminderScheduler.scheduleExcursion(this@ExcursionDetailActivity, excursion.copy(id = newId))
                 Toast.makeText(this@ExcursionDetailActivity, R.string.excursion_saved, Toast.LENGTH_SHORT).show()
             } else {
                 val excursion = Excursion(updatedTitle, updatedDate, vacationId, excursionId)
                 db!!.excursionDAO().update(excursion)
+                ReminderScheduler.scheduleExcursion(this@ExcursionDetailActivity, excursion)
                 Toast.makeText(this@ExcursionDetailActivity, R.string.excursion_updated, Toast.LENGTH_SHORT).show()
             }
             finish()
@@ -95,57 +95,31 @@ class ExcursionDetailActivity : AppCompatActivity() {
                 )
 
                 db!!.excursionDAO().delete(excursion)
+                ReminderScheduler.cancelExcursion(this@ExcursionDetailActivity, excursionId)
 
                 Toast.makeText(this@ExcursionDetailActivity, R.string.excursion_deleted, Toast.LENGTH_SHORT).show()
                 finish()
             }
         })
 
-        //excursion button logic
-        buttonExcursionAlert!!.setOnClickListener excursionAlertClick@{
-            if (excursionId == -1) {
-                Toast.makeText(this@ExcursionDetailActivity, R.string.save_excursion_before_alerts, Toast.LENGTH_SHORT).show()
-                return@excursionAlertClick
+        //share button logic
+        buttonShareExcursion!!.setOnClickListener shareClick@{
+            val vacation = db!!.vacationDAO().getVacationById(vacationId)
+            if (vacation == null) {
+                Toast.makeText(this@ExcursionDetailActivity, R.string.associated_vacation_not_found, Toast.LENGTH_SHORT).show()
+                return@shareClick
             }
-            val savedExcursion = db!!.excursionDAO().getExcursionById(excursionId)
-            if (savedExcursion == null) {
-                Toast.makeText(this@ExcursionDetailActivity, R.string.saved_excursion_not_found, Toast.LENGTH_SHORT).show()
-                return@excursionAlertClick
-            }
-
-            scheduleExcursionAlert(
-                savedExcursion.date,
-                getString(R.string.excursion_happening_today, savedExcursion.title),
-                excursionId + 3000,
-                editExcursionDate!!
+            val shareText = getString(
+                R.string.excursion_share_template,
+                editExcursionTitle!!.getText().toString().trim { it <= ' ' },
+                editExcursionDate!!.getText().toString().trim { it <= ' ' },
+                vacation.title,
+                vacation.hotel
             )
-        }
-    }
-
-    //excursion alert helper
-    private fun scheduleExcursionAlert(dateText: String, message: String?, requestCode: Int, dateField: EditText) {
-        val alertDate = DateValidators.parseDate(dateText)
-        if (alertDate == null) {
-            dateField.error = getString(R.string.invalid_date_format)
-            Toast.makeText(this, R.string.invalid_date_format, Toast.LENGTH_LONG).show()
-            return
-        }
-        dateField.error = null
-
-        val intent = Intent(this@ExcursionDetailActivity, MyReceiver::class.java)
-        intent.putExtra("message", message)
-
-        val pendingIntent = PendingIntent.getBroadcast(
-            this@ExcursionDetailActivity,
-            requestCode,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager?
-        if (alarmManager != null) {
-            alarmManager.set(AlarmManager.RTC_WAKEUP, alertDate.time, pendingIntent)
-            Toast.makeText(this, R.string.excursion_alert_set, Toast.LENGTH_SHORT).show()
+            val shareIntent = Intent(Intent.ACTION_SEND)
+            shareIntent.setType("text/plain")
+            shareIntent.putExtra(Intent.EXTRA_TEXT, shareText)
+            startActivity(Intent.createChooser(shareIntent, getString(R.string.share_excursion_details)))
         }
     }
 }
