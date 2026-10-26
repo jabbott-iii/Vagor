@@ -2,6 +2,7 @@ package com.example.vagor
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.widget.ListView
 import androidx.room.Room
@@ -12,8 +13,12 @@ import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.replaceText
+import androidx.test.espresso.action.ViewActions.scrollTo
+import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.Visibility
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -25,6 +30,7 @@ import org.hamcrest.Description
 import org.hamcrest.Matcher
 import org.hamcrest.TypeSafeMatcher
 import org.junit.After
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -115,6 +121,55 @@ class HomeFlowInstrumentedTest {
 
             onView(withId(R.id.vacationPageTitle)).check(matches(withText(vacation.title)))
             onView(withText(event.title)).check(matches(isDisplayed()))
+        }
+    }
+
+    @Test
+    fun deletingFromEditReturnsToTheDashboard() {
+        val vacation = insertVacation(date(30), date(32))
+
+        ActivityScenario.launch(HomeActivity::class.java).use { scenario ->
+            onData(tripTitled(vacation.title)).inAdapterView(withId(R.id.vacationListView)).perform(click())
+            onView(withId(R.id.buttonEditVacation)).perform(click())
+            onView(withId(R.id.buttonDelete)).perform(scrollTo(), click())
+
+            // The vacation page closed itself, so the dashboard is showing, without the vacation.
+            onView(withId(R.id.buttonAddVacation)).check(matches(isDisplayed()))
+            onView(withId(R.id.vacationPageTitle)).check(doesNotExist())
+            assertNull(db.vacationDAO().getVacationById(vacation.id))
+            scenario.onActivity { activity ->
+                val adapter = activity.findViewById<ListView>(R.id.vacationListView).adapter
+                val rows = (0 until adapter.count).map { adapter.getItem(it) }
+                assertTrue(rows.none { it is DashboardRow.Trip && it.vacation.id == vacation.id })
+            }
+        }
+    }
+
+    @Test
+    fun editingAVacationUpdatesItsPage() {
+        val vacation = insertVacation(date(30), date(32))
+
+        ActivityScenario.launch(HomeActivity::class.java).use {
+            onData(tripTitled(vacation.title)).inAdapterView(withId(R.id.vacationListView)).perform(click())
+            onView(withId(R.id.buttonEditVacation)).perform(click())
+            onView(withId(R.id.editHotel)).perform(replaceText("Hotel Two"))
+            closeSoftKeyboard()
+            onView(withId(R.id.buttonSave)).perform(scrollTo(), click())
+
+            onView(withId(R.id.vacationPageHotel))
+                .check(matches(withText(context.getString(R.string.vacation_hotel, "Hotel Two"))))
+        }
+    }
+
+    @Test
+    fun newVacationsAndEventsHaveNoDeleteButton() {
+        ActivityScenario.launch(VacationDetailActivity::class.java).use {
+            onView(withId(R.id.buttonDelete)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+        }
+        val vacation = insertVacation(date(30), date(32))
+        val intent = Intent(context, EventDetailActivity::class.java).putExtra("vacationId", vacation.id)
+        ActivityScenario.launch<EventDetailActivity>(intent).use {
+            onView(withId(R.id.buttonDeleteEvent)).check(matches(withEffectiveVisibility(Visibility.GONE)))
         }
     }
 

@@ -59,15 +59,17 @@
 
         <Button
             android:id="@+id/buttonSave"
-            android:layout_width="89dp"
-            android:layout_height="50dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="89dp"
             android:layout_marginTop="16dp"
             android:text="@string/save" />
 
         <Button
             android:id="@+id/buttonDelete"
-            android:layout_width="102dp"
-            android:layout_height="61dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="102dp"
             android:layout_marginTop="8dp"
             android:text="@string/delete" />
 

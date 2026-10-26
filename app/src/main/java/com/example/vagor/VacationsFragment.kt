@@ -76,9 +76,14 @@ class VacationsFragment : Fragment(R.layout.fragment_vacations) {
     override fun onResume() {
         super.onResume()
         val vacations = db!!.vacationDAO().getAllVacations()
-        // Refilled rather than replaced, so the list keeps its scroll position.
-        dashboardAdapter!!.clear()
-        dashboardAdapter!!.addAll(Dashboard.rows(vacations, LocalDate.now()))
+        // Refilled rather than replaced, with one change notification, so the list keeps its scroll
+        // position and focus. Clearing it on its own would briefly empty it, which shows the empty
+        // view and resets the list.
+        val adapter = dashboardAdapter!!
+        adapter.setNotifyOnChange(false)
+        adapter.clear()
+        adapter.addAll(Dashboard.rows(vacations, LocalDate.now()))
+        adapter.notifyDataSetChanged()
         if (vacations.isNotEmpty()) checkNotifications()
     }
 

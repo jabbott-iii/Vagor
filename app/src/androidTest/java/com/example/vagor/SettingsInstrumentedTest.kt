@@ -1,6 +1,8 @@
 package com.example.vagor
 
+import android.Manifest
 import android.content.Context
+import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -31,9 +33,14 @@ class SettingsInstrumentedTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
     private var originalDarkMode = true
 
+    // The home screen asks for notifications when trips exist; the prompt would cover the tabs.
     @Before
-    fun rememberSetting() {
+    fun rememberSettingAndGrantNotifications() {
         originalDarkMode = ThemeSettings.isDarkMode(context)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            InstrumentationRegistry.getInstrumentation().uiAutomation
+                .grantRuntimePermission(context.packageName, Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 
     @After

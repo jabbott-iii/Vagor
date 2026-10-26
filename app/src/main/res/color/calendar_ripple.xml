@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Touch feedback in the drop-down calendar. Keyboard focus is shown by a focus ring instead of a
+     fill, which would lower the contrast of today's blue number. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@android:color/transparent" android:state_focused="true" android:state_pressed="false" />
+    <item android:color="?attr/colorControlHighlight" />
+</selector>

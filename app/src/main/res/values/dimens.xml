@@ -5,7 +5,22 @@
     <dimen name="calendar_dropdown_max_width">412dp</dimen>
     <dimen name="calendar_dropdown_elevation">6dp</dimen>
     <dimen name="calendar_dropdown_corner">16dp</dimen>
-    <!-- The framework CalendarView's portrait height (338dp) plus its padding; corrected once it
-         lays out. -->
-    <dimen name="calendar_dropdown_estimated_height">354dp</dimen>
+    <!-- A day in the drop-down calendar: a 48dp-tall touch target with a circle up to 36dp
+         across (smaller when the column is narrower; see calendarDayBackground). In sp so the
+         cell and its circle grow with the day number when the font size is larger. -->
+    <dimen name="calendar_day_height">48sp</dimen>
+    <dimen name="calendar_day_circle">36sp</dimen>
+    <dimen name="calendar_weekday_height">32sp</dimen>
+    <dimen name="calendar_today_ring_width">2dp</dimen>
+    <!-- Space kept between a day's circle and its cell edge, inside the 3dp focus ring. -->
+    <dimen name="calendar_day_circle_clearance">3dp</dimen>
+
+    <!-- State-layer opacities for vagor_on_primary_ripple, the same values Material Components
+         uses: RippleDrawable draws them differently before Android 9 (values-v28 has those). -->
+    <item name="vagor_ripple_pressed_alpha" format="float" type="dimen">0.2</item>
+    <item name="vagor_ripple_focused_alpha" format="float" type="dimen">0.2</item>
+    <item name="vagor_ripple_hovered_alpha" format="float" type="dimen">0.16</item>
+    <item name="vagor_ripple_default_alpha" format="float" type="dimen">0.32</item>
+    <!-- The height an Add button and its margins take at the bottom of a screen. -->
+    <dimen name="add_button_clearance">88dp</dimen>
 </resources>

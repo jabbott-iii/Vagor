@@ -59,6 +59,15 @@ class ThemeContrastTest {
                 "primary" to "background",
                 // The selected tab's indicator against the bottom navigation bar.
                 "primary" to "surfaceContainer",
+                // Material's focus rings: the outer ring against what's around a control, and the
+                // inner ring against a blue control.
+                "secondary" to "background",
+                "secondary" to "surfaceContainer",
+                "secondary" to "surfaceContainerHighest",
+                "onSecondary" to "primary",
+                // Drop-down calendar: today's ring and the selected day's circle against the
+                // calendar; its focus ring is onSurface (checked as text above).
+                "primary" to "surfaceContainerHigh",
             ),
             3.0
         )

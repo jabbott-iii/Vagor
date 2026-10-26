@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fills the day's cell, so it fits however narrow the calendar is. A layer-list rather than an
+     <inset>, which would also pad the day's text. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:bottom="1dp"
+        android:left="1dp"
+        android:right="1dp"
+        android:top="1dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="12dp" />
+            <stroke
+                android:width="2dp"
+                android:color="?attr/colorOnSurface" />
+        </shape>
+    </item>
+</layer-list>

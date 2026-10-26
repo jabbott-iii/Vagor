@@ -1,7 +1,7 @@
 package com.example.vagor
 
+import android.content.res.Configuration
 import android.graphics.Color
-import android.os.Build
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.SystemBarStyle
@@ -48,11 +48,17 @@ fun AppCompatActivity.setEdgeToEdgeContentViewWithBottomBar(
     @IdRes barId: Int,
 ) {
     // The bar gives the navigation bar its background, so no translucent scrim is drawn over it
-    // with 3-button navigation.
-    enableEdgeToEdge(navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT))
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        window.isNavigationBarContrastEnforced = false
-    }
+    // with 3-button navigation. A fixed light or dark style, not auto: auto turns the system's
+    // contrast scrim back on whenever the window's configuration changes. The screen is
+    // recreated when the theme switches, so the style always matches it.
+    val dark = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+    enableEdgeToEdge(
+        navigationBarStyle = if (dark) {
+            SystemBarStyle.dark(Color.TRANSPARENT)
+        } else {
+            SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+        }
+    )
     setContentView(layoutResId)
     val types = WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
 

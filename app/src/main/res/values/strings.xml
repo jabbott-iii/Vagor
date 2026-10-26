@@ -66,5 +66,10 @@
     <string name="edit_vacation">Edit Vacation</string>
     <string name="no_events_yet">No events yet. Tap Add Event to plan one.</string>
     <string name="choose_date">Choose date</string>
-    <string name="reminders_need_notifications">Notifications are off for Vagor, so trip reminders won\'t appear. You can turn them on in Settings.</string>
+    <string name="previous_month">Previous month</string>
+    <string name="next_month">Next month</string>
+    <string name="today">Today</string>
+    <!-- How a date field is read out by screen readers: its name, then the picked date. -->
+    <string name="date_field_with_value">%1$s, %2$s</string>
+    <string name="reminders_need_notifications">Notifications are off for Vagor, so trip reminders won\'t appear. You can turn them on in Android Settings.</string>
 </resources>

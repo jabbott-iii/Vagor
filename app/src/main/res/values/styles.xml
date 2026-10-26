@@ -20,13 +20,4 @@
     <style name="Widget.Vagor.BottomNavigation.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
         <item name="android:color">?attr/colorPrimary</item>
     </style>
-
-    <!-- Colours for the framework CalendarView in the date drop-down: the selected day is a
-         primary-blue circle with onPrimary text, other days use the scheme's surface text. -->
-    <style name="ThemeOverlay.Vagor.CalendarDropdown" parent="">
-        <item name="android:colorControlActivated">?attr/colorPrimary</item>
-        <item name="android:textColorPrimaryInverse">?attr/colorOnPrimary</item>
-        <!-- Days outside the allowed range, at Material 3's disabled opacity. -->
-        <item name="android:disabledAlpha">0.38</item>
-    </style>
 </resources>

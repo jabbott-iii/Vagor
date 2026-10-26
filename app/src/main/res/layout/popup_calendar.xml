@@ -1,16 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The calendar that drops down below a date field (see CalendarDropdown.kt). It scrolls when
-     the screen is too short to show it whole, for example a phone in landscape. -->
+     the screen is too short to show it whole, for example a phone in landscape. The day cells are
+     added in code. -->
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <CalendarView
+    <LinearLayout
         android:id="@+id/calendar"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:padding="8dp" />
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/previousMonth"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/calendar_month_button_background"
+                android:contentDescription="@string/previous_month"
+                android:src="@drawable/ic_chevron_start" />
+
+            <!-- Announced when the month changes. -->
+            <TextView
+                android:id="@+id/monthTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:accessibilityHeading="true"
+                android:accessibilityLiveRegion="polite"
+                android:gravity="center"
+                android:textAppearance="?attr/textAppearanceTitleSmall"
+                android:textColor="?attr/colorOnSurface"
+                tools:targetApi="28" />
+
+            <ImageButton
+                android:id="@+id/nextMonth"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/calendar_month_button_background"
+                android:contentDescription="@string/next_month"
+                android:src="@drawable/ic_chevron_end" />
+
+        </LinearLayout>
+
+        <!-- Single-letter weekday names; every day cell reads out its full date instead. -->
+        <LinearLayout
+            android:id="@+id/weekdays"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/calendar_weekday_height"
+            android:importantForAccessibility="noHideDescendants"
+            android:orientation="horizontal" />
+
+        <LinearLayout
+            android:id="@+id/days"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+    </LinearLayout>
 
 </ScrollView>

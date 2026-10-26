@@ -60,25 +60,14 @@ class MyReceiver : BroadcastReceiver() {
                 }
                 builder.setContentTitle(context.getString(message, vacation.title))
                     .setContentText(context.getString(R.string.reminder_hotel, vacation.hotel))
-                    .setContentIntent(
-                        TaskStackBuilder.create(context)
-                            .addNextIntent(Intent(context, HomeActivity::class.java))
-                            .addNextIntent(vacationPageIntent(context, vacation).setData(key.toUriString().toUri()))
-                            .getPendingIntent(0, PENDING_INTENT_FLAGS)
-                    )
+                    .setContentIntent(vacationReminderStack(context, vacation, key).getPendingIntent(0, PENDING_INTENT_FLAGS))
             }
             ReminderType.EVENT -> {
                 val event = db.eventDAO().getEventById(key.itemId) ?: return
                 val vacation = db.vacationDAO().getVacationById(event.vacationId) ?: return
                 builder.setContentTitle(context.getString(R.string.event_happening_today, event.title))
                     .setContentText(context.getString(R.string.reminder_part_of_vacation, vacation.title))
-                    .setContentIntent(
-                        TaskStackBuilder.create(context)
-                            .addNextIntent(Intent(context, HomeActivity::class.java))
-                            .addNextIntent(vacationPageIntent(context, vacation))
-                            .addNextIntent(eventDetailIntent(context, event).setData(key.toUriString().toUri()))
-                            .getPendingIntent(0, PENDING_INTENT_FLAGS)
-                    )
+                    .setContentIntent(eventReminderStack(context, vacation, event, key).getPendingIntent(0, PENDING_INTENT_FLAGS))
             }
         }
 
@@ -86,19 +75,32 @@ class MyReceiver : BroadcastReceiver() {
         NotificationManagerCompat.from(context).notify(key.toUriString(), 0, builder.build())
     }
 
-    // The vacation's page, with its details and events.
-    private fun vacationPageIntent(context: Context, vacation: Vacation) =
-        Intent(context, EventListActivity::class.java)
-            .putExtra("vacationId", vacation.id)
+    companion object {
+        private const val PENDING_INTENT_FLAGS = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
 
-    private fun eventDetailIntent(context: Context, event: Event) =
-        Intent(context, EventDetailActivity::class.java)
-            .putExtra("eventId", event.id)
-            .putExtra("title", event.title)
-            .putExtra("date", event.date)
-            .putExtra("vacationId", event.vacationId)
+        // What tapping a reminder opens, above the screens Back returns to. The last intent carries
+        // the reminder's URI, which keeps each reminder's PendingIntent separate.
+        internal fun vacationReminderStack(context: Context, vacation: Vacation, key: ReminderKey): TaskStackBuilder =
+            TaskStackBuilder.create(context)
+                .addNextIntent(Intent(context, HomeActivity::class.java))
+                .addNextIntent(vacationPageIntent(context, vacation).setData(key.toUriString().toUri()))
 
-    private companion object {
-        const val PENDING_INTENT_FLAGS = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        internal fun eventReminderStack(context: Context, vacation: Vacation, event: Event, key: ReminderKey): TaskStackBuilder =
+            TaskStackBuilder.create(context)
+                .addNextIntent(Intent(context, HomeActivity::class.java))
+                .addNextIntent(vacationPageIntent(context, vacation))
+                .addNextIntent(eventDetailIntent(context, event).setData(key.toUriString().toUri()))
+
+        // The vacation's page, with its details and events.
+        private fun vacationPageIntent(context: Context, vacation: Vacation) =
+            Intent(context, EventListActivity::class.java)
+                .putExtra("vacationId", vacation.id)
+
+        private fun eventDetailIntent(context: Context, event: Event) =
+            Intent(context, EventDetailActivity::class.java)
+                .putExtra("eventId", event.id)
+                .putExtra("title", event.title)
+                .putExtra("date", event.date)
+                .putExtra("vacationId", event.vacationId)
     }
 }

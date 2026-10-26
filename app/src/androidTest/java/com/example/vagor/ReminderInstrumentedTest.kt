@@ -134,11 +134,41 @@ class ReminderInstrumentedTest {
             eventNotification!!.notification.extras.getString("android.title")
         )
         assertNotNull(vacationNotification.notification.contentIntent)
+        assertNotNull(eventNotification.notification.contentIntent)
 
         ReminderScheduler.cancelEvent(context, event.id)
         ReminderScheduler.cancelVacation(context, vacation.id)
         val remaining = awaitNotifications { active -> active.none { it.tag in tags } }
         assertFalse(remaining.any { it.tag in tags })
+    }
+
+    @Test
+    fun tappingAReminderOpensTheVacationPageOrTheEvent() {
+        val vacation = Vacation("Trip", "Hotel Vagor", daysFromNow(10), daysFromNow(12), 41)
+        val event = Event("Event", daysFromNow(11), vacation.id, 42)
+        val vacationKey = ReminderKey(ReminderType.VACATION_START, vacation.id)
+        val eventKey = ReminderKey(ReminderType.EVENT, event.id)
+
+        val vacationStack = MyReceiver.vacationReminderStack(context, vacation, vacationKey).intents
+        assertEquals(
+            listOf(HomeActivity::class.java.name, EventListActivity::class.java.name),
+            vacationStack.map { it.component!!.className }
+        )
+        assertEquals(vacation.id, vacationStack[1].getIntExtra("vacationId", -1))
+        assertEquals(vacationKey.toUriString(), vacationStack[1].dataString)
+
+        val eventStack = MyReceiver.eventReminderStack(context, vacation, event, eventKey).intents
+        assertEquals(
+            listOf(HomeActivity::class.java.name, EventListActivity::class.java.name, EventDetailActivity::class.java.name),
+            eventStack.map { it.component!!.className }
+        )
+        assertEquals(vacation.id, eventStack[1].getIntExtra("vacationId", -1))
+        assertEquals(event.id, eventStack[2].getIntExtra("eventId", -1))
+        // The event form fills its fields from these.
+        assertEquals(event.title, eventStack[2].getStringExtra("title"))
+        assertEquals(event.date, eventStack[2].getStringExtra("date"))
+        assertEquals(vacation.id, eventStack[2].getIntExtra("vacationId", -1))
+        assertEquals(eventKey.toUriString(), eventStack[2].dataString)
     }
 
     @Test

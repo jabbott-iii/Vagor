@@ -43,5 +43,9 @@
         <item name="android:textColorHighlight">@color/vagor_dark_primaryContainer</item>
         <item name="colorControlNormal">@color/vagor_dark_onSurfaceVariant</item>
         <item name="colorControlActivated">@color/vagor_dark_primary</item>
+        <!-- Material's two-tone focus rings (secondary outside, onSecondary inside) on buttons,
+             floating action buttons, cards and bottom bar tabs, so keyboard focus is easy to see.
+             The attribute isn't in Material's public API yet; if it is renamed, the build fails. -->
+        <item name="focusRingsEnabled" tools:ignore="PrivateResource">true</item>
     </style>
 </resources>

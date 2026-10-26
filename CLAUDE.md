@@ -33,7 +33,9 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
 7. **Accessible colours**: a blue Material 3 scheme for colour-blind users, from the Okabe-Ito blue
    `#0072B2`. Every text/background pair must meet WCAG AA (4.5:1; 3:1 for non-text UI) in both
    themes; `ThemeContrastTest` enforces this. Don't convey anything by colour alone, and don't
-   add DynamicColors (it would replace the blue with wallpaper colours).
+   add DynamicColors (it would replace the blue with wallpaper colours). Keyboard focus must be
+   visible: the theme turns on Material's focus rings (`focusRingsEnabled`, not yet public API),
+   the dashboard list has its own focus ring, and the calendar's days have one.
 8. **Google Play compliance**: see [PLAY_RELEASE.md](PLAY_RELEASE.md). Play Console steps are the
    developer's to do.
 9. **Dashboard and navigation** (asked for by the user on 2026-10-25): the app opens on a
@@ -47,7 +49,10 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
    calendar that drops down below the field, and dates can't be typed (`CalendarDropdown.kt`).
    The end date calendar starts at the start date; an event's calendar offers only its
    vacation's days.
-   Current: implemented.
+   Current: implemented. The app draws the calendar itself. Don't switch to the framework
+   `CalendarView`: it follows the phone's calendar system (a Thai phone would store Buddhist-era
+   years) and marks today by colour alone. The calendar is always Gregorian and marks today
+   with a ring.
 
 ## Local-only rules (never break these)
 
@@ -79,23 +84,31 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   `EventDetailActivity` the add/edit event form. Also there: `entities/` (`Vacation`, `Event`),
   `dao/`, `database/AppDatabase.kt`, `DateValidators.kt`, `Dashboard.kt` (plain-Kotlin dashboard
   order and trip status), `TripText.kt` (dates and status as display text), `CalendarDropdown.kt`
-  (the date fields' drop-down calendar), `ReminderSchedule.kt` (plain-Kotlin reminder times and
+  (the date fields' drop-down calendar), `CalendarMonth.kt` (plain-Kotlin month grid for the
+  calendar), `CalendarDayBackground.kt` (the calendar days' circles and rings, drawn to fit their
+  cells), `ReminderSchedule.kt` (plain-Kotlin reminder times and
   identities), `ReminderScheduler.kt` (sets and cancels alarms), `MyReceiver.kt` (the alarm
   receiver; posts the notification), `ReminderRescheduleReceiver.kt`, `ThemeSettings.kt`,
   `VagorApplication.kt` (applies the saved theme before any screen) and `EdgeToEdge.kt`.
   `MainActivity` and `activity_main.xml` are unused template leftovers.
 - The `Event` entity maps to the table `excursions` (`@Entity(tableName = "excursions")`), and
   `EventDAO` queries that table. Don't rename the table without a migration.
-- Every screen calls `setEdgeToEdgeContentView()` instead of `setContentView()`, so content stays
-  clear of the system bars (required at targetSdk 36); `HomeActivity` uses
-  `setEdgeToEdgeContentViewWithBottomBar()`, because the bottom bar pads itself. While the keyboard is open it also ends the
-  root view at the keyboard's top edge. The two detail forms are in a `ScrollView` with
-  `adjustResize`, so every field and button can be scrolled into view in landscape and with the
-  keyboard open (a full-screen landscape keyboard still covers the form until it is closed).
+- Every screen except `HomeActivity` calls `setEdgeToEdgeContentView()` instead of
+  `setContentView()`, so content stays clear of the system bars (required at targetSdk 36).
+  While the keyboard is open, that helper also ends the root view at the keyboard's top edge. The
+  two detail forms are in a `ScrollView` with `adjustResize`, so every field and button can be
+  scrolled into view in landscape and with the keyboard open (a full-screen landscape keyboard
+  still covers the form until it is closed).
+- `HomeActivity` uses `setEdgeToEdgeContentViewWithBottomBar()` instead. It pads the tab content
+  for the status bar and the sides, and pads the bottom bar for the navigation bar and the
+  sides, so the bar's background reaches behind the navigation bar with no scrim. It replaces
+  the bar's own inset handling, which would add the keyboard's height, and it does nothing for
+  the keyboard: a text field added to a home tab would need its own keyboard handling.
 - Colours come from theme attributes only (`res/values/colors.xml`, `values/themes.xml`,
   `values-night/themes.xml`). Never hard-code a text or background colour in a layout.
 - UI is XML layouts, `AppCompatActivity` (plus a `Fragment` for each home screen tab),
-  `findViewById`, and `ListView` with `ArrayAdapter`. The code uses no Compose, ViewBinding,
+  `findViewById`, and `ListView` with `ArrayAdapter` for the dashboard. The vacation page shows
+  its few events as plain rows in a `ScrollView`, so focus follows the screen. The code uses no Compose, ViewBinding,
   ViewModel, DI framework or coroutines. Don't introduce them without the user's approval.
 - Every Activity or Fragment that reads or writes data builds its own Room instance with
   `allowMainThreadQueries()`, and DAOs are synchronous. Follow that pattern in small changes.
@@ -136,10 +149,18 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
 ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.example.vagor.HomeFlowInstrumentedTest
 ```
 
-- IMPORTANT: `HomeFlowInstrumentedTest` and `ReminderInstrumentedTest` write to the app's real
-  `vacation_database` and post real notifications. Both delete only the rows they create.
-  `SettingsInstrumentedTest` flips the dark mode setting and restores it. Run instrumented tests
-  only on an emulator or a test device, never on a phone that holds real trips.
+- IMPORTANT: `HomeFlowInstrumentedTest`, `ReminderInstrumentedTest` and
+  `CalendarDropdownInstrumentedTest` write to the app's real `vacation_database`;
+  `HomeFlowInstrumentedTest` and `ReminderInstrumentedTest` also set real alarms, and
+  `ReminderInstrumentedTest` posts real notifications. All three delete only the rows they create,
+  in `@After`, so a run that is killed partway can leave a test trip behind.
+  `SettingsInstrumentedTest` opens the real home screen, which reads the database and re-arms
+  every stored trip's reminders as a normal launch does, and it flips the dark mode setting and
+  restores it. `CalendarDropdownInstrumentedTest` switches the app's language to Thai for one test
+  and back. The home flow, reminder and settings tests grant the notification permission and leave
+  it granted. Run instrumented tests
+  only on an emulator or a test device, never on a phone that holds real trips. A
+  `connectedDebugAndroidTest` run also uninstalls the app afterwards, which deletes its data.
 - Release signing reads the upload key only from the `VAGOR_UPLOAD_KEYSTORE`,
   `VAGOR_UPLOAD_KEYSTORE_PASSWORD`, `VAGOR_UPLOAD_KEY_ALIAS` and `VAGOR_UPLOAD_KEY_PASSWORD`
   environment variables; without them `bundleRelease` is unsigned. Never commit a keystore or

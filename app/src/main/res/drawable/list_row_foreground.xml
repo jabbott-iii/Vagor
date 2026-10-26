@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A tappable row: the usual ripple, plus a ring when it has keyboard focus (the ripple's own
+     focus tint is too faint to see). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="?attr/selectableItemBackground" />
+    <item
+        android:bottom="2dp"
+        android:left="4dp"
+        android:right="4dp"
+        android:top="2dp">
+        <selector>
+            <item android:state_focused="true">
+                <shape android:shape="rectangle">
+                    <corners android:radius="12dp" />
+                    <stroke
+                        android:width="2dp"
+                        android:color="?attr/colorOnSurface" />
+                </shape>
+            </item>
+        </selector>
+    </item>
+</layer-list>

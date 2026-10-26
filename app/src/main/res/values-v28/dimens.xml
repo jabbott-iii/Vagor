@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 9+ state-layer opacities for vagor_on_primary_ripple (see values/dimens.xml). -->
+    <item name="vagor_ripple_pressed_alpha" format="float" type="dimen">0.1</item>
+    <item name="vagor_ripple_focused_alpha" format="float" type="dimen">0.17</item>
+    <item name="vagor_ripple_hovered_alpha" format="float" type="dimen">0.4</item>
+    <item name="vagor_ripple_default_alpha" format="float" type="dimen">0.16</item>
+</resources>

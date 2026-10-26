@@ -41,6 +41,8 @@ class HomeActivity : AppCompatActivity() {
         // After a recreation (rotation, or the dark mode switch) the fragment manager restores the
         // open tab and the bar restores its selection; neither calls the listener below.
         val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottomNavigation)
+        // The tab labels grow with the system font size, like the rest of the app's text.
+        bottomNavigation.setLabelFontScalingEnabled(true)
         bottomNavigation.setOnItemSelectedListener { item ->
             showTab(if (item.itemId == R.id.nav_settings) SettingsFragment() else VacationsFragment())
             true
