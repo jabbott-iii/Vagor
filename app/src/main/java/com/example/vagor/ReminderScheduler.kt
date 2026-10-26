@@ -9,7 +9,7 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
 import com.example.vagor.database.AppDatabase
-import com.example.vagor.entities.Excursion
+import com.example.vagor.entities.Event
 import com.example.vagor.entities.Vacation
 import java.time.ZoneId
 
@@ -37,19 +37,19 @@ object ReminderScheduler {
         cancel(context, ReminderKey(ReminderType.VACATION_END, vacationId), dismissPosted = true)
     }
 
-    fun scheduleExcursion(context: Context, excursion: Excursion) {
-        schedule(context, ReminderKey(ReminderType.EXCURSION, excursion.id), excursion.date)
+    fun scheduleEvent(context: Context, event: Event) {
+        schedule(context, ReminderKey(ReminderType.EVENT, event.id), event.date)
     }
 
-    fun cancelExcursion(context: Context, excursionId: Int) {
-        cancel(context, ReminderKey(ReminderType.EXCURSION, excursionId), dismissPosted = true)
+    fun cancelEvent(context: Context, eventId: Int) {
+        cancel(context, ReminderKey(ReminderType.EVENT, eventId), dismissPosted = true)
     }
 
     // Alarms don't survive a reboot or force stop, and stored dates have no time zone, so every
     // reminder is rebuilt from the database.
     fun rescheduleAll(context: Context, db: AppDatabase) {
         db.vacationDAO().getAllVacations().forEach { scheduleVacation(context, it) }
-        db.excursionDAO().getAllExcursions().forEach { scheduleExcursion(context, it) }
+        db.eventDAO().getAllEvents().forEach { scheduleEvent(context, it) }
     }
 
     private fun schedule(context: Context, key: ReminderKey, dateText: String) {
@@ -66,7 +66,8 @@ object ReminderScheduler {
             alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
         } else {
             // Older versions may defer an inexact alarm by up to 75% of the time left until it's
-            // due, which is months for a trip planned far ahead, so cap the delay at an hour.
+            // due, which is months for a trip planned far ahead, so cap the window at an hour.
+            // Doze can still hold it until the phone wakes.
             alarmManager.setWindow(AlarmManager.RTC_WAKEUP, triggerAt, ONE_HOUR_MILLIS, pendingIntent)
         }
     }

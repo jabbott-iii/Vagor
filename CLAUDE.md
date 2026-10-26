@@ -6,49 +6,77 @@ Maintainers: written 2026-10-25 against commit 2092255. The "Current:" notes and
 Block-level HTML comments like this one are stripped before Claude reads the file.
 -->
 
-Vagor is an offline Android vacation planner written in Kotlin: a single `:app` module,
-package `com.example.vagor`. It runs entirely on the phone, with no backend and no accounts.
+Vagor is an offline Android vacation planner written in Kotlin: a single `:app` module. Its
+application ID (the Play and device identity) is `io.github.jabbott_iii.vagor`; the Kotlin package
+and `namespace` are still `com.example.vagor`. It runs entirely on the phone, with no backend and no
+accounts.
 
 ## Product requirements
 
-These define "done" for feature work. The requirements say **events**; the code and UI call them
-**excursions**. Keep the existing name unless asked to rename.
+These define "done" for feature work. Events were called excursions until 2026-10-25; the UI and
+code now say **events**, but the Room table keeps its old name `excursions` (see Code layout).
 
 1. **Vacations**: create, edit and delete, with title, hotel, start date and end date.
    Current: implemented.
-2. **Events (excursions)**: each one is planned on a date inside its vacation's date range.
+2. **Events**: each one is planned on a date inside its vacation's date range.
    Current: implemented.
-3. **Reminders**: system notifications for vacation start, vacation end and each excursion.
-   Current: implemented. Automatic for every item: a notification at 9:00 AM local time on each
-   vacation's start and end dates and on each excursion's date. See "Reminders" below.
-4. **Sharing**: vacations and excursions can be shared with other people.
+3. **Reminders**: system notifications for vacation start, vacation end and each event.
+   Current: implemented. Automatic for every item: a notification around 9:00 AM local time on
+   each vacation's start and end dates and on each event's date. See "Reminders" below.
+4. **Sharing**: vacations and events can be shared with other people.
    Current: implemented as plain text through the Sharesheet. The vacation text lists its
-   excursions, and each excursion has its own Share button. Importing a shared trip isn't supported.
+   events, and each event has its own Share button. Importing a shared trip isn't supported.
 5. **Local-only**: see the next section.
+6. **Dark mode**: a switch on the Settings screen, on by default (asked for by the user on
+   2026-10-25 as an on/off switch, not a follow-system option).
+   Current: implemented (`ThemeSettings`, `VagorApplication`, `SettingsActivity`).
+7. **Accessible colours**: a blue Material 3 scheme for colour-blind users, from the Okabe-Ito blue
+   `#0072B2`. Every text/background pair must meet WCAG AA (4.5:1; 3:1 for non-text UI) in both
+   themes; `ThemeContrastTest` enforces this. Don't convey anything by colour alone, and don't
+   add DynamicColors (it would replace the blue with wallpaper colours).
+8. **Google Play compliance**: see [PLAY_RELEASE.md](PLAY_RELEASE.md). Play Console steps are the
+   developer's to do.
 
 ## Local-only rules (never break these)
 
 - No network access of any kind. Don't add `INTERNET` or `ACCESS_NETWORK_STATE`, HTTP clients,
   remote WebView content, Firebase, analytics, crash reporting, ads, accounts or sync. The
   manifest declares only `POST_NOTIFICATIONS` and `RECEIVE_BOOT_COMPLETED`. After adding any
-  dependency, check the merged manifest for permissions it pulls in.
-- Data leaves the app only when the user shares it through the Android Sharesheet, plus Android
-  Auto Backup (see Known issues).
+  dependency, check the merged manifest for permissions it pulls in. Play's Data safety answer
+  ("no data collected or shared") and PRIVACY.md depend on this.
+- Data leaves the app only when the user shares it through the Android Sharesheet. Cloud backup
+  is off, decided with the user on 2026-10-25 (`allowBackup="false"` plus exclusions in
+  `backup_rules.xml` and `data_extraction_rules.xml`); a direct device-to-device transfer to a new
+  phone is still allowed.
+- The privacy policy exists twice: PRIVACY.md and `privacy_policy_text` in strings.xml. Change
+  both together, and keep them true to what the app does. Its privacy contact is the public GitHub
+  Issues page (picked as the default on 2026-10-25; the user may want an email address instead).
 - All user data lives in the Room database file `vacation_database`, and there is no other copy.
-  Never rename it, never use `fallbackToDestructiveMigration`, and never clear tables outside
-  tests. For a schema change, bump `AppDatabase.version` and add a `Migration`. Before the first
-  one, turn on `exportSchema` with a schema directory and export the current version 1 schema,
-  so migrations can be tested with `MigrationTestHelper`.
+  Never rename that file, never use `fallbackToDestructiveMigration`, and never clear tables
+  outside tests. For a schema change, bump `AppDatabase.version` and add a `Migration`. Before the
+  first one, turn on `exportSchema` with a schema directory and export the current version 1
+  schema, so migrations can be tested with `MigrationTestHelper`. The only other stored state is
+  the dark mode switch, in the SharedPreferences file `settings`.
 
 ## Code layout and patterns
 
 - Screens in `app/src/main/java/com/example/vagor/`: `HomeActivity` (launcher), then
-  `VacationListActivity`, `VacationDetailActivity`, `ExcursionListActivity` and
-  `ExcursionDetailActivity`. Also there: `entities/`, `dao/`, `database/AppDatabase.kt`,
-  `DateValidators.kt`, `ReminderSchedule.kt` (plain-Kotlin reminder times and identities),
-  `ReminderScheduler.kt` (sets and cancels alarms), `MyReceiver.kt` (the alarm receiver; posts
-  the notification) and `ReminderRescheduleReceiver.kt`. `MainActivity` and `activity_main.xml`
-  are unused template leftovers.
+  `VacationListActivity`, `VacationDetailActivity`, `EventListActivity`, `EventDetailActivity` and
+  `SettingsActivity`. Also there: `entities/` (`Vacation`, `Event`), `dao/`,
+  `database/AppDatabase.kt`, `DateValidators.kt`, `ReminderSchedule.kt` (plain-Kotlin reminder
+  times and identities), `ReminderScheduler.kt` (sets and cancels alarms), `MyReceiver.kt` (the
+  alarm receiver; posts the notification), `ReminderRescheduleReceiver.kt`, `ThemeSettings.kt`,
+  `VagorApplication.kt` (applies the saved theme before any screen) and `EdgeToEdge.kt`.
+  `MainActivity` and `activity_main.xml` are unused template leftovers.
+- The `Event` entity maps to the table `excursions` (`@Entity(tableName = "excursions")`), and
+  `EventDAO` queries that table. Don't rename the table without a migration.
+- Every screen calls `setEdgeToEdgeContentView()` instead of `setContentView()`, so content stays
+  clear of the system bars (required at targetSdk 36). While the keyboard is open it also ends the
+  root view at the keyboard's top edge. The two detail forms are in a `ScrollView` with
+  `adjustResize`, so every field and button can be scrolled into view in landscape and with the
+  keyboard open (a full-screen landscape keyboard still covers the form until it is closed).
+- Colours come from theme attributes only (`res/values/colors.xml`, `values/themes.xml`,
+  `values-night/themes.xml`). Never hard-code a text or background colour in a layout.
 - UI is XML layouts, `AppCompatActivity`, `findViewById`, and `ListView` with `ArrayAdapter`. The
   code uses no Compose, ViewBinding, ViewModel, DI framework or coroutines. Don't introduce them
   without the user's approval.
@@ -56,21 +84,23 @@ These define "done" for feature work. The requirements say **events**; the code 
   `allowMainThreadQueries()`, and DAOs are synchronous. Follow that pattern in small changes.
   A shared instance or background threading is a refactor: propose it first.
 - Screens pass data through Intent extras with literal keys (`vacationId`, `title`, `hotel`,
-  `startDate`, `endDate`, `excursionId`, `date`). The instrumented tests and the reminder
+  `startDate`, `endDate`, `eventId`, `date`). The instrumented tests and the reminder
   notifications use the same keys. Detail screens prefill from the extras.
 - User-visible text goes in `res/values/strings.xml`.
 - Dates are stored as `MM/dd/yyyy` strings. Parse and validate them only through
-  `DateValidators`. Put new date or reminder math in plain Kotlin beside it so it can be unit
+  `DateValidators`, which is strict: exactly two-digit month and day, four-digit year, a real
+  calendar date, nothing before or after. Put new date or reminder math in plain Kotlin beside it so it can be unit
   tested (`java.time` is available at minSdk 26).
 - Rules enforced today: all fields are required; vacation end date is on or after the start date;
-  an excursion's date falls within its vacation's start and end dates, inclusive; and a vacation
-  that has excursions can't be deleted. That last check exists only in `VacationDetailActivity`,
+  an event's date falls within its vacation's start and end dates, inclusive; and a vacation
+  that has events can't be deleted. That last check exists only in `VacationDetailActivity`,
   because `excursions.vacationId` has no foreign key.
 
 ## Build and test
 
 The build uses AGP 9.4.1 with built-in Kotlin (Kotlin 2.4.20, set through the root
-`buildscript` classpath), KSP 2.3.12 for Room, Gradle 9.6.1, compileSdk 37 and targetSdk 35.
+`buildscript` classpath), KSP 2.3.12 for Room, Gradle 9.6.1, compileSdk 37 and targetSdk 36 (the
+Google Play minimum since 2026-08-31).
 Gradle runs on JDK 17 or later, and `gradle/gradle-daemon-jvm.properties` asks for a JDK 25
 daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` or `sdk.dir` in
 `local.properties`.
@@ -86,8 +116,13 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
 
 - IMPORTANT: `HomeFlowInstrumentedTest` and `ReminderInstrumentedTest` write to the app's real
   `vacation_database` and post real notifications. `ReminderInstrumentedTest` deletes only the
-  rows it inserts; `HomeFlowInstrumentedTest` leaves its vacation behind. Run instrumented tests
+  rows it inserts; `HomeFlowInstrumentedTest` leaves its vacation behind.
+  `SettingsInstrumentedTest` flips the dark mode setting and restores it. Run instrumented tests
   only on an emulator or a test device, never on a phone that holds real trips.
+- Release signing reads the upload key only from the `VAGOR_UPLOAD_KEYSTORE`,
+  `VAGOR_UPLOAD_KEYSTORE_PASSWORD`, `VAGOR_UPLOAD_KEY_ALIAS` and `VAGOR_UPLOAD_KEY_PASSWORD`
+  environment variables; without them `bundleRelease` is unsigned. Never commit a keystore or
+  password.
 - CI (`.github/workflows/`) also calls `detekt`, `ktlintCheck`, `sonarqube`,
   `dependencyCheckAnalyze`, `testDebugUnitTestCoverage` and `publishBundle`. None of those tasks
   exist in this build because no plugin provides them. Those steps use `|| true` or
@@ -97,8 +132,10 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
 
 ## Reminders
 
-Decided with the user on 2026-10-25: reminders are automatic for every item, fire at 9:00 AM
-local time on the stored date with no lead time, and excursions stay date-only. Changing any of
+Decided with the user on 2026-10-25: reminders are automatic for every item, fire around 9:00 AM
+local time on the stored date with no lead time, and events stay date-only. Alarms are inexact:
+on Android 12+ they usually arrive within an hour; on Android 8–11 (`setWindow`) Doze can hold
+them until the phone wakes. Changing any of
 these is the user's call.
 
 - Post a `NotificationCompat` notification on an app notification channel (channels are required
@@ -126,7 +163,7 @@ these is the user's call.
   `vacation_share_template`. No links to servers and no accounts.
 - To share a file (an `.ics` file, for example), serve it through a `FileProvider` `content://`
   URI with `FLAG_GRANT_READ_URI_PERMISSION`. Never use a `file://` URI.
-- Decided with the user on 2026-10-25: excursions are shared as plain text. Whether Vagor should
+- Decided with the user on 2026-10-25: events are shared as plain text. Whether Vagor should
   be able to import a trip someone shared is still open.
 
 ## Working rules
@@ -137,8 +174,9 @@ these is the user's call.
   Google Play internal track.
 - Make the smallest complete change. No unrelated refactors, renames or reformatting. Don't
   change dependency, AGP, Gradle, Kotlin or SDK versions unless asked.
-- Unless the task explicitly calls for it, don't change `applicationId` or `namespace`, the
-  database schema, manifest permissions, backup settings, or the CI/CD workflows.
+- Unless the task explicitly calls for it, don't change `namespace`, the database schema,
+  manifest permissions, backup settings, or the CI/CD workflows. Never change `applicationId`:
+  after the first Play upload a new ID is a different app.
 - `local.properties` (machine-specific `sdk.dir`) is tracked in git even though its own header
   says it shouldn't be. Don't commit changes to it.
 - Finish with: files changed, commands run and their results, checks not run, assumptions, and
@@ -146,12 +184,13 @@ these is the user's call.
 
 ## Known issues (as of 2026-10-25)
 
-- A Google Play upload would be rejected today. Play requires targetSdk 36 or higher for new apps
-  and updates since 2026-08-31, and it rejects `com.example.*` package names. Changing
-  `applicationId` gives the app a new identity, so that's the user's decision.
-- The README calls date validation strict, but `SimpleDateFormat` parsing ignores trailing text
-  and doesn't enforce digit counts: `09/16/2026abc`, `9/16/2026` and `09/16/26` (the year 26)
-  all pass `DateValidators`.
-- Auto Backup is on (`allowBackup="true"` with the template rules), so the Room database is part
-  of the user's Google Drive backup. Whether that fits "local-only" is an open decision.
-- The Slack payload in `cd.yml` says "DenariiDolor Release Notification".
+- Not yet on Google Play. The remaining steps are Play Console work listed in PLAY_RELEASE.md:
+  hosting PRIVACY.md at a public URL, the upload key, Data safety and other declarations, store
+  assets, and a 12-tester, 14-day closed test for new personal developer accounts.
+- The CD workflow can't publish to Play: `publishBundle` doesn't exist in this build, and CD
+  builds the bundle unsigned (it signs only the APK).
+- The launcher icon is still the Android template robot, now on a blue background.
+- The system draws the launch window before any app code runs. On Android 8–11 it follows the
+  system light/dark setting on every cold start, so a dark-mode user on a light-themed phone sees
+  a brief light flash. On Android 12+ only the very first launch does; later launches match the
+  app setting through `UiModeManager.setApplicationNightMode` (not captured on a device).

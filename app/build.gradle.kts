@@ -8,18 +8,34 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.example.vagor"
+        applicationId = "io.github.jabbott_iii.vagor"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Google Play needs the bundle signed with an upload key. The key comes only from environment
+    // variables (locally or as CI secrets), so the keystore and its passwords never enter git.
+    // Without them the release build is unsigned, as before.
+    val uploadKeystore = System.getenv("VAGOR_UPLOAD_KEYSTORE")?.let { file(it) }?.takeIf { it.exists() }
+    signingConfigs {
+        if (uploadKeystore != null) {
+            create("release") {
+                storeFile = uploadKeystore
+                storePassword = System.getenv("VAGOR_UPLOAD_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("VAGOR_UPLOAD_KEY_ALIAS")
+                keyPassword = System.getenv("VAGOR_UPLOAD_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.findByName("release")
         }
     }
     compileOptions {

@@ -10,17 +10,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:text="@string/excursions"
+        android:text="@string/events"
         android:textSize="24sp" />
 
     <Button
-        android:id="@+id/buttonAddExcursion"
+        android:id="@+id/buttonAddEvent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/add_excursion" />
+        android:text="@string/add_event" />
 
     <ListView
-        android:id="@+id/excursionListView"
+        android:id="@+id/eventListView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp" />

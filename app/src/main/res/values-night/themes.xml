@@ -1,7 +1,47 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- Base application theme. Dark blue scheme, the default (see ThemeSettings). -->
     <style name="Base.Theme.Vagor" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="colorPrimary">@color/vagor_dark_primary</item>
+        <item name="colorOnPrimary">@color/vagor_dark_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/vagor_dark_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/vagor_dark_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/vagor_dark_secondary</item>
+        <item name="colorOnSecondary">@color/vagor_dark_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/vagor_dark_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/vagor_dark_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/vagor_dark_tertiary</item>
+        <item name="colorOnTertiary">@color/vagor_dark_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/vagor_dark_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/vagor_dark_onTertiaryContainer</item>
+        <item name="colorError">@color/vagor_dark_error</item>
+        <item name="colorOnError">@color/vagor_dark_onError</item>
+        <item name="colorErrorContainer">@color/vagor_dark_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/vagor_dark_onErrorContainer</item>
+        <item name="android:colorBackground">@color/vagor_dark_background</item>
+        <item name="colorOnBackground">@color/vagor_dark_onBackground</item>
+        <item name="colorSurface">@color/vagor_dark_surface</item>
+        <item name="colorOnSurface">@color/vagor_dark_onSurface</item>
+        <item name="colorSurfaceVariant">@color/vagor_dark_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/vagor_dark_onSurfaceVariant</item>
+        <item name="colorOutline">@color/vagor_dark_outline</item>
+        <item name="colorOutlineVariant">@color/vagor_dark_outlineVariant</item>
+        <item name="colorSurfaceInverse">@color/vagor_dark_inverseSurface</item>
+        <item name="colorOnSurfaceInverse">@color/vagor_dark_inverseOnSurface</item>
+        <item name="colorPrimaryInverse">@color/vagor_dark_inversePrimary</item>
+        <item name="colorSurfaceDim">@color/vagor_dark_surfaceDim</item>
+        <item name="colorSurfaceBright">@color/vagor_dark_surfaceBright</item>
+        <item name="colorSurfaceContainerLowest">@color/vagor_dark_surfaceContainerLowest</item>
+        <item name="colorSurfaceContainerLow">@color/vagor_dark_surfaceContainerLow</item>
+        <item name="colorSurfaceContainer">@color/vagor_dark_surfaceContainer</item>
+        <item name="colorSurfaceContainerHigh">@color/vagor_dark_surfaceContainerHigh</item>
+        <item name="colorSurfaceContainerHighest">@color/vagor_dark_surfaceContainerHighest</item>
+        <!-- Material 3's default text and control colours are fixed neutrals; use this scheme's. -->
+        <item name="android:textColorPrimary">@color/vagor_dark_onSurface</item>
+        <item name="android:textColorSecondary">@color/vagor_dark_onSurfaceVariant</item>
+        <item name="android:textColorTertiary">@color/vagor_dark_onSurfaceVariant</item>
+        <item name="android:textColorHint">@color/vagor_dark_onSurfaceVariant</item>
+        <item name="android:textColorHighlight">@color/vagor_dark_primaryContainer</item>
+        <item name="colorControlNormal">@color/vagor_dark_onSurfaceVariant</item>
+        <item name="colorControlActivated">@color/vagor_dark_primary</item>
     </style>
 </resources>

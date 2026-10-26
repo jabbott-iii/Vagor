@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Scrolls so every field and button stays reachable in landscape and on small screens. -->
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/event_details"
+            android:textSize="24sp"
+            android:layout_marginBottom="16dp"/>
+
+        <EditText
+            android:id="@+id/editEventTitle"
+            android:layout_width="match_parent"
+            android:layout_height="71dp"
+            android:hint="@string/event_title"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/editEventDate"
+            android:layout_width="match_parent"
+            android:layout_height="78dp"
+            android:layout_marginTop="8dp"
+            android:hint="@string/event_date"
+            android:inputType="date" />
+
+        <Button
+            android:id="@+id/buttonSaveEvent"
+            android:layout_width="263dp"
+            android:layout_height="85dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/save_event" />
+
+        <Button
+            android:id="@+id/buttonDeleteEvent"
+            android:layout_width="267dp"
+            android:layout_height="95dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/delete_event" />
+
+        <Button
+            android:id="@+id/buttonShareEvent"
+            android:layout_width="272dp"
+            android:layout_height="86dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/share_event" />
+
+    </LinearLayout>
+
+</ScrollView>

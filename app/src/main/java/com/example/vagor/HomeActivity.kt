@@ -11,7 +11,7 @@ import com.example.vagor.database.AppDatabase
 class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_home)
+        setEdgeToEdgeContentView(R.layout.activity_home)
 
         // A force stop clears alarms and an app update may predate them, so rebuild on launch.
         if (savedInstanceState == null) {
@@ -31,5 +31,9 @@ class HomeActivity : AppCompatActivity() {
             val intent = Intent(this@HomeActivity, VacationListActivity::class.java)
             startActivity(intent)
         })
+
+        findViewById<Button>(R.id.buttonGoToSettings).setOnClickListener {
+            startActivity(Intent(this@HomeActivity, SettingsActivity::class.java))
+        }
     }
 }

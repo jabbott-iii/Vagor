@@ -57,14 +57,14 @@ class ReminderScheduleTest {
         val keys = listOf(
             ReminderKey(ReminderType.VACATION_START, 7),
             ReminderKey(ReminderType.VACATION_END, 7),
-            ReminderKey(ReminderType.EXCURSION, 7),
+            ReminderKey(ReminderType.EVENT, 7),
             ReminderKey(ReminderType.VACATION_START, 2001),
         )
         for (key in keys) {
             assertEquals(key, ReminderKey.fromUriString(key.toUriString()))
         }
         assertEquals("vagor://reminder/vacation/7/start", keys[0].toUriString())
-        assertEquals("vagor://reminder/excursion/7", keys[2].toUriString())
+        assertEquals("vagor://reminder/event/7", keys[2].toUriString())
     }
 
     @Test
@@ -82,8 +82,8 @@ class ReminderScheduleTest {
         assertNull(ReminderKey.fromUriString(""))
         assertNull(ReminderKey.fromUriString("vagor://reminder/vacation/7"))
         assertNull(ReminderKey.fromUriString("vagor://reminder/vacation/7/middle"))
-        assertNull(ReminderKey.fromUriString("vagor://reminder/excursion/x"))
-        assertNull(ReminderKey.fromUriString("https://example.com/reminder/excursion/7"))
-        assertNull(ReminderKey.fromUriString("vagor://reminder/excursion/99999999999"))
+        assertNull(ReminderKey.fromUriString("vagor://reminder/event/x"))
+        assertNull(ReminderKey.fromUriString("https://example.com/reminder/event/7"))
+        assertNull(ReminderKey.fromUriString("vagor://reminder/event/99999999999"))
     }
 }

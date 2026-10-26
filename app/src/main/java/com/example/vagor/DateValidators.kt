@@ -1,48 +1,40 @@
 package com.example.vagor
 
-import java.text.ParseException
-import java.text.SimpleDateFormat
 import java.time.LocalDate
-import java.util.Date
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+import java.time.format.ResolverStyle
 import java.util.Locale
 
-private const val APP_DATE_PATTERN = "MM/dd/yyyy"
+// Exactly two-digit month, two-digit day and four-digit year, with nothing before or after.
+private val APP_DATE_SHAPE = Regex("""\d{2}/\d{2}/\d{4}""")
+private val APP_DATE_FORMAT: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("MM/dd/uuuu", Locale.US).withResolverStyle(ResolverStyle.STRICT)
 
 object DateValidators {
-    private fun parser() = SimpleDateFormat(APP_DATE_PATTERN, Locale.US).apply {
-        isLenient = false
-    }
-
-    fun isValidDate(dateText: String): Boolean = parseDate(dateText) != null
+    fun isValidDate(dateText: String): Boolean = parseLocalDate(dateText) != null
 
     fun isEndDateAfterOrEqualStartDate(startDate: String, endDate: String): Boolean {
-        val start = parseDate(startDate)
-        val end = parseDate(endDate)
-        return start != null && end != null && !end.before(start)
+        val start = parseLocalDate(startDate)
+        val end = parseLocalDate(endDate)
+        return start != null && end != null && !end.isBefore(start)
     }
 
-    fun isDateWithinVacation(excursionDate: String, vacationStart: String, vacationEnd: String): Boolean {
-        val excursion = parseDate(excursionDate)
-        val start = parseDate(vacationStart)
-        val end = parseDate(vacationEnd)
-        return excursion != null && start != null && end != null &&
-            !end.before(start) &&
-            !excursion.before(start) && !excursion.after(end)
-    }
-
-    fun parseDate(dateText: String): Date? = try {
-        parser().parse(dateText)
-    } catch (_: ParseException) {
-        null
+    fun isDateWithinVacation(eventDate: String, vacationStart: String, vacationEnd: String): Boolean {
+        val event = parseLocalDate(eventDate)
+        val start = parseLocalDate(vacationStart)
+        val end = parseLocalDate(vacationEnd)
+        return event != null && start != null && end != null &&
+            !end.isBefore(start) &&
+            !event.isBefore(start) && !event.isAfter(end)
     }
 
     fun parseLocalDate(dateText: String): LocalDate? {
-        val parser = parser()
-        val date = try {
-            parser.parse(dateText)
-        } catch (_: ParseException) {
-            return null
+        if (!APP_DATE_SHAPE.matches(dateText)) return null
+        return try {
+            LocalDate.parse(dateText, APP_DATE_FORMAT)
+        } catch (_: DateTimeParseException) {
+            null
         }
-        return date.toInstant().atZone(parser.timeZone.toZoneId()).toLocalDate()
     }
 }

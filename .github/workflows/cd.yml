@@ -131,7 +131,7 @@ jobs:
         webhook-url: ${{ secrets.SLACK_WEBHOOK }}
         payload: |
           {
-            "text": "DenariiDolor Release Notification",
+            "text": "Vagor Release Notification",
             "blocks": [
               {
                 "type": "section",

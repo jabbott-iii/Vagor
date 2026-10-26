@@ -29,3 +29,7 @@ replay_pid*
 .kotlin/
 .gradle/
 /build/
+
+# Release signing keys never go in git
+*.jks
+*.keystore

@@ -14,7 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.room.Room.databaseBuilder
 import com.example.vagor.database.AppDatabase
-import com.example.vagor.entities.Excursion
+import com.example.vagor.entities.Event
 import com.example.vagor.entities.Vacation
 
 // Fires for alarms set by ReminderScheduler and posts the reminder notification.
@@ -68,10 +68,10 @@ class MyReceiver : BroadcastReceiver() {
                             .getPendingIntent(0, PENDING_INTENT_FLAGS)
                     )
             }
-            ReminderType.EXCURSION -> {
-                val excursion = db.excursionDAO().getExcursionById(key.itemId) ?: return
-                val vacation = db.vacationDAO().getVacationById(excursion.vacationId) ?: return
-                builder.setContentTitle(context.getString(R.string.excursion_happening_today, excursion.title))
+            ReminderType.EVENT -> {
+                val event = db.eventDAO().getEventById(key.itemId) ?: return
+                val vacation = db.vacationDAO().getVacationById(event.vacationId) ?: return
+                builder.setContentTitle(context.getString(R.string.event_happening_today, event.title))
                     .setContentText(context.getString(R.string.reminder_part_of_vacation, vacation.title))
                     .setContentIntent(
                         TaskStackBuilder.create(context)
@@ -79,10 +79,10 @@ class MyReceiver : BroadcastReceiver() {
                             .addNextIntent(Intent(context, VacationListActivity::class.java))
                             .addNextIntent(vacationDetailIntent(context, vacation))
                             .addNextIntent(
-                                Intent(context, ExcursionListActivity::class.java)
+                                Intent(context, EventListActivity::class.java)
                                     .putExtra("vacationId", vacation.id)
                             )
-                            .addNextIntent(excursionDetailIntent(context, excursion).setData(key.toUriString().toUri()))
+                            .addNextIntent(eventDetailIntent(context, event).setData(key.toUriString().toUri()))
                             .getPendingIntent(0, PENDING_INTENT_FLAGS)
                     )
             }
@@ -100,12 +100,12 @@ class MyReceiver : BroadcastReceiver() {
             .putExtra("startDate", vacation.startDate)
             .putExtra("endDate", vacation.endDate)
 
-    private fun excursionDetailIntent(context: Context, excursion: Excursion) =
-        Intent(context, ExcursionDetailActivity::class.java)
-            .putExtra("excursionId", excursion.id)
-            .putExtra("title", excursion.title)
-            .putExtra("date", excursion.date)
-            .putExtra("vacationId", excursion.vacationId)
+    private fun eventDetailIntent(context: Context, event: Event) =
+        Intent(context, EventDetailActivity::class.java)
+            .putExtra("eventId", event.id)
+            .putExtra("title", event.title)
+            .putExtra("date", event.date)
+            .putExtra("vacationId", event.vacationId)
 
     private companion object {
         const val PENDING_INTENT_FLAGS = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE

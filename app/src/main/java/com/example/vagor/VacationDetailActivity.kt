@@ -19,13 +19,13 @@ class VacationDetailActivity : AppCompatActivity() {
     private var buttonSave: Button? = null
     private var db: AppDatabase? = null
     private var buttonDelete: Button? = null
-    private var buttonViewExcursions: Button? = null
+    private var buttonViewEvents: Button? = null
     private var buttonShare: Button? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_vacation_detail)
+        setEdgeToEdgeContentView(R.layout.activity_vacation_detail)
 
         editTitle = findViewById<EditText>(R.id.editTitle)
         editHotel = findViewById<EditText>(R.id.editHotel)
@@ -33,7 +33,7 @@ class VacationDetailActivity : AppCompatActivity() {
         editEndDate = findViewById<EditText>(R.id.editEndDate)
         buttonSave = findViewById<Button>(R.id.buttonSave)
         buttonDelete = findViewById<Button>(R.id.buttonDelete)
-        buttonViewExcursions = findViewById<Button>(R.id.buttonViewExcursions)
+        buttonViewEvents = findViewById<Button>(R.id.buttonViewEvents)
         buttonShare = findViewById<Button>(R.id.buttonShare)
 
         val vacationId = getIntent().getIntExtra("vacationId", -1)
@@ -97,10 +97,10 @@ class VacationDetailActivity : AppCompatActivity() {
         //delete vacay logic
         buttonDelete!!.setOnClickListener(View.OnClickListener setOnClickListener@{ _: View? ->
             if (vacationId != -1) {
-                val excursionCount = db!!.excursionDAO().getExcursionCountForVacation(vacationId)
+                val eventCount = db!!.eventDAO().getEventCountForVacation(vacationId)
 
-                if (excursionCount > 0) {
-                    Toast.makeText(this@VacationDetailActivity, R.string.cannot_delete_vacation_with_excursions, Toast.LENGTH_LONG).show()
+                if (eventCount > 0) {
+                    Toast.makeText(this@VacationDetailActivity, R.string.cannot_delete_vacation_with_events, Toast.LENGTH_LONG).show()
                     return@setOnClickListener
                 }
 
@@ -119,10 +119,10 @@ class VacationDetailActivity : AppCompatActivity() {
                 finish()
             }
         })
-        //excursion button logic
-        buttonViewExcursions!!.setOnClickListener(View.OnClickListener { _: View? ->
+        //event button logic
+        buttonViewEvents!!.setOnClickListener(View.OnClickListener { _: View? ->
             if (vacationId != -1) {
-                val intent = Intent(this@VacationDetailActivity, ExcursionListActivity::class.java)
+                val intent = Intent(this@VacationDetailActivity, EventListActivity::class.java)
                 intent.putExtra("vacationId", vacationId)
                 startActivity(intent)
             } else {
@@ -139,14 +139,14 @@ class VacationDetailActivity : AppCompatActivity() {
                 editStartDate!!.getText().toString().trim { it <= ' ' },
                 editEndDate!!.getText().toString().trim { it <= ' ' }
             )
-            val excursions = if (vacationId == -1) emptyList() else db!!.excursionDAO().getExcursionsForVacation(vacationId)
-            val shareText = if (excursions.isEmpty()) {
+            val events = if (vacationId == -1) emptyList() else db!!.eventDAO().getEventsForVacation(vacationId)
+            val shareText = if (events.isEmpty()) {
                 vacationText
             } else {
-                val excursionLines = excursions
-                    .sortedBy { DateValidators.parseDate(it.date) }
-                    .joinToString("\n") { getString(R.string.excursion_share_line, it.title, it.date) }
-                getString(R.string.vacation_share_with_excursions, vacationText, excursionLines)
+                val eventLines = events
+                    .sortedBy { DateValidators.parseLocalDate(it.date)?.toEpochDay() }
+                    .joinToString("\n") { getString(R.string.event_share_line, it.title, it.date) }
+                getString(R.string.vacation_share_with_events, vacationText, eventLines)
             }
             val shareIntent = Intent(Intent.ACTION_SEND)
             shareIntent.setType("text/plain")

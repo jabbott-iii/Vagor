@@ -14,7 +14,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.vagor.database.AppDatabase
-import com.example.vagor.entities.Excursion
+import com.example.vagor.entities.Event
 import com.example.vagor.entities.Vacation
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -39,7 +39,7 @@ class ReminderInstrumentedTest {
         "vacation_database"
     ).allowMainThreadQueries().build()
     private val insertedVacations = mutableListOf<Vacation>()
-    private val insertedExcursions = mutableListOf<Excursion>()
+    private val insertedEvents = mutableListOf<Event>()
 
     @Before
     fun grantNotifications() {
@@ -51,9 +51,9 @@ class ReminderInstrumentedTest {
 
     @After
     fun tearDown() {
-        insertedExcursions.forEach {
-            ReminderScheduler.cancelExcursion(context, it.id)
-            db.excursionDAO().delete(it)
+        insertedEvents.forEach {
+            ReminderScheduler.cancelEvent(context, it.id)
+            db.eventDAO().delete(it)
         }
         insertedVacations.forEach {
             ReminderScheduler.cancelVacation(context, it.id)
@@ -65,21 +65,21 @@ class ReminderInstrumentedTest {
     @Test
     fun savingSchedulesAndDeletingCancelsReminders() {
         val vacation = insertVacation(daysFromNow(10), daysFromNow(12))
-        val excursion = insertExcursion(vacation, daysFromNow(11))
+        val event = insertEvent(vacation, daysFromNow(11))
 
         ReminderScheduler.scheduleVacation(context, vacation)
-        ReminderScheduler.scheduleExcursion(context, excursion)
+        ReminderScheduler.scheduleEvent(context, event)
 
         assertNotNull(existingAlarm(ReminderKey(ReminderType.VACATION_START, vacation.id)))
         assertNotNull(existingAlarm(ReminderKey(ReminderType.VACATION_END, vacation.id)))
-        assertNotNull(existingAlarm(ReminderKey(ReminderType.EXCURSION, excursion.id)))
+        assertNotNull(existingAlarm(ReminderKey(ReminderType.EVENT, event.id)))
 
-        ReminderScheduler.cancelExcursion(context, excursion.id)
+        ReminderScheduler.cancelEvent(context, event.id)
         ReminderScheduler.cancelVacation(context, vacation.id)
 
         assertNull(existingAlarm(ReminderKey(ReminderType.VACATION_START, vacation.id)))
         assertNull(existingAlarm(ReminderKey(ReminderType.VACATION_END, vacation.id)))
-        assertNull(existingAlarm(ReminderKey(ReminderType.EXCURSION, excursion.id)))
+        assertNull(existingAlarm(ReminderKey(ReminderType.EVENT, event.id)))
     }
 
     @Test
@@ -99,43 +99,43 @@ class ReminderInstrumentedTest {
     @Test
     fun rescheduleAllRestoresRemindersFromTheDatabase() {
         val vacation = insertVacation(daysFromNow(10), daysFromNow(12))
-        val excursion = insertExcursion(vacation, daysFromNow(11))
+        val event = insertEvent(vacation, daysFromNow(11))
 
         ReminderScheduler.rescheduleAll(context, db)
 
         assertNotNull(existingAlarm(ReminderKey(ReminderType.VACATION_START, vacation.id)))
-        assertNotNull(existingAlarm(ReminderKey(ReminderType.EXCURSION, excursion.id)))
+        assertNotNull(existingAlarm(ReminderKey(ReminderType.EVENT, event.id)))
     }
 
     @Test
     fun firedReminderPostsANotification() {
         val vacation = insertVacation(daysFromNow(0), daysFromNow(2))
-        val excursion = insertExcursion(vacation, daysFromNow(1))
+        val event = insertEvent(vacation, daysFromNow(1))
 
         val vacationKey = ReminderKey(ReminderType.VACATION_START, vacation.id)
-        val excursionKey = ReminderKey(ReminderType.EXCURSION, excursion.id)
-        val tags = listOf(vacationKey.toUriString(), excursionKey.toUriString())
+        val eventKey = ReminderKey(ReminderType.EVENT, event.id)
+        val tags = listOf(vacationKey.toUriString(), eventKey.toUriString())
         MyReceiver().onReceive(context, alarmIntentFor(vacationKey))
-        MyReceiver().onReceive(context, alarmIntentFor(excursionKey))
+        MyReceiver().onReceive(context, alarmIntentFor(eventKey))
 
         // The notification service posts and cancels asynchronously.
         val posted = awaitNotifications { active -> active.count { it.tag in tags } == 2 }.associateBy { it.tag }
         val vacationNotification = posted[vacationKey.toUriString()]
-        val excursionNotification = posted[excursionKey.toUriString()]
+        val eventNotification = posted[eventKey.toUriString()]
         assertNotNull(vacationNotification)
-        assertNotNull(excursionNotification)
+        assertNotNull(eventNotification)
         assertEquals(ReminderScheduler.CHANNEL_ID, vacationNotification!!.notification.channelId)
         assertEquals(
             context.getString(R.string.vacation_starting_today, vacation.title),
             vacationNotification.notification.extras.getString("android.title")
         )
         assertEquals(
-            context.getString(R.string.excursion_happening_today, excursion.title),
-            excursionNotification!!.notification.extras.getString("android.title")
+            context.getString(R.string.event_happening_today, event.title),
+            eventNotification!!.notification.extras.getString("android.title")
         )
         assertNotNull(vacationNotification.notification.contentIntent)
 
-        ReminderScheduler.cancelExcursion(context, excursion.id)
+        ReminderScheduler.cancelEvent(context, event.id)
         ReminderScheduler.cancelVacation(context, vacation.id)
         val remaining = awaitNotifications { active -> active.none { it.tag in tags } }
         assertFalse(remaining.any { it.tag in tags })
@@ -143,7 +143,7 @@ class ReminderInstrumentedTest {
 
     @Test
     fun reminderForDeletedItemPostsNothing() {
-        val missingKey = ReminderKey(ReminderType.EXCURSION, Int.MAX_VALUE)
+        val missingKey = ReminderKey(ReminderType.EVENT, Int.MAX_VALUE)
 
         MyReceiver().onReceive(context, alarmIntentFor(missingKey))
         MyReceiver().onReceive(context, Intent(context, MyReceiver::class.java).putExtra("message", "old alert"))
@@ -172,10 +172,10 @@ class ReminderInstrumentedTest {
         return saved
     }
 
-    private fun insertExcursion(vacation: Vacation, date: String): Excursion {
-        val excursion = Excursion("Excursion-${UUID.randomUUID().toString().take(8)}", date, vacation.id)
-        val saved = excursion.copy(id = db.excursionDAO().insert(excursion).toInt())
-        insertedExcursions += saved
+    private fun insertEvent(vacation: Vacation, date: String): Event {
+        val event = Event("Event-${UUID.randomUUID().toString().take(8)}", date, vacation.id)
+        val saved = event.copy(id = db.eventDAO().insert(event).toInt())
+        insertedEvents += saved
         return saved
     }
 

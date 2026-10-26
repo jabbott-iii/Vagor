@@ -3,25 +3,25 @@ package com.example.vagor
 import java.time.LocalTime
 import java.time.ZoneId
 
-enum class ReminderType { VACATION_START, VACATION_END, EXCURSION }
+enum class ReminderType { VACATION_START, VACATION_END, EVENT }
 
-// One reminder per vacation start, vacation end and excursion. The URI is the alarm's identity,
+// One reminder per vacation start, vacation end and event. The URI is the alarm's identity,
 // so each reminder can be replaced or cancelled on its own whatever the item id.
 data class ReminderKey(val type: ReminderType, val itemId: Int) {
     fun toUriString(): String = when (type) {
         ReminderType.VACATION_START -> "vagor://reminder/vacation/$itemId/start"
         ReminderType.VACATION_END -> "vagor://reminder/vacation/$itemId/end"
-        ReminderType.EXCURSION -> "vagor://reminder/excursion/$itemId"
+        ReminderType.EVENT -> "vagor://reminder/event/$itemId"
     }
 
     companion object {
-        private val URI_PATTERN = Regex("""vagor://reminder/(?:vacation/(\d+)/(start|end)|excursion/(\d+))""")
+        private val URI_PATTERN = Regex("""vagor://reminder/(?:vacation/(\d+)/(start|end)|event/(\d+))""")
 
         fun fromUriString(uri: String?): ReminderKey? {
             val match = URI_PATTERN.matchEntire(uri ?: return null) ?: return null
-            val (vacationId, edge, excursionId) = match.destructured
+            val (vacationId, edge, eventId) = match.destructured
             return when {
-                excursionId.isNotEmpty() -> excursionId.toIntOrNull()?.let { ReminderKey(ReminderType.EXCURSION, it) }
+                eventId.isNotEmpty() -> eventId.toIntOrNull()?.let { ReminderKey(ReminderType.EVENT, it) }
                 edge == "start" -> vacationId.toIntOrNull()?.let { ReminderKey(ReminderType.VACATION_START, it) }
                 else -> vacationId.toIntOrNull()?.let { ReminderKey(ReminderType.VACATION_END, it) }
             }
