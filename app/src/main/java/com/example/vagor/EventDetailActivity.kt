@@ -48,7 +48,16 @@ class EventDetailActivity : AppCompatActivity() {
         if (eventId != -1) {
             editEventTitle!!.setText(title)
             editEventDate!!.setText(date)
+        } else {
+            // A new event has nothing to delete yet.
+            buttonDeleteEvent!!.visibility = View.GONE
         }
+
+        // The calendar offers only the days of the event's vacation.
+        editEventDate!!.attachCalendarDropdown(
+            earliest = { db!!.vacationDAO().getVacationById(vacationId)?.let { DateValidators.parseLocalDate(it.startDate) } },
+            latest = { db!!.vacationDAO().getVacationById(vacationId)?.let { DateValidators.parseLocalDate(it.endDate) } }
+        )
 
         buttonSaveEvent!!.setOnClickListener(View.OnClickListener setOnClickListener@{ _: View? ->
             val updatedTitle = editEventTitle!!.getText().toString().trim { it <= ' ' }

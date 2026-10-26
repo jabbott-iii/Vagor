@@ -1,6 +1,5 @@
 package com.example.vagor
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -19,9 +18,6 @@ class VacationDetailActivity : AppCompatActivity() {
     private var buttonSave: Button? = null
     private var db: AppDatabase? = null
     private var buttonDelete: Button? = null
-    private var buttonViewEvents: Button? = null
-    private var buttonShare: Button? = null
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,8 +29,6 @@ class VacationDetailActivity : AppCompatActivity() {
         editEndDate = findViewById<EditText>(R.id.editEndDate)
         buttonSave = findViewById<Button>(R.id.buttonSave)
         buttonDelete = findViewById<Button>(R.id.buttonDelete)
-        buttonViewEvents = findViewById<Button>(R.id.buttonViewEvents)
-        buttonShare = findViewById<Button>(R.id.buttonShare)
 
         val vacationId = getIntent().getIntExtra("vacationId", -1)
         val title = getIntent().getStringExtra("title")
@@ -48,6 +42,16 @@ class VacationDetailActivity : AppCompatActivity() {
             editStartDate!!.setText(startDate)
             editEndDate!!.setText(endDate)
         }
+        // A new vacation has nothing to delete yet.
+        if (vacationId == -1) {
+            buttonDelete!!.visibility = View.GONE
+        }
+
+        editStartDate!!.attachCalendarDropdown()
+        // The end date can't be before the start date.
+        editEndDate!!.attachCalendarDropdown(
+            earliest = { DateValidators.parseLocalDate(editStartDate!!.getText().toString()) }
+        )
 
         db = databaseBuilder<AppDatabase>(
             getApplicationContext(),
@@ -118,40 +122,6 @@ class VacationDetailActivity : AppCompatActivity() {
                 Toast.makeText(this@VacationDetailActivity, R.string.vacation_deleted, Toast.LENGTH_SHORT).show()
                 finish()
             }
-        })
-        //event button logic
-        buttonViewEvents!!.setOnClickListener(View.OnClickListener { _: View? ->
-            if (vacationId != -1) {
-                val intent = Intent(this@VacationDetailActivity, EventListActivity::class.java)
-                intent.putExtra("vacationId", vacationId)
-                startActivity(intent)
-            } else {
-                Toast.makeText(this@VacationDetailActivity, R.string.save_vacation_first, Toast.LENGTH_SHORT).show()
-            }
-        })
-
-        //share button logic
-        buttonShare!!.setOnClickListener(View.OnClickListener { _: View? ->
-            val vacationText = getString(
-                R.string.vacation_share_template,
-                editTitle!!.getText().toString().trim { it <= ' ' },
-                editHotel!!.getText().toString().trim { it <= ' ' },
-                editStartDate!!.getText().toString().trim { it <= ' ' },
-                editEndDate!!.getText().toString().trim { it <= ' ' }
-            )
-            val events = if (vacationId == -1) emptyList() else db!!.eventDAO().getEventsForVacation(vacationId)
-            val shareText = if (events.isEmpty()) {
-                vacationText
-            } else {
-                val eventLines = events
-                    .sortedBy { DateValidators.parseLocalDate(it.date)?.toEpochDay() }
-                    .joinToString("\n") { getString(R.string.event_share_line, it.title, it.date) }
-                getString(R.string.vacation_share_with_events, vacationText, eventLines)
-            }
-            val shareIntent = Intent(Intent.ACTION_SEND)
-            shareIntent.setType("text/plain")
-            shareIntent.putExtra(Intent.EXTRA_TEXT, shareText)
-            startActivity(Intent.createChooser(shareIntent, getString(R.string.share_vacation_details)))
         })
     }
 }

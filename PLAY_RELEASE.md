@@ -51,9 +51,8 @@ jarsigner -verify app/build/outputs/bundle/release/app-release.aab
 Upload `app/build/outputs/bundle/release/app-release.aab`. Raise `versionCode` in
 `app/build.gradle.kts` before every later upload, including test-track uploads.
 
-The CD workflow (`.github/workflows/cd.yml`) can't upload to Play yet: its `publishBundle` task
-doesn't exist in this build and it builds the bundle unsigned. Upload by hand until that is set
-up.
+There is no release workflow (`cd.yml` was removed on 2026-10-25), so upload the bundle in Play
+Console by hand.
 
 ## 3. Publish the privacy policy
 

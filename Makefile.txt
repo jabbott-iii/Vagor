@@ -11,7 +11,7 @@ help:
 	@echo "Targets:"
 	@echo "  make tag VERSION=vX.Y.Z       Create annotated git tag"
 	@echo "  make push-tag VERSION=vX.Y.Z  Push tag to origin"
-	@echo "  make release VERSION=vX.Y.Z   Create and push tag (triggers CD)"
+	@echo "  make release VERSION=vX.Y.Z   Create and push tag"
 
 check-version:
 	@if [[ -z "$(VERSION)" ]]; then \

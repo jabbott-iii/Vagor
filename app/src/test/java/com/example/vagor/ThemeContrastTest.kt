@@ -37,13 +37,31 @@ class ThemeContrastTest {
             "error" to "surface",
             // Selected text on the selection highlight.
             "onSurface" to "primaryContainer",
+            // Dashboard cards (filled cards).
+            "onSurfaceVariant" to "surfaceContainerHighest",
+            // Bottom navigation bar labels, active and inactive.
+            "onSurface" to "surfaceContainer",
+            "onSurfaceVariant" to "surfaceContainer",
+            // Drop-down calendar: weekday labels and days; the selected day is onPrimary on primary.
+            "onSurfaceVariant" to "surfaceContainerHigh",
         )
         assertPairs(pairs, 4.5)
     }
 
     @Test
     fun nonTextUiMeetsWcagAa() {
-        assertPairs(listOf("outline" to "surface", "onSurfaceVariant" to "surface", "primary" to "surfaceContainerHighest"), 3.0)
+        assertPairs(
+            listOf(
+                "outline" to "surface",
+                "onSurfaceVariant" to "surface",
+                "primary" to "surfaceContainerHighest",
+                // The blue Add buttons against the screen.
+                "primary" to "background",
+                // The selected tab's indicator against the bottom navigation bar.
+                "primary" to "surfaceContainer",
+            ),
+            3.0
+        )
     }
 
     private fun assertPairs(pairs: List<Pair<String, String>>, minimum: Double) {

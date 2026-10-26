@@ -32,6 +32,8 @@
             android:layout_width="match_parent"
             android:layout_height="78dp"
             android:layout_marginTop="8dp"
+            android:autofillHints="none"
+            android:drawableEnd="@drawable/ic_calendar"
             android:hint="@string/event_date"
             android:inputType="date" />
 

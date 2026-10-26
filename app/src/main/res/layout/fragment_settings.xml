@@ -5,15 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="16dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="16dp"
         android:accessibilityHeading="true"
         android:text="@string/settings"
-        android:textSize="24sp"
+        android:textAppearance="?attr/textAppearanceHeadlineSmall"
         tools:targetApi="28" />
 
     <com.google.android.material.materialswitch.MaterialSwitch

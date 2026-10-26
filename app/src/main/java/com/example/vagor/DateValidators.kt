@@ -29,6 +29,8 @@ object DateValidators {
             !event.isBefore(start) && !event.isAfter(end)
     }
 
+    fun formatDate(date: LocalDate): String = date.format(APP_DATE_FORMAT)
+
     fun parseLocalDate(dateText: String): LocalDate? {
         if (!APP_DATE_SHAPE.matches(dateText)) return null
         return try {

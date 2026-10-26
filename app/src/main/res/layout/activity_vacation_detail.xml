@@ -43,6 +43,7 @@
             android:layout_height="57dp"
             android:layout_marginTop="8dp"
             android:autofillHints="none"
+            android:drawableEnd="@drawable/ic_calendar"
             android:hint="@string/start_date"
             android:inputType="date" />
 
@@ -52,6 +53,7 @@
             android:layout_height="57dp"
             android:layout_marginTop="8dp"
             android:autofillHints="none"
+            android:drawableEnd="@drawable/ic_calendar"
             android:hint="@string/end_date"
             android:inputType="date" />
 
@@ -68,20 +70,6 @@
             android:layout_height="61dp"
             android:layout_marginTop="8dp"
             android:text="@string/delete" />
-
-        <Button
-            android:id="@+id/buttonViewEvents"
-            android:layout_width="138dp"
-            android:layout_height="53dp"
-            android:layout_marginTop="8dp"
-            android:text="@string/view_events" />
-
-        <Button
-            android:id="@+id/buttonShare"
-            android:layout_width="138dp"
-            android:layout_height="51dp"
-            android:layout_marginTop="8dp"
-            android:text="@string/share_vacation" />
 
     </LinearLayout>
 

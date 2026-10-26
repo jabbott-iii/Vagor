@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ripple for content on a primary-blue background, at Material 3's state-layer opacities. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:alpha="0.10" android:color="?attr/colorOnPrimary" android:state_pressed="true" />
+    <item android:alpha="0.10" android:color="?attr/colorOnPrimary" android:state_focused="true" />
+    <item android:alpha="0.08" android:color="?attr/colorOnPrimary" android:state_hovered="true" />
+    <item android:alpha="0.16" android:color="?attr/colorOnPrimary" />
+</selector>

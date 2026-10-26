@@ -1,7 +1,12 @@
 package com.example.vagor
 
+import android.graphics.Color
+import android.os.Build
+import android.view.View
 import android.view.ViewGroup
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -29,6 +34,46 @@ fun AppCompatActivity.setEdgeToEdgeContentView(@LayoutRes layoutResId: Int) {
         view.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin = keyboard }
         // Passed on rather than consumed: on Android 10 and lower, consuming here would stop the
         // insets from reaching sibling views.
+        insets
+    }
+}
+
+// For a screen with a bottom navigation bar, whose background reaches the bottom edge of the screen
+// behind the navigation bar. The content view above it is padded for the status bar and the sides;
+// the bar is padded for the navigation bar and the sides. This replaces the bar's own inset handling,
+// which would also add the keyboard's height under adjustResize.
+fun AppCompatActivity.setEdgeToEdgeContentViewWithBottomBar(
+    @LayoutRes layoutResId: Int,
+    @IdRes contentId: Int,
+    @IdRes barId: Int,
+) {
+    // The bar gives the navigation bar its background, so no translucent scrim is drawn over it
+    // with 3-button navigation.
+    enableEdgeToEdge(navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT))
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        window.isNavigationBarContrastEnforced = false
+    }
+    setContentView(layoutResId)
+    val types = WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+
+    val content = findViewById<View>(contentId)
+    val contentLeft = content.paddingLeft
+    val contentTop = content.paddingTop
+    val contentRight = content.paddingRight
+    ViewCompat.setOnApplyWindowInsetsListener(content) { view, insets ->
+        val bars = insets.getInsets(types)
+        view.setPadding(contentLeft + bars.left, contentTop + bars.top, contentRight + bars.right, view.paddingBottom)
+        // The fragment container passes these on to the tab's layout, which must not pad again.
+        insets
+    }
+
+    val bar = findViewById<View>(barId)
+    val barLeft = bar.paddingLeft
+    val barRight = bar.paddingRight
+    val barBottom = bar.paddingBottom
+    ViewCompat.setOnApplyWindowInsetsListener(bar) { view, insets ->
+        val bars = insets.getInsets(types)
+        view.setPadding(barLeft + bars.left, view.paddingTop, barRight + bars.right, barBottom + bars.bottom)
         insets
     }
 }

@@ -1,25 +1,22 @@
 <resources>
     <string name="app_name">Vagor</string>
     <string name="event_title">Event Title</string>
-    <string name="event_date">Event Date (MM/dd/yyyy)</string>
+    <string name="event_date">Event Date</string>
     <string name="save_event">Save Event</string>
     <string name="delete_event">Delete Event</string>
     <string name="share_event">Share Event</string>
     <string name="event_details">Event Details</string>
     <string name="events">Events</string>
     <string name="add_event">Add Event</string>
-    <string name="plan_and_manage_your_trips">Plan and manage your trips</string>
-    <string name="view_vacations">View Vacations</string>
     <string name="vacation_details">Vacation Details</string>
     <string name="vacations">Vacations</string>
     <string name="add_vacation">Add Vacation</string>
     <string name="hotel">Hotel</string>
     <string name="vacation_title">Vacation Title</string>
-    <string name="start_date">Start Date (MM/dd/yyyy)</string>
-    <string name="end_date">End Date (MM/dd/yyyy)</string>
+    <string name="start_date">Start Date</string>
+    <string name="end_date">End Date</string>
     <string name="save">Save</string>
     <string name="delete">Delete</string>
-    <string name="view_events">View Events</string>
     <string name="share_vacation">Share Vacation</string>
     <string name="please_fill_all_fields">Please fill in all fields</string>
     <string name="dates_must_be_mmddyyyy">Dates must be in MM/dd/yyyy format</string>
@@ -28,7 +25,6 @@
     <string name="vacation_updated">Vacation updated</string>
     <string name="cannot_delete_vacation_with_events">Cannot delete vacation with associated events</string>
     <string name="vacation_deleted">Vacation deleted</string>
-    <string name="save_vacation_first">Save the vacation before adding events</string>
     <string name="share_vacation_details">Share vacation details</string>
     <string name="vacation_share_template">Vacation Title: %1$s\nHotel: %2$s\nStart Date: %3$s\nEnd Date: %4$s</string>
     <string name="vacation_share_with_events">%1$s\n\nEvents:\n%2$s</string>
@@ -52,5 +48,23 @@
     <string name="privacy_policy">Privacy Policy</string>
     <!-- Same text as PRIVACY.md at the repository root; change both together. -->
     <string name="privacy_policy_text">Effective October 25, 2026\n\nVagor is a vacation planner made by Joseph Anthony Abbott III. This policy explains how Vagor handles your information.\n\nInformation Vagor stores\nVagor stores the vacations and events you enter (titles, hotel names and dates) and your dark mode setting. They are stored only on your device, in Vagor\'s private app storage.\n\nInformation Vagor collects or shares\nNone. Vagor has no internet access, no accounts, no ads, no analytics and no crash reporting. Nothing you enter is sent to the developer or to anyone else.\n\nSharing\nWhen you tap Share Vacation or Share Event, Vagor opens Android\'s share menu with the trip details as text. The text goes only to the app you choose, and that app\'s privacy policy applies to it.\n\nReminders\nVagor uses notifications and alarms on your device to remind you on the day a vacation starts or ends and on the day of each event. Reminders are scheduled on your device, and nothing is sent over the internet.\n\nBackup\nVagor turns off Android cloud backup, so your trips aren\'t copied to Google Drive. If you move to a new phone with a direct device-to-device transfer, Android may copy Vagor\'s data to the new phone.\n\nKeeping and deleting your information\nYour information stays on your device until you delete it. Delete a vacation or event in the app, or uninstall Vagor or clear its storage in Android Settings to remove all of it.\n\nSecurity\nAndroid keeps Vagor\'s data in the app\'s private storage, which other apps can\'t access.\n\nChildren\nVagor doesn\'t collect information from anyone, including children.\n\nChanges\nIf this policy changes, the new version will be included in an app update and posted where this policy is published, with a new effective date.\n\nContact\nFor privacy questions, open an issue at https://github.com/jabbott-iii/Vagor/issues. Issues are public, so don\'t include personal details in them.</string>
+    <string name="no_vacations_yet">No vacations yet. Tap Add Vacation to plan one.</string>
+    <string name="past_vacations">Past</string>
+    <string name="vacation_date_range">%1$s – %2$s</string>
+    <string name="vacation_hotel">Hotel: %1$s</string>
+    <string name="trip_starts_tomorrow">Starts tomorrow</string>
+    <plurals name="trip_starts_in_days">
+        <item quantity="one">Starts in %d day</item>
+        <item quantity="other">Starts in %d days</item>
+    </plurals>
+    <string name="trip_today_only">Today</string>
+    <string name="trip_starts_today">Starts today</string>
+    <string name="trip_ends_today">Ends today</string>
+    <string name="trip_in_progress">Happening now</string>
+    <string name="trip_ended">Ended</string>
+    <string name="trip_check_dates">Check the dates</string>
+    <string name="edit_vacation">Edit Vacation</string>
+    <string name="no_events_yet">No events yet. Tap Add Event to plan one.</string>
+    <string name="choose_date">Choose date</string>
     <string name="reminders_need_notifications">Notifications are off for Vagor, so trip reminders won\'t appear. You can turn them on in Settings.</string>
 </resources>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The blue Add Vacation and Add Event buttons: the scheme's primary blue in both themes. -->
+    <style name="Widget.Vagor.AddButton" parent="Widget.Material3.ExtendedFloatingActionButton.Icon.Primary">
+        <item name="backgroundTint">?attr/colorPrimary</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="icon">@drawable/ic_add</item>
+        <item name="iconTint">?attr/colorOnPrimary</item>
+        <item name="rippleColor">@color/vagor_on_primary_ripple</item>
+    </style>
+
+    <!-- The selected tab's indicator is primary blue so it stands out from the bar (3:1 or more,
+         see ThemeContrastTest); Material 3's default secondaryContainer pill is about 1.1:1. -->
+    <style name="Widget.Vagor.BottomNavigation" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemActiveIndicatorStyle">@style/Widget.Vagor.BottomNavigation.ActiveIndicator</item>
+        <item name="itemIconTint">@color/bottom_navigation_icon</item>
+        <item name="labelVisibilityMode">labeled</item>
+    </style>
+
+    <style name="Widget.Vagor.BottomNavigation.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">?attr/colorPrimary</item>
+    </style>
+
+    <!-- Colours for the framework CalendarView in the date drop-down: the selected day is a
+         primary-blue circle with onPrimary text, other days use the scheme's surface text. -->
+    <style name="ThemeOverlay.Vagor.CalendarDropdown" parent="">
+        <item name="android:colorControlActivated">?attr/colorPrimary</item>
+        <item name="android:textColorPrimaryInverse">?attr/colorOnPrimary</item>
+        <!-- Days outside the allowed range, at Material 3's disabled opacity. -->
+        <item name="android:disabledAlpha">0.38</item>
+    </style>
+</resources>

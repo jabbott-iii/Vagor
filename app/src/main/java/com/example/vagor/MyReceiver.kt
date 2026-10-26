@@ -63,8 +63,7 @@ class MyReceiver : BroadcastReceiver() {
                     .setContentIntent(
                         TaskStackBuilder.create(context)
                             .addNextIntent(Intent(context, HomeActivity::class.java))
-                            .addNextIntent(Intent(context, VacationListActivity::class.java))
-                            .addNextIntent(vacationDetailIntent(context, vacation).setData(key.toUriString().toUri()))
+                            .addNextIntent(vacationPageIntent(context, vacation).setData(key.toUriString().toUri()))
                             .getPendingIntent(0, PENDING_INTENT_FLAGS)
                     )
             }
@@ -76,12 +75,7 @@ class MyReceiver : BroadcastReceiver() {
                     .setContentIntent(
                         TaskStackBuilder.create(context)
                             .addNextIntent(Intent(context, HomeActivity::class.java))
-                            .addNextIntent(Intent(context, VacationListActivity::class.java))
-                            .addNextIntent(vacationDetailIntent(context, vacation))
-                            .addNextIntent(
-                                Intent(context, EventListActivity::class.java)
-                                    .putExtra("vacationId", vacation.id)
-                            )
+                            .addNextIntent(vacationPageIntent(context, vacation))
                             .addNextIntent(eventDetailIntent(context, event).setData(key.toUriString().toUri()))
                             .getPendingIntent(0, PENDING_INTENT_FLAGS)
                     )
@@ -92,13 +86,10 @@ class MyReceiver : BroadcastReceiver() {
         NotificationManagerCompat.from(context).notify(key.toUriString(), 0, builder.build())
     }
 
-    private fun vacationDetailIntent(context: Context, vacation: Vacation) =
-        Intent(context, VacationDetailActivity::class.java)
+    // The vacation's page, with its details and events.
+    private fun vacationPageIntent(context: Context, vacation: Vacation) =
+        Intent(context, EventListActivity::class.java)
             .putExtra("vacationId", vacation.id)
-            .putExtra("title", vacation.title)
-            .putExtra("hotel", vacation.hotel)
-            .putExtra("startDate", vacation.startDate)
-            .putExtra("endDate", vacation.endDate)
 
     private fun eventDetailIntent(context: Context, event: Event) =
         Intent(context, EventDetailActivity::class.java)

@@ -70,4 +70,12 @@ class DateValidatorsTest {
         assertNull(DateValidators.parseLocalDate("02/30/2026"))
         assertNull(DateValidators.parseLocalDate("2026-09-16"))
     }
+
+    @Test
+    fun formatDateWritesTheStoredFormat() {
+        assertEquals("09/06/2026", DateValidators.formatDate(LocalDate.of(2026, 9, 6)))
+        assertEquals("12/31/1999", DateValidators.formatDate(LocalDate.of(1999, 12, 31)))
+        val date = LocalDate.of(2028, 2, 29)
+        assertEquals(date, DateValidators.parseLocalDate(DateValidators.formatDate(date)))
+    }
 }

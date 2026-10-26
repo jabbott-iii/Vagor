@@ -1,37 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The landing screen: the Vacations and Settings tabs above a bottom navigation bar. -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="24dp">
+    android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp"/>
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/homeContent"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
-    <TextView
-        android:layout_width="wrap_content"
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        style="@style/Widget.Vagor.BottomNavigation"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/plan_and_manage_your_trips"
-        android:textSize="16sp"
-        android:layout_marginBottom="24dp"/>
+        app:menu="@menu/bottom_navigation" />
 
-    <Button
-        android:id="@+id/buttonGoToVacations"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/view_vacations"/>
-
-    <Button
-        android:id="@+id/buttonGoToSettings"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/settings"/>
 </LinearLayout>

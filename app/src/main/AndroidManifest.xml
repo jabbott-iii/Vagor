@@ -17,7 +17,6 @@
         android:theme="@style/Theme.Vagor">
 
         <activity android:name=".MainActivity" />
-        <activity android:name=".VacationListActivity" />
         <activity
             android:name=".VacationDetailActivity"
             android:windowSoftInputMode="adjustResize|stateHidden" />
@@ -25,7 +24,6 @@
         <activity
             android:name=".EventDetailActivity"
             android:windowSoftInputMode="adjustResize|stateHidden" />
-        <activity android:name=".SettingsActivity" />
 
         <activity
             android:name=".HomeActivity"

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The drop-down calendar spans its field on phones in portrait, and is no wider than this
+         in landscape or on tablets. Elevation and corner follow Material 3's docked date picker. -->
+    <dimen name="calendar_dropdown_max_width">412dp</dimen>
+    <dimen name="calendar_dropdown_elevation">6dp</dimen>
+    <dimen name="calendar_dropdown_corner">16dp</dimen>
+    <!-- The framework CalendarView's portrait height (338dp) plus its padding; corrected once it
+         lays out. -->
+    <dimen name="calendar_dropdown_estimated_height">354dp</dimen>
+</resources>
