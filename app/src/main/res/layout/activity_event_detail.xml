@@ -39,23 +39,26 @@
 
         <Button
             android:id="@+id/buttonSaveEvent"
-            android:layout_width="263dp"
-            android:layout_height="85dp"
+            style="@style/Widget.Vagor.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/save_event" />
 
         <Button
             android:id="@+id/buttonDeleteEvent"
-            android:layout_width="267dp"
-            android:layout_height="95dp"
-            android:layout_marginTop="8dp"
+            style="@style/Widget.Vagor.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/button_spacing"
             android:text="@string/delete_event" />
 
         <Button
             android:id="@+id/buttonShareEvent"
-            android:layout_width="272dp"
-            android:layout_height="86dp"
-            android:layout_marginTop="8dp"
+            style="@style/Widget.Vagor.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/button_spacing"
             android:text="@string/share_event" />
 
     </LinearLayout>

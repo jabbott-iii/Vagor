@@ -21,6 +21,10 @@
     <item name="vagor_ripple_focused_alpha" format="float" type="dimen">0.2</item>
     <item name="vagor_ripple_hovered_alpha" format="float" type="dimen">0.16</item>
     <item name="vagor_ripple_default_alpha" format="float" type="dimen">0.32</item>
+    <!-- The height of every button on a page (Widget.Vagor.Button), or more at large font sizes. -->
+    <dimen name="button_height">56dp</dimen>
+    <!-- The space between buttons stacked on a page. -->
+    <dimen name="button_spacing">8dp</dimen>
     <!-- The height an Add button and its margins take at the bottom of a screen. -->
     <dimen name="add_button_clearance">88dp</dimen>
 </resources>

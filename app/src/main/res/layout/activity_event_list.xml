@@ -49,28 +49,21 @@
                     android:textAppearance="?attr/textAppearanceBodyMedium"
                     android:textColor="?attr/colorOnSurfaceVariant" />
 
-                <LinearLayout
+                <Button
+                    android:id="@+id/buttonEditVacation"
+                    style="@style/Widget.Vagor.Button.Outlined"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="16dp"
+                    android:text="@string/edit_vacation" />
 
-                    <Button
-                        android:id="@+id/buttonEditVacation"
-                        style="?attr/materialButtonOutlinedStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/edit_vacation" />
-
-                    <Button
-                        android:id="@+id/buttonShareVacation"
-                        style="?attr/materialButtonOutlinedStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="@string/share_vacation" />
-
-                </LinearLayout>
+                <Button
+                    android:id="@+id/buttonShareVacation"
+                    style="@style/Widget.Vagor.Button.Outlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/button_spacing"
+                    android:text="@string/share_vacation" />
 
                 <TextView
                     android:layout_width="match_parent"

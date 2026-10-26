@@ -106,6 +106,11 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   the keyboard: a text field added to a home tab would need its own keyboard handling.
 - Colours come from theme attributes only (`res/values/colors.xml`, `values/themes.xml`,
   `values-night/themes.xml`). Never hard-code a text or background colour in a layout.
+- Every button on a page is the same size (asked for by the user on 2026-10-26): full width,
+  one above the other, styled `Widget.Vagor.Button` or `Widget.Vagor.Button.Outlined` with
+  `layout_width="match_parent"` and `layout_height="wrap_content"`. The style sets one height
+  (`@dimen/button_height`), which grows with the font size. Only the floating Add Vacation and Add
+  Event buttons differ (`Widget.Vagor.AddButton`).
 - UI is XML layouts, `AppCompatActivity` (plus a `Fragment` for each home screen tab),
   `findViewById`, and `ListView` with `ArrayAdapter` for the dashboard. The vacation page shows
   its few events as plain rows in a `ScrollView`, so focus follows the screen. The code uses no Compose, ViewBinding,

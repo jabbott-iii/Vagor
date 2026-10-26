@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Every button on a page (all but the floating Add buttons) spans the page and has the same
+         height, one above the other. The height grows with the font size, so a label is never cut
+         off. Layouts set layout_width="match_parent" and layout_height="wrap_content". -->
+    <style name="Widget.Vagor.Button" parent="Widget.Material3.Button">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+
+    <style name="Widget.Vagor.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+
     <!-- The blue Add Vacation and Add Event buttons: the scheme's primary blue in both themes. -->
     <style name="Widget.Vagor.AddButton" parent="Widget.Material3.ExtendedFloatingActionButton.Icon.Primary">
         <item name="backgroundTint">?attr/colorPrimary</item>
