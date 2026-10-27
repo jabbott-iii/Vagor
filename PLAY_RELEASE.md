@@ -87,8 +87,9 @@ section in both copies.
 - **Does your app collect or share any of the required user data types?** No.
   - Play counts data as *collected* only when it is sent off the device. Vagor keeps everything on
     the device and has no internet access.
-  - Sharing is only the user's own tap on Share, which opens Android's share menu. Play exempts
-    transfers the user starts and expects.
+  - Sharing is only the user's own tap on Share, which opens Android's share menu, or on Add to
+    Calendar, which hands one vacation or event to a calendar app. Play exempts transfers the user
+    starts and expects ("User-initiated action" in Play's Data safety help).
 - Recheck these answers if Vagor ever adds a library that uses the network, analytics, crash
   reporting, or ads.
 
@@ -104,11 +105,15 @@ section in both copies.
   > • Plan events on the days of each vacation, each with its time, time zone and details.
   > • Get a reminder notification on the morning a vacation starts, the morning it ends, and an hour before each event.
   > • Share a vacation, with its events, or a single event as text through any app you choose.
+  > • Add a vacation or an event to Google Calendar or another calendar app.
   > • Dark mode by default, with a blue colour scheme designed to stay readable for people with colour blindness.
   >
-  > Vagor has no account, no ads and no internet access. It never uploads your trips: they leave your phone only when you share them or move to a new phone.
+  > Vagor has no account, no ads and no internet access. It never uploads your trips: they leave Vagor only when you share them, add them to a calendar app, or move to a new phone.
 
-  Don't claim features Vagor doesn't have: importing trips, sync or cloud backup. Don't promise
+  Don't claim features Vagor doesn't have: importing trips, sync or cloud backup (Google Calendar
+  may sync an item saved there, but that's Google Calendar, not Vagor). Name Google Calendar only
+  in plain text saying what Vagor works with: no Google logo or Calendar icon in the graphics or
+  screenshots, and no Google name in the app's title or icon. Don't promise
   reminders to the minute either: they depend on Alarms & reminders and the phone's battery
   settings.
 - **Graphics:** a 512×512 PNG icon, a 1024×500 feature graphic, and at least two phone

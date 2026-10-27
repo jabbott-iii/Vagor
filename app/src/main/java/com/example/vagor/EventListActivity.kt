@@ -7,14 +7,15 @@ import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.example.vagor.database.AppDatabase
 import com.example.vagor.entities.Event
 import com.example.vagor.entities.Vacation
 
-// A vacation's page, opened by tapping it on the dashboard: its details, Edit and Share
-// buttons, and its events in date and time order.
+// A vacation's page, opened by tapping it on the dashboard: its details, Edit, Share and Add to
+// Calendar buttons, and its events in date and time order.
 class EventListActivity : AppCompatActivity() {
     private var eventRows: LinearLayout? = null
     private var emptyEvents: View? = null
@@ -72,6 +73,17 @@ class EventListActivity : AppCompatActivity() {
             shareIntent.setType("text/plain")
             shareIntent.putExtra(Intent.EXTRA_TEXT, shareText)
             startActivity(Intent.createChooser(shareIntent, getString(R.string.share_vacation_details)))
+        }
+
+        findViewById<Button>(R.id.buttonVacationToCalendar).setOnClickListener {
+            val current = vacation ?: return@setOnClickListener
+            val insert = vacationCalendarIntent(current, events)
+            if (insert == null) {
+                // A date saved before dates were checked strictly.
+                Toast.makeText(this@EventListActivity, R.string.dates_must_be_mmddyyyy, Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+            openCalendarInsert(insert)
         }
 
         findViewById<View>(R.id.buttonAddEvent).setOnClickListener {

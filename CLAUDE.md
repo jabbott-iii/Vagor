@@ -33,7 +33,13 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
 4. **Sharing**: vacations and events can be shared with other people.
    Current: implemented as plain text through the Sharesheet. The vacation text lists its
    events with their dates and times, and each event has its own Share button, whose text adds
-   its time zone and details. Importing a shared trip isn't supported.
+   its time zone and details. Importing a shared trip isn't supported. Adding to Google Calendar
+   was asked for by the user on 2026-10-26: an Add to Calendar button on the vacation page and the
+   event form opens Google Calendar's own new-event screen (another calendar app's when Google
+   Calendar isn't installed) filled in: a vacation all day over its dates, with its trip details
+   and events as the description; an event at its time in its time zone, an hour long, with its
+   details, time and vacation (`CalendarInsert.kt`). The label says "Calendar" because it may open
+   another app, and Google's brand guidance asks for accurate wording.
 5. **Local-only**: see the next section.
 6. **Dark mode**: a switch on the Settings tab, on by default (asked for by the user on
    2026-10-25 as an on/off switch, not a follow-system option).
@@ -75,7 +81,8 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   `SCHEDULE_EXACT_ALARM` (see Reminders). After adding any
   dependency, check the merged manifest for permissions it pulls in. Play's Data safety answer
   ("no data collected or shared") and PRIVACY.md depend on this.
-- Data leaves the app only when the user shares it through the Android Sharesheet. Cloud backup
+- Data leaves the app only when the user shares it through the Android Sharesheet, or hands one
+  vacation or event to a calendar app with Add to Calendar (see Sharing). Cloud backup
   is off, decided with the user on 2026-10-25 (`allowBackup="false"` plus exclusions in
   `backup_rules.xml` and `data_extraction_rules.xml`); a direct device-to-device transfer to a new
   phone is still allowed.
@@ -96,8 +103,9 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
 
 - Screens in `app/src/main/java/com/example/vagor/`: `HomeActivity` (launcher) holds a bottom
   navigation bar and two tabs, `VacationsFragment` (the dashboard) and `SettingsFragment`. Tapping
-  a vacation opens `EventListActivity`, the vacation's page: its details, Edit Vacation and Share
-  Vacation buttons, and its events. `VacationDetailActivity` is the add/edit vacation form, and
+  a vacation opens `EventListActivity`, the vacation's page: its details, Edit Vacation, Share
+  Vacation and Add to Calendar buttons, and its events. `VacationDetailActivity` is the add/edit
+  vacation form, and
   `EventDetailActivity` the add/edit event form. Also there: `entities/` (`Vacation`, `Event`),
   `dao/`, `database/AppDatabase.kt`, `DateValidators.kt`, `Dashboard.kt` (plain-Kotlin dashboard
   order and trip status), `TripText.kt` (dates, times and status as display text),
@@ -106,7 +114,8 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   `CalendarMonth.kt` (plain-Kotlin month grid for the calendar), `CalendarDayBackground.kt` (the
   calendar days' circles and rings, drawn to fit their cells), `TimeZonePicker.kt` (the event
   form's searchable time zone list, labelled from Android's ICU time zone names),
-  `ReminderSchedule.kt` (plain-Kotlin reminder times and
+  `CalendarInsert.kt` (the Add to Calendar intents, with their plain-Kotlin times in
+  `CalendarTimes`), `ReminderSchedule.kt` (plain-Kotlin reminder times and
   identities), `ReminderScheduler.kt` (sets and cancels alarms), `ExactAlarmOffer.kt` (offers
   Android's Alarms & reminders screen), `MyReceiver.kt` (the alarm
   receiver; posts the notification), `ReminderRescheduleReceiver.kt`, `ThemeSettings.kt`,
@@ -193,10 +202,12 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
 ```
 
 - IMPORTANT: `HomeFlowInstrumentedTest`, `ReminderInstrumentedTest`,
-  `CalendarDropdownInstrumentedTest` and `EventFormInstrumentedTest` write to the app's real
-  `vacation_database`; all but the calendar test also set real alarms, and
-  `ReminderInstrumentedTest` posts real notifications. All four delete only the rows they create,
-  in `@After`, so a run that is killed partway can leave a test trip behind.
+  `CalendarDropdownInstrumentedTest`, `EventFormInstrumentedTest` and
+  `CalendarInsertInstrumentedTest` write to the app's real `vacation_database`; all but the two
+  calendar tests also set real alarms, and `ReminderInstrumentedTest` posts real notifications.
+  All five delete only the rows they create, in `@After`, so a run that is killed partway can
+  leave a test trip behind. `CalendarInsertInstrumentedTest` catches the calendar intents with an
+  `Instrumentation.ActivityMonitor`, so no calendar app opens.
   `MigrationInstrumentedTest` upgrades a database file of its own (`migration-test`) and deletes
   it.
   Every instrumented run starts the app's process, which re-arms every stored trip's reminders
@@ -274,6 +285,26 @@ phone was off isn't shown late. Changing any of these is the user's call.
   `vacation_share_template`. No links to servers and no accounts.
 - To share a file (an `.ics` file, for example), serve it through a `FileProvider` `content://`
   URI with `FLAG_GRANT_READ_URI_PERMISSION`. Never use a `file://` URI.
+- Add to Calendar uses `Intent.ACTION_INSERT` with `CalendarContract.Events.CONTENT_URI` and the
+  type `vnd.android.cursor.dir/event`, aimed at Google Calendar (`com.google.android.calendar`)
+  and, when that isn't installed, at any calendar app (`openCalendarInsert`). It opens the
+  calendar app's own new-event screen; that app decides whether and where to save (Android's
+  original calendar app saves when the user leaves the screen), so never promise that nothing is
+  added until the user saves. It needs no permission: never add `READ_CALENDAR` or
+  `WRITE_CALENDAR`, and never write to the calendar provider directly. Starting the intent needs no
+  `<queries>` entry; catch `ActivityNotFoundException` instead. A second tap within 2 seconds
+  is ignored, because some calendar apps save every new-event screen the user leaves, and "no
+  calendar app" is a dialog, because a toast is cut at two lines.
+- Calendar apps read an all-day intent's times differently (in the phone's zone or in UTC; an
+  end at midnight as exclusive or not), and Google Calendar documents none of it.
+  `CalendarTimes` starts a vacation at the later of its first day's UTC and local midnights, and
+  ends it inside its last day: an hour after that day's start, or 1:00 on the phone's clock,
+  whichever is later (the clock time matters where clocks go back from 1:00 to midnight, and the
+  hour where they skip from midnight to 1:00). Every app checked (Android's original calendar,
+  Etar, Fossify) reads that correctly; Google Calendar's reading couldn't be checked without a
+  signed-in account.
+  Calendar apps also handle `Events.EVENT_TIMEZONE` unevenly, so an event's description names
+  its time and zone too.
 - Decided with the user on 2026-10-25: events are shared as plain text. Whether Vagor should
   be able to import a trip someone shared is still open.
 

@@ -97,6 +97,14 @@
             android:layout_marginTop="@dimen/button_spacing"
             android:text="@string/share_event" />
 
+        <Button
+            android:id="@+id/buttonEventToCalendar"
+            style="@style/Widget.Vagor.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/button_spacing"
+            android:text="@string/add_to_calendar" />
+
     </LinearLayout>
 
 </ScrollView>

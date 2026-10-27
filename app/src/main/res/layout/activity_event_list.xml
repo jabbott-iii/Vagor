@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A vacation's page: its details, Edit and Share buttons, and its events. One scrolling page
-     (rather than a list with a header) so keyboard and D-pad focus follow the screen's order. -->
+<!-- A vacation's page: its details, Edit, Share and Add to Calendar buttons, and its events. One
+     scrolling page (rather than a list with a header) so keyboard and D-pad focus follow the
+     screen's order. -->
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -65,6 +66,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/button_spacing"
                     android:text="@string/share_vacation" />
+
+                <Button
+                    android:id="@+id/buttonVacationToCalendar"
+                    style="@style/Widget.Vagor.Button.Outlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/button_spacing"
+                    android:text="@string/add_to_calendar" />
 
                 <TextView
                     android:layout_width="match_parent"

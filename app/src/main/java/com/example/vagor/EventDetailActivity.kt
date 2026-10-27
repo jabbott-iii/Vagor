@@ -26,6 +26,7 @@ class EventDetailActivity : AppCompatActivity() {
     private var vacationId = 0
     private var buttonDeleteEvent: Button? = null
     private var buttonShareEvent: Button? = null
+    private var buttonEventToCalendar: Button? = null
     // The picked time and time zone, which their fields show as text. A new event, or one saved
     // before events had a time, has no time until one is picked.
     private var pickedTime: LocalTime? = null
@@ -44,6 +45,7 @@ class EventDetailActivity : AppCompatActivity() {
         buttonSaveEvent = findViewById<Button>(R.id.buttonSaveEvent)
         buttonDeleteEvent = findViewById<Button>(R.id.buttonDeleteEvent)
         buttonShareEvent = findViewById<Button>(R.id.buttonShareEvent)
+        buttonEventToCalendar = findViewById<Button>(R.id.buttonEventToCalendar)
 
         vacationId = getIntent().getIntExtra("vacationId", -1)
 
@@ -144,6 +146,7 @@ class EventDetailActivity : AppCompatActivity() {
             buttonSaveEvent!!.isEnabled = false
             buttonDeleteEvent!!.isEnabled = false
             buttonShareEvent!!.isEnabled = false
+            buttonEventToCalendar!!.isEnabled = false
             val timingChanged = saved == null || saved.date != stored.date || saved.time != stored.time ||
                 saved.timeZone != stored.timeZone
             ReminderScheduler.eventSaved(this@EventDetailActivity, stored, timingChanged)
@@ -200,6 +203,35 @@ class EventDetailActivity : AppCompatActivity() {
             shareIntent.setType("text/plain")
             shareIntent.putExtra(Intent.EXTRA_TEXT, lines.joinToString("\n"))
             startActivity(Intent.createChooser(shareIntent, getString(R.string.share_event_details)))
+        }
+
+        // Like Share, this takes what the form shows, saved or not.
+        buttonEventToCalendar!!.setOnClickListener calendarClick@{
+            val vacation = db!!.vacationDAO().getVacationById(vacationId)
+            if (vacation == null) {
+                Toast.makeText(this@EventDetailActivity, R.string.associated_vacation_not_found, Toast.LENGTH_SHORT).show()
+                return@calendarClick
+            }
+            val title = editEventTitle!!.getText().toString().trim { it <= ' ' }
+            val shown = Event(
+                title,
+                editEventDate!!.getText().toString().trim { it <= ' ' },
+                vacationId,
+                details = editEventDetails!!.getText().toString().trim { it <= ' ' },
+                time = pickedTime?.let { DateValidators.formatTime(it) },
+                timeZone = pickedZoneId
+            )
+            if (title.isEmpty() || shown.date.isEmpty() || shown.time == null) {
+                Toast.makeText(this@EventDetailActivity, R.string.event_needs_title_date_and_time, Toast.LENGTH_SHORT).show()
+                return@calendarClick
+            }
+            val insert = eventCalendarIntent(shown, vacation)
+            if (insert == null) {
+                // A date saved before dates were checked strictly.
+                Toast.makeText(this@EventDetailActivity, R.string.dates_must_be_mmddyyyy, Toast.LENGTH_LONG).show()
+                return@calendarClick
+            }
+            openCalendarInsert(insert)
         }
     }
 

@@ -13,12 +13,20 @@ your dark mode setting. They are stored only on your device, in Vagor's private 
 ## Information Vagor collects or shares
 
 None. Vagor has no internet access, no accounts, no ads, no analytics and no crash reporting.
-Nothing you enter is sent to the developer or to anyone else.
+Nothing you enter is sent to the developer, and it goes to another app only when you share it or
+add it to a calendar, as described below.
 
 ## Sharing
 
 When you tap Share Vacation or Share Event, Vagor opens Android's share menu with that vacation or
 event as text. The text goes only to the app you choose, and that app's privacy policy applies to it.
+
+When you tap Add to Calendar, Vagor opens your calendar app (Google Calendar, if it's installed)
+with that vacation or event filled in: its title, dates, time and time zone, details and vacation,
+and for a vacation the list of its events. Vagor doesn't add anything to your calendar itself and
+can't read your calendar. The calendar app decides whether and where to save it, and if it's saved
+to an account such as your Google Account, it may sync to that account and your other devices. That
+app's privacy policy applies to it; for Google Calendar, that's Google's Privacy Policy.
 
 ## Reminders
 
