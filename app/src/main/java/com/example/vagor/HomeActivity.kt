@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.example.vagor.database.AppDatabase
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 // The landing screen: the Vacations dashboard and the Settings tab, switched by the bottom bar.
@@ -21,11 +20,6 @@ class HomeActivity : AppCompatActivity() {
         setEdgeToEdgeContentViewWithBottomBar(R.layout.activity_home, R.id.homeContent, R.id.bottomNavigation)
 
         if (savedInstanceState == null) {
-            // A force stop clears alarms and an app update may predate them, so rebuild on launch.
-            val db = AppDatabase.open(getApplicationContext())
-            ReminderScheduler.rescheduleAll(this, db)
-            db.close()
-
             supportFragmentManager.beginTransaction()
                 .setReorderingAllowed(true)
                 .add(R.id.homeContent, VacationsFragment())
@@ -44,6 +38,14 @@ class HomeActivity : AppCompatActivity() {
         bottomNavigation.setOnItemReselectedListener { }
         onBackPressedDispatcher.addCallback(this, backToVacations)
         backToVacations.isEnabled = supportFragmentManager.findFragmentById(R.id.homeContent) is SettingsFragment
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // VagorApplication rebuilds the reminders in each new process. Setting Vagor's battery use
+        // to Unrestricted allows exact alarms without a broadcast, so check again on the way back,
+        // before the Settings tab says whether event reminders are exact.
+        ReminderScheduler.rebuildIfNeeded(this)
     }
 
     private fun showTab(fragment: Fragment) {

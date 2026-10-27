@@ -1,7 +1,10 @@
 package com.example.vagor
 
+import android.Manifest
+import android.accessibilityservice.AccessibilityService
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.SystemClock
 import android.view.View
 import android.widget.LinearLayout
@@ -15,6 +18,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.closeSoftKeyboard
 import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.Espresso.pressBackUnconditionally
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.action.ViewActions.scrollTo
@@ -25,6 +29,7 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import com.example.vagor.database.AppDatabase
 import com.example.vagor.entities.Event
 import com.example.vagor.entities.Vacation
@@ -34,23 +39,34 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeFalse
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.time.LocalTime
 import java.time.ZoneId
 import java.util.UUID
 
-// The event form's time, time zone and details, and how the vacation page shows them. Uses the
-// app's vacation_database but deletes only the rows it inserts, and cancels the alarms that saving
-// an event sets.
+// The event form's time, time zone and details, how the vacation page shows them, and the offer
+// of exact alarms after saving. Uses the app's vacation_database but deletes only the rows it
+// inserts, and cancels the alarms that saving an event sets.
 @RunWith(AndroidJUnit4::class)
 class EventFormInstrumentedTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val db: AppDatabase = AppDatabase.open(context)
     private val insertedVacations = mutableListOf<Vacation>()
+    private var exactAlarmsOffered = false
+
+    // Saving offers exact alarms only in the tests of that offer.
+    @Before
+    fun skipExactAlarmOffer() {
+        exactAlarmsOffered = ExactAlarmOfferDialog.offered
+        ExactAlarmOfferDialog.offered = true
+    }
 
     @After
     fun tearDown() {
+        ExactAlarmOfferDialog.offered = exactAlarmsOffered
         insertedVacations.forEach { vacation ->
             db.eventDAO().getEventsForVacation(vacation.id).forEach {
                 ReminderScheduler.cancelEvent(context, it.id)
@@ -248,6 +264,69 @@ class EventFormInstrumentedTest {
         }
     }
 
+    // Android 14 and later install apps without exact alarms, as a test run does, and taking
+    // them away would stop the app and the test with it. So these run only while they're off.
+    @Test
+    fun savingOffersExactAlarmsOnceWhenTheReminderCantBeExact() {
+        val vacation = offerExactAlarmsOnNextSave()
+
+        ActivityScenario.launch<EventDetailActivity>(newEventIntent(vacation)).use { scenario ->
+            fillAndSave("Museum")
+            onView(withText(R.string.exact_reminders_title)).inRoot(isDialog()).check(matches(isDisplayed()))
+            // A second tap behind the opening offer can't save the event twice.
+            scenario.onActivity { assertFalse(it.findViewById<View>(R.id.buttonSaveEvent).isEnabled) }
+
+            // The offer outlasts a rotation, and whichever way it's closed, the form closes.
+            scenario.recreate()
+            onView(withText(R.string.not_now)).inRoot(isDialog()).perform(click())
+            awaitState(scenario, Lifecycle.State.DESTROYED)
+        }
+        assertEquals(listOf("Museum"), db.eventDAO().getEventsForVacation(vacation.id).map { it.title })
+
+        // Asked once per launch: the next save just closes the form.
+        ActivityScenario.launch<EventDetailActivity>(newEventIntent(vacation)).use { scenario ->
+            fillAndSave("Gallery")
+            awaitState(scenario, Lifecycle.State.DESTROYED)
+        }
+        assertEquals(2, db.eventDAO().getEventsForVacation(vacation.id).size)
+    }
+
+    @Test
+    fun exactAlarmOfferOpensAlarmsAndReminders() {
+        val vacation = offerExactAlarmsOnNextSave()
+
+        ActivityScenario.launch<EventDetailActivity>(newEventIntent(vacation)).use { scenario ->
+            fillAndSave("Museum")
+            onView(withText(R.string.open_settings)).inRoot(isDialog()).perform(click())
+            awaitState(scenario, Lifecycle.State.DESTROYED)
+        }
+        // Android's Alarms & reminders screen is on top; Back leaves it.
+        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        val deadline = SystemClock.uptimeMillis() + 5000
+        var shown: CharSequence? = null
+        while (SystemClock.uptimeMillis() < deadline) {
+            shown = automation.rootInActiveWindow?.packageName
+            if (shown != null && shown != context.packageName) break
+            SystemClock.sleep(100)
+        }
+        assertTrue("Expected another app's screen on top, not $shown", shown != null && shown != context.packageName)
+        automation.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
+    }
+
+    @Test
+    fun backOnTheExactAlarmOfferClosesTheForm() {
+        val vacation = offerExactAlarmsOnNextSave()
+
+        ActivityScenario.launch<EventDetailActivity>(newEventIntent(vacation)).use { scenario ->
+            fillAndSave("Museum")
+            onView(withText(R.string.exact_reminders_title)).inRoot(isDialog()).check(matches(isDisplayed()))
+            // The form is the only screen here, so Back leaves the app.
+            pressBackUnconditionally()
+            awaitState(scenario, Lifecycle.State.DESTROYED)
+        }
+        assertEquals(1, db.eventDAO().getEventsForVacation(vacation.id).size)
+    }
+
     // A ListView ignores a tap that comes before it has laid out the rows a search left, and
     // Espresso doesn't always wait for that layout.
     private fun searchTimeZones(query: String) {
@@ -263,6 +342,33 @@ class EventFormInstrumentedTest {
             if (!laidOut) SystemClock.sleep(20)
         }
         assertTrue("The time zone list didn't lay out its rows", laidOut)
+    }
+
+    // Exact alarms off, notifications on (without them no reminder shows, so nothing is offered),
+    // and nothing offered yet in this launch.
+    private fun offerExactAlarmsOnNextSave(): Vacation {
+        assumeFalse("Exact alarms are already allowed", ReminderScheduler.canScheduleExactAlarms(context))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            InstrumentationRegistry.getInstrumentation().uiAutomation
+                .grantRuntimePermission(context.packageName, Manifest.permission.POST_NOTIFICATIONS)
+        }
+        ExactAlarmOfferDialog.offered = false
+        return insertVacation()
+    }
+
+    // An event in 2031, so its reminder is still to come.
+    private fun fillAndSave(title: String) {
+        onView(withId(R.id.editEventTitle)).perform(replaceText(title))
+        onView(withId(R.id.editEventDate)).perform(replaceText("07/06/2031"))
+        pickDefaultTime()
+        onView(withId(R.id.buttonSaveEvent)).perform(scrollTo(), click())
+    }
+
+    // A finishing activity is destroyed after Espresso's click returns.
+    private fun awaitState(scenario: ActivityScenario<*>, state: Lifecycle.State) {
+        val deadline = SystemClock.uptimeMillis() + 5000
+        while (scenario.state != state && SystemClock.uptimeMillis() < deadline) SystemClock.sleep(50)
+        assertEquals(state, scenario.state)
     }
 
     private fun pickDefaultTime() {

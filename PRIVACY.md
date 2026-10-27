@@ -23,7 +23,7 @@ event as text. The text goes only to the app you choose, and that app's privacy 
 ## Reminders
 
 Vagor uses notifications and alarms on your device to remind you on the day a vacation starts or
-ends and on the day of each event. Reminders are scheduled on your device, and nothing is sent over
+ends and an hour before each event. Reminders are scheduled on your device, and nothing is sent over
 the internet.
 
 ## Backup

@@ -1,6 +1,7 @@
 package com.example.vagor
 
 import android.Manifest
+import android.app.AlarmManager
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
@@ -25,6 +26,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.time.LocalDate
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 
@@ -75,6 +77,61 @@ class ReminderInstrumentedTest {
         assertNull(existingAlarm(ReminderKey(ReminderType.VACATION_START, vacation.id)))
         assertNull(existingAlarm(ReminderKey(ReminderType.VACATION_END, vacation.id)))
         assertNull(existingAlarm(ReminderKey(ReminderType.EVENT, event.id)))
+    }
+
+    // Whether the alarm is exact depends on Alarms & reminders, which a test can't turn off
+    // without stopping the app; either way there's one alarm per event.
+    @Test
+    fun anEventWithATimeGetsAReminderUntilAnHourBeforeItStarts() {
+        val vacation = insertVacation(daysFromNow(0), daysFromNow(12))
+        val later = insertEvent(vacation, daysFromNow(11), time = "10:00", zone = "Asia/Tokyo")
+        // Saved 30 minutes before it starts: the hour before has passed.
+        val soon = insertEventAt(vacation, ZonedDateTime.now().plusMinutes(30))
+
+        ReminderScheduler.scheduleEvent(context, later)
+        ReminderScheduler.scheduleEvent(context, soon)
+
+        assertNotNull(existingAlarm(ReminderKey(ReminderType.EVENT, later.id)))
+        assertNull(existingAlarm(ReminderKey(ReminderType.EVENT, soon.id)))
+    }
+
+    // An inexact alarm can come after its moment (the end of its window, Doze, Battery Saver), so
+    // a rebuild mustn't cancel one whose event is still ahead. Saving the event with a new time
+    // does cancel it.
+    @Test
+    fun aRebuildKeepsAnAlarmThatMayStillBeOnItsWay() {
+        val vacation = insertVacation(daysFromNow(-1), daysFromNow(1))
+        val soon = insertEventAt(vacation, ZonedDateTime.now().plusMinutes(30))
+        val started = insertEventAt(vacation, ZonedDateTime.now().minusMinutes(30))
+        // Stand-ins for alarms that haven't fired yet.
+        listOf(soon, started).forEach { pendingAlarm(ReminderKey(ReminderType.EVENT, it.id)) }
+
+        ReminderScheduler.rescheduleAll(context, db)
+
+        assertNotNull(existingAlarm(ReminderKey(ReminderType.EVENT, soon.id)))
+        assertNull(existingAlarm(ReminderKey(ReminderType.EVENT, started.id)))
+
+        ReminderScheduler.eventSaved(context, soon, timingChanged = false)
+        assertNotNull(existingAlarm(ReminderKey(ReminderType.EVENT, soon.id)))
+        ReminderScheduler.eventSaved(context, soon, timingChanged = true)
+        assertNull(existingAlarm(ReminderKey(ReminderType.EVENT, soon.id)))
+    }
+
+    // A posted reminder gives the event's start time, which a new time makes wrong.
+    @Test
+    fun savingAnEventWithANewTimeDismissesItsPostedReminder() {
+        val vacation = insertVacation(daysFromNow(0), daysFromNow(2))
+        val event = insertEvent(vacation, daysFromNow(1), time = "19:30", zone = "Asia/Tokyo")
+        val tag = ReminderKey(ReminderType.EVENT, event.id).toUriString()
+        MyReceiver().onReceive(context, alarmIntentFor(ReminderKey(ReminderType.EVENT, event.id)))
+        assertTrue(awaitNotifications { active -> active.any { it.tag == tag } }.any { it.tag == tag })
+
+        ReminderScheduler.eventSaved(context, event.copy(details = "New details"), timingChanged = false)
+        SystemClock.sleep(500)
+        assertTrue(activeNotifications().any { it.tag == tag })
+
+        ReminderScheduler.eventSaved(context, event.copy(time = "20:00"), timingChanged = true)
+        assertTrue(awaitNotifications { active -> active.none { it.tag == tag } }.none { it.tag == tag })
     }
 
     @Test
@@ -142,6 +199,31 @@ class ReminderInstrumentedTest {
     }
 
     @Test
+    fun anEventReminderGivesItsStartTimeAndDetails() {
+        val vacation = insertVacation(daysFromNow(0), daysFromNow(2))
+        val event = insertEvent(vacation, daysFromNow(1), time = "19:30", zone = "Asia/Tokyo", details = "Table for two")
+        val key = ReminderKey(ReminderType.EVENT, event.id)
+
+        MyReceiver().onReceive(context, alarmIntentFor(key))
+
+        val posted = awaitNotifications { active -> active.any { it.tag == key.toUriString() } }
+            .single { it.tag == key.toUriString() }.notification.extras
+        val partOf = context.getString(R.string.reminder_part_of_vacation, vacation.title)
+        assertEquals(
+            context.getString(R.string.event_starts_at, event.title, context.eventTimeText(event)),
+            posted.getCharSequence("android.title")?.toString()
+        )
+        assertEquals(partOf, posted.getCharSequence("android.text")?.toString())
+        assertEquals(
+            context.getString(R.string.reminder_vacation_and_details, partOf, "Table for two"),
+            posted.getCharSequence("android.bigText")?.toString()
+        )
+
+        ReminderScheduler.cancelEvent(context, event.id)
+        awaitNotifications { active -> active.none { it.tag == key.toUriString() } }
+    }
+
+    @Test
     fun tappingAReminderOpensTheVacationPageOrTheEvent() {
         val vacation = Vacation("Trip", "Hotel Vagor", daysFromNow(10), daysFromNow(12), 41)
         val event = Event("Event", daysFromNow(11), vacation.id, 42)
@@ -201,11 +283,36 @@ class ReminderInstrumentedTest {
         return saved
     }
 
-    private fun insertEvent(vacation: Vacation, date: String): Event {
-        val event = Event("Event-${UUID.randomUUID().toString().take(8)}", date, vacation.id)
+    // Without a time, like an event saved before events had one.
+    private fun insertEvent(
+        vacation: Vacation,
+        date: String,
+        time: String? = null,
+        zone: String? = null,
+        details: String = "",
+    ): Event {
+        val event = Event("Event-${UUID.randomUUID().toString().take(8)}", date, vacation.id, details = details, time = time, timeZone = zone)
         val saved = event.copy(id = db.eventDAO().insert(event).toInt())
         insertedEvents += saved
         return saved
+    }
+
+    private fun insertEventAt(vacation: Vacation, start: ZonedDateTime): Event = insertEvent(
+        vacation,
+        start.format(DateTimeFormatter.ofPattern("MM/dd/yyyy")),
+        time = start.format(DateTimeFormatter.ofPattern("HH:mm")),
+        zone = start.zone.id
+    )
+
+    private fun pendingAlarm(key: ReminderKey) {
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            alarmIntentFor(key),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        context.getSystemService(AlarmManager::class.java)
+            .setWindow(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 24 * 60 * 60 * 1000L, 10 * 60 * 1000L, pendingIntent)
     }
 
     private fun daysFromNow(days: Long): String =

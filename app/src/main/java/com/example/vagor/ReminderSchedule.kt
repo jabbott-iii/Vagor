@@ -1,7 +1,9 @@
 package com.example.vagor
 
+import java.time.Duration
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 
 enum class ReminderType { VACATION_START, VACATION_END, EVENT }
 
@@ -32,6 +34,13 @@ data class ReminderKey(val type: ReminderType, val itemId: Int) {
 object ReminderTimes {
     val REMINDER_TIME: LocalTime = LocalTime.of(9, 0)
 
+    // An event with a time is reminded this long before it starts.
+    val EVENT_LEAD: Duration = Duration.ofHours(1)
+
+    // Without exact alarms an event's reminder may come up to this much after its moment, so 50 to
+    // 60 minutes before the event. Android 12 and later make shorter windows this long anyway.
+    val INEXACT_EVENT_WINDOW: Duration = Duration.ofMinutes(10)
+
     // Epoch millis of 9:00 AM in [zone] on the stored date, or null when the date is invalid
     // or that moment has already passed.
     fun triggerAtMillis(dateText: String, zone: ZoneId, nowMillis: Long): Long? {
@@ -39,4 +48,23 @@ object ReminderTimes {
         val triggerAt = date.atTime(REMINDER_TIME).atZone(zone).toInstant().toEpochMilli()
         return triggerAt.takeIf { it > nowMillis }
     }
+
+    // Epoch millis an hour before an event starts, or null once that moment has passed. It's an
+    // hour of elapsed time, so a daylight saving change during it doesn't stretch or shrink it.
+    fun eventTriggerAtMillis(start: ZonedDateTime, nowMillis: Long): Long? {
+        val triggerAt = start.toInstant().minus(EVENT_LEAD).toEpochMilli()
+        return triggerAt.takeIf { it > nowMillis }
+    }
+
+    // Whether a reminder whose moment has passed may still be on its way, so rebuilding the
+    // reminders should leave its alarm alone: an inexact alarm can come late (the end of its
+    // window, Doze, Battery Saver). A 9:00 AM reminder is still worth having until its day ends.
+    fun dateReminderMayBeDue(dateText: String, zone: ZoneId, nowMillis: Long): Boolean {
+        val date = DateValidators.parseLocalDate(dateText) ?: return false
+        return nowMillis < date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+    }
+
+    // An event's reminder is still worth having until the event starts.
+    fun eventReminderMayBeDue(start: ZonedDateTime, nowMillis: Long): Boolean =
+        nowMillis < start.toInstant().toEpochMilli()
 }

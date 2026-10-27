@@ -130,17 +130,27 @@ class EventDetailActivity : AppCompatActivity() {
                 time = DateValidators.formatTime(updatedTime),
                 timeZone = pickedZoneId
             )
+            val stored: Event
             if (eventId == -1) {
                 val newId = db!!.eventDAO().insert(event).toInt()
-                ReminderScheduler.scheduleEvent(this@EventDetailActivity, event.copy(id = newId))
+                stored = event.copy(id = newId)
                 Toast.makeText(this@EventDetailActivity, R.string.event_saved, Toast.LENGTH_SHORT).show()
             } else {
-                val updated = event.copy(id = eventId)
-                db!!.eventDAO().update(updated)
-                ReminderScheduler.scheduleEvent(this@EventDetailActivity, updated)
+                stored = event.copy(id = eventId)
+                db!!.eventDAO().update(stored)
                 Toast.makeText(this@EventDetailActivity, R.string.event_updated, Toast.LENGTH_SHORT).show()
             }
-            finish()
+            // The form closes after a save, so a second tap mustn't save, or insert, again.
+            buttonSaveEvent!!.isEnabled = false
+            buttonDeleteEvent!!.isEnabled = false
+            buttonShareEvent!!.isEnabled = false
+            val timingChanged = saved == null || saved.date != stored.date || saved.time != stored.time ||
+                saved.timeZone != stored.timeZone
+            ReminderScheduler.eventSaved(this@EventDetailActivity, stored, timingChanged)
+            // When the reminder can't be exact, the offer to allow exact alarms closes the form.
+            if (!ExactAlarmOfferDialog.showAfterSave(supportFragmentManager, this@EventDetailActivity, stored)) {
+                finish()
+            }
         })
 
         buttonDeleteEvent!!.setOnClickListener(View.OnClickListener { _: View? ->

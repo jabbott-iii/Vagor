@@ -28,7 +28,8 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
    Current: implemented.
 3. **Reminders**: system notifications for vacation start, vacation end and each event.
    Current: implemented. Automatic for every item: a notification around 9:00 AM local time on
-   each vacation's start and end dates and on each event's date. See "Reminders" below.
+   each vacation's start and end dates, and an hour before each event (asked for by the user on
+   2026-10-26). See "Reminders" below.
 4. **Sharing**: vacations and events can be shared with other people.
    Current: implemented as plain text through the Sharesheet. The vacation text lists its
    events with their dates and times, and each event has its own Share button, whose text adds
@@ -70,7 +71,8 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
 
 - No network access of any kind. Don't add `INTERNET` or `ACCESS_NETWORK_STATE`, HTTP clients,
   remote WebView content, Firebase, analytics, crash reporting, ads, accounts or sync. The
-  manifest declares only `POST_NOTIFICATIONS` and `RECEIVE_BOOT_COMPLETED`. After adding any
+  manifest declares only `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED` and
+  `SCHEDULE_EXACT_ALARM` (see Reminders). After adding any
   dependency, check the merged manifest for permissions it pulls in. Play's Data safety answer
   ("no data collected or shared") and PRIVACY.md depend on this.
 - Data leaves the app only when the user shares it through the Android Sharesheet. Cloud backup
@@ -105,9 +107,11 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   calendar days' circles and rings, drawn to fit their cells), `TimeZonePicker.kt` (the event
   form's searchable time zone list, labelled from Android's ICU time zone names),
   `ReminderSchedule.kt` (plain-Kotlin reminder times and
-  identities), `ReminderScheduler.kt` (sets and cancels alarms), `MyReceiver.kt` (the alarm
+  identities), `ReminderScheduler.kt` (sets and cancels alarms), `ExactAlarmOffer.kt` (offers
+  Android's Alarms & reminders screen), `MyReceiver.kt` (the alarm
   receiver; posts the notification), `ReminderRescheduleReceiver.kt`, `ThemeSettings.kt`,
-  `VagorApplication.kt` (applies the saved theme before any screen) and `EdgeToEdge.kt`.
+  `VagorApplication.kt` (applies the saved theme before any screen and rebuilds the reminders in
+  each new process) and `EdgeToEdge.kt`.
   `MainActivity` and `activity_main.xml` are unused template leftovers.
 - The `Event` entity maps to the table `excursions` (`@Entity(tableName = "excursions")`), and
   `EventDAO` queries that table. Don't rename the table without a migration. Likewise
@@ -195,11 +199,15 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
   in `@After`, so a run that is killed partway can leave a test trip behind.
   `MigrationInstrumentedTest` upgrades a database file of its own (`migration-test`) and deletes
   it.
-  `SettingsInstrumentedTest` opens the real home screen, which reads the database and re-arms
-  every stored trip's reminders as a normal launch does, and it flips the dark mode setting and
-  restores it. `CalendarDropdownInstrumentedTest` switches the app's language to Thai for one test
-  and back. The home flow, reminder and settings tests grant the notification permission and leave
-  it granted. Run instrumented tests
+  Every instrumented run starts the app's process, which re-arms every stored trip's reminders
+  as any start does (`VagorApplication`). `SettingsInstrumentedTest` opens the real home screen,
+  and it flips the dark mode setting and restores it. `CalendarDropdownInstrumentedTest` switches the app's language to Thai for one test
+  and back. The home flow, reminder, settings and event form tests grant the notification
+  permission and leave it granted. `SettingsInstrumentedTest` opens Android's Alarms & reminders
+  screen and leaves it with Back. The event form's tests of the exact alarm offer run only while
+  exact alarms are off, as they are after a fresh install on Android 14+; never take
+  `SCHEDULE_EXACT_ALARM` away during a test, because Android stops the app, test and all.
+  Run instrumented tests
   only on an emulator or a test device, never on a phone that holds real trips. A
   `connectedDebugAndroidTest` run also uninstalls the app afterwards, which deletes its data.
 - Release signing reads the upload key only from the `VAGOR_UPLOAD_KEYSTORE`,
@@ -215,25 +223,43 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
 
 ## Reminders
 
-Decided with the user on 2026-10-25: reminders are automatic for every item, fire around 9:00 AM
-local time on the stored date with no lead time. Events have had a time and time zone since
-2026-10-27, but their reminders still use only the date. Alarms are inexact:
-on Android 12+ they usually arrive within an hour; on Android 8–11 (`setWindow`) Doze can hold
-them until the phone wakes. Changing any of
-these is the user's call.
+Decided with the user on 2026-10-25: reminders are automatic for every item. A vacation's fire
+around 9:00 AM local time on its start and end dates, with inexact alarms: on Android 12+ they
+usually arrive within an hour; on Android 8–11 (`setWindow`) Doze can hold them until the phone
+wakes. Decided on 2026-10-26: an event's reminder fires an hour before it starts, in its own
+time zone (`ReminderTimes.eventTriggerAtMillis`), with an exact alarm
+(`setExactAndAllowWhileIdle`) whenever Android allows one: always below Android 12, and on
+Android 12+ while Alarms & reminders (`SCHEDULE_EXACT_ALARM`) is on, which it is by default only
+on Android 12 and 13. Without that it uses `setWindow` for 50 to 60 minutes before, which Doze
+holds to its next maintenance window and Battery Saver holds until it's off or Vagor is opened,
+so it can come after the event. An event saved before events had a time keeps the 9:00 AM
+reminder on its date. A reminder whose moment has passed is never set, so one missed while the
+phone was off isn't shown late. Changing any of these is the user's call.
 
 - Post a `NotificationCompat` notification on an app notification channel (channels are required
   on every supported API level). Declare `POST_NOTIFICATIONS`, request it at runtime on API 33+
   when the user sets a reminder, and check `areNotificationsEnabled()`. Tapping a vacation
   reminder opens the vacation's page; tapping an event reminder opens the event, with the
   vacation's page and the dashboard behind it.
-- Use inexact alarms (`setAndAllowWhileIdle` or `setWindow`). Exact alarms need
-  `SCHEDULE_EXACT_ALARM`, which is denied by default for new installs on Android 14+, or
-  `USE_EXACT_ALARM`, which Google Play allows only for calendar and alarm-clock apps. Ask before
-  adding either.
+- Only event reminders use exact alarms. `SCHEDULE_EXACT_ALARM` is denied by default for new
+  installs on Android 14+, so check `canScheduleExactAlarms()` (`ReminderScheduler`) before
+  each exact alarm and catch `SecurityException`. Never add `USE_EXACT_ALARM`: Google Play
+  allows it only for calendar and alarm-clock apps. After saving an event whose reminder can't
+  be exact, `ExactAlarmOfferDialog` offers Alarms & reminders, once per launch; the Settings tab
+  says whether event reminders are exact and opens the same screen.
 - Alarms are cleared on reboot and force stop. `ReminderRescheduleReceiver` rebuilds every
-  reminder from the database on `BOOT_COMPLETED`, `MY_PACKAGE_REPLACED`, `TIME_SET` and
-  `TIMEZONE_CHANGED` (stored dates have no time zone), and `HomeActivity` does the same on launch.
+  reminder from the database on `BOOT_COMPLETED`, `MY_PACKAGE_REPLACED`, `TIME_SET`,
+  `TIMEZONE_CHANGED` (dates saved without a time zone follow the phone's) and
+  `SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED` (sent when the user allows exact alarms).
+  `VagorApplication` does the same once in every new process (`ReminderScheduler.rebuildIfNeeded`),
+  and `HomeActivity` again on resume if exact alarms were allowed or taken away since. Taking
+  exact alarms away sends nothing: Android deletes the exact alarms and kills the app (not a force
+  stop), and the event reminders come back as `setWindow` the next time anything starts the app.
+  Setting Vagor's battery use to Unrestricted also allows exact alarms, with no broadcast.
+- A rebuild never cancels a reminder whose moment has passed but which may still be on its way,
+  since inexact alarms can come late: an event's is kept until the event starts, and a 9:00 AM
+  one until its day ends (`keepDue`). Saving an event keeps it too, unless the date, time or time
+  zone changed; then a reminder already posted for it is dismissed, because it gives the old time.
   Opt-in reminders would have to be saved in the database, which is a schema change (see
   Local-only rules).
 - Keep scheduling in `ReminderScheduler`. Detail screens call it on every save and delete.

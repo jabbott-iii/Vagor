@@ -15,10 +15,17 @@ can only be done by the developer.
 - **Privacy policy** inside the app (Settings > Privacy Policy). The same text is in
   [PRIVACY.md](PRIVACY.md).
 - **No data collection.** No internet permission, no accounts, ads, analytics or crash reporting.
-  Cloud backup is off. The app requests only `POST_NOTIFICATIONS` and `RECEIVE_BOOT_COMPLETED`.
+  Cloud backup is off. The app requests only `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED` and
+  `SCHEDULE_EXACT_ALARM`.
   The bundle also lists AndroidX's app-internal `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, which
   needs no declaration.
-- **Inexact alarms only**, so no exact-alarm permission or Play declaration is needed.
+- **Exact alarms only through `SCHEDULE_EXACT_ALARM`**, for the reminder an hour before each
+  event. The user allows it in Android's Alarms & reminders screen (Android 14 and later start
+  without it), and without it the reminder comes 50 to 60 minutes before. The app doesn't declare
+  `USE_EXACT_ALARM`, which Play allows only for alarm clock and calendar apps. As of 2026-10-27
+  Play's policy asks for no declaration for `SCHEDULE_EXACT_ALARM`; if Play Console shows a
+  permissions declaration at the first upload, answer it with that use (a reminder an hour before
+  each event the user plans), and allow for a review that can take several weeks.
 - **No native code**, so the 16 KB page size requirement doesn't apply.
 - **Signed App Bundle** support (below).
 
@@ -88,21 +95,22 @@ section in both copies.
 ## 5. Store listing
 
 - **App name** (30 characters max): `Vagor` or `Vagor: Vacation Planner`
-- **Short description** (80 max): Plan trips and events offline, with day-of reminders and easy sharing.
+- **Short description** (80 max): Plan trips and events offline, with reminders and easy sharing.
 - **Full description** (draft):
 
   > Vagor is a simple vacation planner that keeps everything on your phone.
   >
   > • Add vacations with start and end dates and your trip details.
   > • Plan events on the days of each vacation, each with its time, time zone and details.
-  > • Get a reminder notification on the morning a vacation starts, the morning it ends, and the morning of each event.
+  > • Get a reminder notification on the morning a vacation starts, the morning it ends, and an hour before each event.
   > • Share a vacation, with its events, or a single event as text through any app you choose.
   > • Dark mode by default, with a blue colour scheme designed to stay readable for people with colour blindness.
   >
   > Vagor has no account, no ads and no internet access. It never uploads your trips: they leave your phone only when you share them or move to a new phone.
 
-  Don't claim features Vagor doesn't have: exact-time reminders, importing trips, sync or cloud
-  backup.
+  Don't claim features Vagor doesn't have: importing trips, sync or cloud backup. Don't promise
+  reminders to the minute either: they depend on Alarms & reminders and the phone's battery
+  settings.
 - **Graphics:** a 512×512 PNG icon, a 1024×500 feature graphic, and at least two phone
   screenshots. The launcher icon is still the Android template robot (now on a blue background);
   a custom icon is recommended before launch.

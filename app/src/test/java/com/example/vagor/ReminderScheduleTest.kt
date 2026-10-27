@@ -1,8 +1,10 @@
 package com.example.vagor
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -50,6 +52,78 @@ class ReminderScheduleTest {
     fun noTriggerForInvalidDate() {
         assertNull(ReminderTimes.triggerAtMillis("invalid-date", zone, 0))
         assertNull(ReminderTimes.triggerAtMillis("02/30/2026", zone, 0))
+    }
+
+    @Test
+    fun eventTriggerIsAnHourBeforeItStartsInItsOwnZone() {
+        val now = ZonedDateTime.of(2026, 9, 1, 12, 0, 0, 0, zone).toInstant().toEpochMilli()
+        val start = ZonedDateTime.of(2026, 9, 16, 19, 30, 0, 0, ZoneId.of("Asia/Tokyo"))
+        val expected = ZonedDateTime.of(2026, 9, 16, 18, 30, 0, 0, ZoneId.of("Asia/Tokyo")).toInstant().toEpochMilli()
+
+        assertEquals(expected, ReminderTimes.eventTriggerAtMillis(start, now))
+    }
+
+    @Test
+    fun eventTriggerCanFallOnTheDayBefore() {
+        val start = ZonedDateTime.of(2026, 9, 16, 0, 30, 0, 0, zone)
+
+        assertEquals(
+            ZonedDateTime.of(2026, 9, 15, 23, 30, 0, 0, zone).toInstant().toEpochMilli(),
+            ReminderTimes.eventTriggerAtMillis(start, 0)
+        )
+    }
+
+    // An hour of elapsed time, even when the clocks change in that hour.
+    @Test
+    fun eventTriggerIsAnElapsedHourAcrossDaylightSavingChanges() {
+        val newYork = ZoneId.of("America/New_York")
+        // Clocks go from 2:00 to 3:00 on March 8, 2026, so 3:30 comes an hour after 1:30.
+        val afterSpringForward = ZonedDateTime.of(2026, 3, 8, 3, 30, 0, 0, newYork)
+        assertEquals(
+            ZonedDateTime.of(2026, 3, 8, 1, 30, 0, 0, newYork).toInstant().toEpochMilli(),
+            ReminderTimes.eventTriggerAtMillis(afterSpringForward, 0)
+        )
+        // Clocks go from 2:00 back to 1:00 on November 1, 2026, so 2:30 comes an hour after the
+        // second 1:30.
+        val afterFallBack = ZonedDateTime.of(2026, 11, 1, 2, 30, 0, 0, newYork)
+        val trigger = ReminderTimes.eventTriggerAtMillis(afterFallBack, 0)!!
+        assertEquals(afterFallBack.toInstant().toEpochMilli() - 60 * 60 * 1000L, trigger)
+        assertEquals(
+            ZonedDateTime.of(2026, 11, 1, 1, 30, 0, 0, newYork).withLaterOffsetAtOverlap().toInstant().toEpochMilli(),
+            trigger
+        )
+    }
+
+    @Test
+    fun noEventTriggerOnceTheHourBeforeHasPassed() {
+        val start = ZonedDateTime.of(2026, 9, 16, 19, 30, 0, 0, zone)
+        val hourBefore = start.minusHours(1).toInstant().toEpochMilli()
+
+        assertEquals(hourBefore, ReminderTimes.eventTriggerAtMillis(start, hourBefore - 1))
+        assertNull(ReminderTimes.eventTriggerAtMillis(start, hourBefore))
+        // Saved 30 minutes before it starts: too late for a reminder an hour before.
+        assertNull(ReminderTimes.eventTriggerAtMillis(start, start.minusMinutes(30).toInstant().toEpochMilli()))
+    }
+
+    // A rebuild leaves a passed reminder's alarm alone while it may still be on its way.
+    @Test
+    fun aPassedDateReminderMayBeDueUntilItsDayEnds() {
+        val nineAm = ZonedDateTime.of(2026, 9, 16, 9, 0, 0, 0, zone)
+        val midnight = ZonedDateTime.of(2026, 9, 17, 0, 0, 0, 0, zone).toInstant().toEpochMilli()
+
+        assertTrue(ReminderTimes.dateReminderMayBeDue("09/16/2026", zone, nineAm.plusMinutes(30).toInstant().toEpochMilli()))
+        assertTrue(ReminderTimes.dateReminderMayBeDue("09/16/2026", zone, midnight - 1))
+        assertFalse(ReminderTimes.dateReminderMayBeDue("09/16/2026", zone, midnight))
+        assertFalse(ReminderTimes.dateReminderMayBeDue("9/16/2026", zone, 0))
+    }
+
+    @Test
+    fun aPassedEventReminderMayBeDueUntilTheEventStarts() {
+        val start = ZonedDateTime.of(2026, 9, 16, 19, 30, 0, 0, ZoneId.of("Asia/Tokyo"))
+        val startMillis = start.toInstant().toEpochMilli()
+
+        assertTrue(ReminderTimes.eventReminderMayBeDue(start, startMillis - 1))
+        assertFalse(ReminderTimes.eventReminderMayBeDue(start, startMillis))
     }
 
     @Test

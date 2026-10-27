@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import androidx.core.app.AlarmManagerCompat
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
@@ -27,9 +28,11 @@ object ReminderScheduler {
         NotificationManagerCompat.from(context).createNotificationChannel(channel)
     }
 
-    fun scheduleVacation(context: Context, vacation: Vacation) {
-        schedule(context, ReminderKey(ReminderType.VACATION_START, vacation.id), vacation.startDate)
-        schedule(context, ReminderKey(ReminderType.VACATION_END, vacation.id), vacation.endDate)
+    // With [keepDue], a reminder whose moment has passed but which may still be on its way is left
+    // alone instead of cancelled (ReminderTimes.dateReminderMayBeDue).
+    fun scheduleVacation(context: Context, vacation: Vacation, keepDue: Boolean = false) {
+        schedule(context, ReminderKey(ReminderType.VACATION_START, vacation.id), vacation.startDate, keepDue)
+        schedule(context, ReminderKey(ReminderType.VACATION_END, vacation.id), vacation.endDate, keepDue)
     }
 
     fun cancelVacation(context: Context, vacationId: Int) {
@@ -37,25 +40,105 @@ object ReminderScheduler {
         cancel(context, ReminderKey(ReminderType.VACATION_END, vacationId), dismissPosted = true)
     }
 
-    fun scheduleEvent(context: Context, event: Event) {
-        schedule(context, ReminderKey(ReminderType.EVENT, event.id), event.date)
+    // An hour before the event starts, or 9:00 AM on its date for an event saved before events had
+    // a time. [keepDue] works as for scheduleVacation (ReminderTimes.eventReminderMayBeDue).
+    fun scheduleEvent(context: Context, event: Event, keepDue: Boolean = false) {
+        val key = ReminderKey(ReminderType.EVENT, event.id)
+        val start = EventTimes.startOf(event, ZoneId.systemDefault())
+        if (start == null) {
+            schedule(context, key, event.date, keepDue)
+            return
+        }
+        val now = System.currentTimeMillis()
+        val triggerAt = ReminderTimes.eventTriggerAtMillis(start, now)
+        if (triggerAt == null) {
+            if (!keepDue || !ReminderTimes.eventReminderMayBeDue(start, now)) {
+                cancel(context, key, dismissPosted = false)
+            }
+            return
+        }
+        val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
+        val pendingIntent = alarmIntent(context, key, PendingIntent.FLAG_UPDATE_CURRENT) ?: return
+        if (AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) {
+            try {
+                AlarmManagerCompat.setExactAndAllowWhileIdle(alarmManager, AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
+                return
+            } catch (_: SecurityException) {
+                // The permission was taken away since the check.
+            }
+        }
+        // Without exact alarms (Android 12 and later, until the user allows them): 50 to 60 minutes
+        // before. Doze and Battery Saver can hold it until the phone wakes or Vagor is opened, which
+        // may be after the event has started.
+        alarmManager.setWindow(AlarmManager.RTC_WAKEUP, triggerAt, ReminderTimes.INEXACT_EVENT_WINDOW.toMillis(), pendingIntent)
+    }
+
+    // After the event form saves [event]. When its date, time or time zone changed, a reminder
+    // already posted for it gives the old time, so it's dismissed and a late alarm isn't kept.
+    // When they didn't, an alarm that may still be on its way is kept.
+    fun eventSaved(context: Context, event: Event, timingChanged: Boolean) {
+        if (timingChanged) {
+            NotificationManagerCompat.from(context).cancel(ReminderKey(ReminderType.EVENT, event.id).toUriString(), 0)
+        }
+        scheduleEvent(context, event, keepDue = !timingChanged)
+    }
+
+    // Exact alarms need no permission before Android 12. From Android 14 a new install starts
+    // without it, and the user can allow it, or take it away, in Alarms & reminders. Android also
+    // allows them for an app whose battery use is set to Unrestricted.
+    fun canScheduleExactAlarms(context: Context): Boolean {
+        val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return false
+        return AlarmManagerCompat.canScheduleExactAlarms(alarmManager)
+    }
+
+    // Whether a reminder would show: notifications are on for Vagor and for its reminder channel
+    // (a channel not created yet will be created on).
+    fun notificationsOn(context: Context): Boolean {
+        val manager = NotificationManagerCompat.from(context)
+        return manager.areNotificationsEnabled() &&
+            manager.getNotificationChannelCompat(CHANNEL_ID)?.importance != NotificationManagerCompat.IMPORTANCE_NONE
     }
 
     fun cancelEvent(context: Context, eventId: Int) {
         cancel(context, ReminderKey(ReminderType.EVENT, eventId), dismissPosted = true)
     }
 
-    // Alarms don't survive a reboot or force stop, and stored dates have no time zone, so every
-    // reminder is rebuilt from the database.
+    // Whether exact alarms were allowed when this process last rebuilt every reminder; null until
+    // it has.
+    @Volatile
+    private var builtWithExact: Boolean? = null
+
+    // Alarms don't survive a reboot or force stop, dates saved without a time zone follow the
+    // phone's, and allowing exact alarms makes event reminders exact, so every reminder is rebuilt
+    // from the database. A rebuild keeps the alarms of reminders that may still be on their way.
     fun rescheduleAll(context: Context, db: AppDatabase) {
-        db.vacationDAO().getAllVacations().forEach { scheduleVacation(context, it) }
-        db.eventDAO().getAllEvents().forEach { scheduleEvent(context, it) }
+        builtWithExact = canScheduleExactAlarms(context)
+        db.vacationDAO().getAllVacations().forEach { scheduleVacation(context, it, keepDue = true) }
+        db.eventDAO().getAllEvents().forEach { scheduleEvent(context, it, keepDue = true) }
     }
 
-    private fun schedule(context: Context, key: ReminderKey, dateText: String) {
-        val triggerAt = ReminderTimes.triggerAtMillis(dateText, ZoneId.systemDefault(), System.currentTimeMillis())
+    // Rebuilds every reminder once in each new process, and again whenever exact alarms have been
+    // allowed or taken away since. Taking them away in Alarms & reminders deletes the exact alarms
+    // and kills the app, which may come back on any screen, and nothing is broadcast; setting
+    // Vagor's battery use to Unrestricted allows them, and nothing is broadcast either.
+    fun rebuildIfNeeded(context: Context) {
+        if (builtWithExact == canScheduleExactAlarms(context)) return
+        val db = AppDatabase.open(context.applicationContext)
+        try {
+            rescheduleAll(context, db)
+        } finally {
+            db.close()
+        }
+    }
+
+    private fun schedule(context: Context, key: ReminderKey, dateText: String, keepDue: Boolean) {
+        val zone = ZoneId.systemDefault()
+        val now = System.currentTimeMillis()
+        val triggerAt = ReminderTimes.triggerAtMillis(dateText, zone, now)
         if (triggerAt == null) {
-            cancel(context, key, dismissPosted = false)
+            if (!keepDue || !ReminderTimes.dateReminderMayBeDue(dateText, zone, now)) {
+                cancel(context, key, dismissPosted = false)
+            }
             return
         }
         val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return

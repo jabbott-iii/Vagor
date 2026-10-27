@@ -67,9 +67,21 @@ class MyReceiver : BroadcastReceiver() {
             ReminderType.EVENT -> {
                 val event = db.eventDAO().getEventById(key.itemId) ?: return
                 val vacation = db.vacationDAO().getVacationById(event.vacationId) ?: return
-                builder.setContentTitle(context.getString(R.string.event_happening_today, event.title))
-                    .setContentText(context.getString(R.string.reminder_part_of_vacation, vacation.title))
+                // An hour ahead the reminder gives the start time, which stays true however late
+                // it's read. An event saved without a time is reminded on the morning of its date.
+                val title = context.eventTimeText(event)?.let { context.getString(R.string.event_starts_at, event.title, it) }
+                    ?: context.getString(R.string.event_happening_today, event.title)
+                val partOf = context.getString(R.string.reminder_part_of_vacation, vacation.title)
+                builder.setContentTitle(title)
+                    .setContentText(partOf)
                     .setContentIntent(eventReminderStack(context, vacation, event, key).getPendingIntent(0, PENDING_INTENT_FLAGS))
+                // Expanded, the reminder also shows the event's details.
+                if (event.details.isNotBlank()) {
+                    builder.setStyle(
+                        NotificationCompat.BigTextStyle()
+                            .bigText(context.getString(R.string.reminder_vacation_and_details, partOf, event.details))
+                    )
+                }
             }
         }
 

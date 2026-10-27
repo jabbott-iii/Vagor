@@ -1,35 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<!-- Scrolls in landscape and at large font sizes. -->
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:accessibilityHeading="true"
-        android:text="@string/settings"
-        android:textAppearance="?attr/textAppearanceHeadlineSmall"
-        tools:targetApi="28" />
-
-    <com.google.android.material.materialswitch.MaterialSwitch
-        android:id="@+id/switchDarkMode"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:text="@string/dark_mode"
-        android:textSize="18sp" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <Button
-        android:id="@+id/buttonPrivacyPolicy"
-        style="@style/Widget.Vagor.Button.Outlined"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/privacy_policy" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:accessibilityHeading="true"
+            android:text="@string/settings"
+            android:textAppearance="?attr/textAppearanceHeadlineSmall"
+            tools:targetApi="28" />
 
-</LinearLayout>
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switchDarkMode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="@string/dark_mode"
+            android:textSize="18sp" />
+
+        <!-- Whether event reminders are exact, or that notifications are off; SettingsFragment
+             sets the text. -->
+        <TextView
+            android:id="@+id/eventRemindersStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+        <Button
+            android:id="@+id/buttonAlarmsAndReminders"
+            style="@style/Widget.Vagor.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/alarms_and_reminders" />
+
+        <Button
+            android:id="@+id/buttonPrivacyPolicy"
+            style="@style/Widget.Vagor.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/privacy_policy" />
+
+    </LinearLayout>
+
+</ScrollView>
