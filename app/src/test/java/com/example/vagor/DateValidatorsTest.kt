@@ -6,6 +6,8 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 
 class DateValidatorsTest {
     @Test
@@ -77,5 +79,36 @@ class DateValidatorsTest {
         assertEquals("12/31/1999", DateValidators.formatDate(LocalDate.of(1999, 12, 31)))
         val date = LocalDate.of(2028, 2, 29)
         assertEquals(date, DateValidators.parseLocalDate(DateValidators.formatDate(date)))
+    }
+
+    @Test
+    fun timesAreStoredAsTwoDigitHourAndMinute() {
+        assertEquals(LocalTime.of(9, 5), DateValidators.parseLocalTime("09:05"))
+        assertEquals(LocalTime.of(23, 59), DateValidators.parseLocalTime("23:59"))
+        assertEquals(LocalTime.MIDNIGHT, DateValidators.parseLocalTime("00:00"))
+        assertEquals("09:05", DateValidators.formatTime(LocalTime.of(9, 5)))
+        assertEquals("14:30", DateValidators.formatTime(LocalTime.of(14, 30, 45)))
+    }
+
+    @Test
+    fun looseTimesAreRejected() {
+        assertNull(DateValidators.parseLocalTime(null))
+        assertNull(DateValidators.parseLocalTime(""))
+        assertNull(DateValidators.parseLocalTime("9:05"))
+        assertNull(DateValidators.parseLocalTime("09:5"))
+        assertNull(DateValidators.parseLocalTime("24:00"))
+        assertNull(DateValidators.parseLocalTime("12:60"))
+        assertNull(DateValidators.parseLocalTime("09:05:00"))
+        assertNull(DateValidators.parseLocalTime(" 09:05"))
+        assertNull(DateValidators.parseLocalTime("9:05 AM"))
+    }
+
+    @Test
+    fun timeZonesAreZoneIds() {
+        assertEquals(ZoneId.of("Asia/Tokyo"), DateValidators.parseZone("Asia/Tokyo"))
+        assertNull(DateValidators.parseZone(null))
+        assertNull(DateValidators.parseZone(""))
+        assertNull(DateValidators.parseZone("Mars/Olympus_Mons"))
+        assertNull(DateValidators.parseZone("not a zone"))
     }
 }

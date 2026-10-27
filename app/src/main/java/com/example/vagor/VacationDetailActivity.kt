@@ -6,7 +6,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.room.Room.databaseBuilder
 import com.example.vagor.database.AppDatabase
 import com.example.vagor.entities.Vacation
 
@@ -53,13 +52,7 @@ class VacationDetailActivity : AppCompatActivity() {
             earliest = { DateValidators.parseLocalDate(editStartDate!!.getText().toString()) }
         )
 
-        db = databaseBuilder<AppDatabase>(
-            getApplicationContext(),
-            AppDatabase::class.java,
-            "vacation_database"
-        )
-            .allowMainThreadQueries()
-            .build()
+        db = AppDatabase.open(getApplicationContext())
 
         //Save button logic
         buttonSave!!.setOnClickListener(View.OnClickListener setOnClickListener@{ _: View? ->

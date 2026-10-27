@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A list's ring around the row with keyboard or D-pad focus, like list_row_foreground's; rows
+     draw their own ripple for touches. A layer-list because an <inset> would also pad every row. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:state_pressed="false">
+        <layer-list>
+            <item
+                android:bottom="2dp"
+                android:left="4dp"
+                android:right="4dp"
+                android:top="2dp">
+                <shape android:shape="rectangle">
+                    <corners android:radius="12dp" />
+                    <stroke
+                        android:width="2dp"
+                        android:color="?attr/colorOnSurface" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <item android:drawable="@android:color/transparent" />
+</selector>

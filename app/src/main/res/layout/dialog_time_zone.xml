@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The event form's time zone list (TimeZonePickerDialog): a search field, then every zone. It
+     fills the dialog's height whatever the search finds (FullHeightLinearLayout). -->
+<com.example.vagor.FullHeightLinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/timeZoneSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="57dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:drawableStart="@drawable/ic_search"
+        android:drawablePadding="8dp"
+        android:hint="@string/search_time_zones"
+        android:imeOptions="actionSearch"
+        android:importantForAutofill="no"
+        android:inputType="text" />
+
+    <ListView
+        android:id="@+id/timeZoneList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:drawSelectorOnTop="true"
+        android:listSelector="@drawable/list_focus_selector" />
+
+    <TextView
+        android:id="@+id/timeZoneNoMatches"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="24dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="16dp"
+        android:text="@string/no_matching_time_zones"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:visibility="gone" />
+
+</com.example.vagor.FullHeightLinearLayout>

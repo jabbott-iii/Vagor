@@ -12,7 +12,6 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.TaskStackBuilder
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
-import androidx.room.Room.databaseBuilder
 import com.example.vagor.database.AppDatabase
 import com.example.vagor.entities.Event
 import com.example.vagor.entities.Vacation
@@ -24,12 +23,7 @@ class MyReceiver : BroadcastReceiver() {
         // the update, so these are ignored.
         val key = ReminderKey.fromUriString(intent.dataString) ?: return
 
-        val db = databaseBuilder<AppDatabase>(
-            context.applicationContext,
-            AppDatabase::class.java, "vacation_database"
-        )
-            .allowMainThreadQueries()
-            .build()
+        val db = AppDatabase.open(context.applicationContext)
         try {
             showReminder(context, db, key)
         } finally {
@@ -107,8 +101,6 @@ class MyReceiver : BroadcastReceiver() {
         private fun eventDetailIntent(context: Context, event: Event) =
             Intent(context, EventDetailActivity::class.java)
                 .putExtra("eventId", event.id)
-                .putExtra("title", event.title)
-                .putExtra("date", event.date)
                 .putExtra("vacationId", event.vacationId)
     }
 }

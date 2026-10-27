@@ -2,6 +2,9 @@
     <string name="app_name">Vagor</string>
     <string name="event_title">Event Title</string>
     <string name="event_date">Event Date</string>
+    <string name="event_time">Event Time</string>
+    <string name="event_time_zone">Time Zone</string>
+    <string name="event_details_hint">Details (optional)</string>
     <string name="save_event">Save Event</string>
     <string name="delete_event">Delete Event</string>
     <string name="share_event">Share Event</string>
@@ -18,7 +21,7 @@
     <string name="save">Save</string>
     <string name="delete">Delete</string>
     <string name="share_vacation">Share Vacation</string>
-    <string name="please_fill_all_fields">Please fill in all fields</string>
+    <string name="event_needs_title_date_and_time">Please enter a title, date and time</string>
     <string name="vacation_needs_title_and_dates">Please enter a title, start date and end date</string>
     <string name="dates_must_be_mmddyyyy">Dates must be in MM/dd/yyyy format</string>
     <string name="end_date_must_follow_start">End date must be after or equal to start date</string>
@@ -33,7 +36,13 @@
     <string name="vacation_share_with_events">%1$s\n\nEvents:\n%2$s</string>
     <string name="event_share_line">- %1$s (%2$s)</string>
     <string name="share_event_details">Share event details</string>
-    <string name="event_share_template">Event: %1$s\nDate: %2$s\nVacation: %3$s</string>
+    <!-- A shared event's text is these lines in this order; Time and Details only when it has them. -->
+    <string name="event_share_title">Event: %1$s</string>
+    <string name="event_share_date">Date: %1$s</string>
+    <!-- The time with its zone's short name, then the zone's city and country. -->
+    <string name="event_share_time">Time: %1$s (%2$s)</string>
+    <string name="event_share_vacation">Vacation: %1$s</string>
+    <string name="event_share_details">Details: %1$s</string>
     <string name="vacation_starting_today">%1$s is starting today</string>
     <string name="vacation_ending_today">%1$s is ending today</string>
     <string name="associated_vacation_not_found">Associated vacation not found</string>
@@ -50,7 +59,7 @@
     <string name="dark_mode">Dark mode</string>
     <string name="privacy_policy">Privacy Policy</string>
     <!-- Same text as PRIVACY.md at the repository root; change both together. -->
-    <string name="privacy_policy_text">Effective October 26, 2026\n\nVagor is a vacation planner made by Joseph Anthony Abbott III. This policy explains how Vagor handles your information.\n\nInformation Vagor stores\nVagor stores the vacations and events you enter (titles, trip details and dates) and your dark mode setting. They are stored only on your device, in Vagor\'s private app storage.\n\nInformation Vagor collects or shares\nNone. Vagor has no internet access, no accounts, no ads, no analytics and no crash reporting. Nothing you enter is sent to the developer or to anyone else.\n\nSharing\nWhen you tap Share Vacation or Share Event, Vagor opens Android\'s share menu with that vacation or event as text. The text goes only to the app you choose, and that app\'s privacy policy applies to it.\n\nReminders\nVagor uses notifications and alarms on your device to remind you on the day a vacation starts or ends and on the day of each event. Reminders are scheduled on your device, and nothing is sent over the internet.\n\nBackup\nVagor turns off Android cloud backup, so your trips aren\'t copied to Google Drive. If you move to a new phone with a direct device-to-device transfer, Android may copy Vagor\'s data to the new phone.\n\nKeeping and deleting your information\nYour information stays on your device until you delete it. Delete a vacation or event in the app, or uninstall Vagor or clear its storage in Android Settings to remove all of it.\n\nSecurity\nAndroid keeps Vagor\'s data in the app\'s private storage, which other apps can\'t access.\n\nChildren\nVagor doesn\'t collect information from anyone, including children.\n\nChanges\nIf this policy changes, the new version will be included in an app update and posted where this policy is published, with a new effective date.\n\nContact\nFor privacy questions, open an issue at https://github.com/jabbott-iii/Vagor/issues. Issues are public, so don\'t include personal details in them.</string>
+    <string name="privacy_policy_text">Effective October 27, 2026\n\nVagor is a vacation planner made by Joseph Anthony Abbott III. This policy explains how Vagor handles your information.\n\nInformation Vagor stores\nVagor stores the vacations and events you enter (titles, details, dates, times and time zones) and your dark mode setting. They are stored only on your device, in Vagor\'s private app storage.\n\nInformation Vagor collects or shares\nNone. Vagor has no internet access, no accounts, no ads, no analytics and no crash reporting. Nothing you enter is sent to the developer or to anyone else.\n\nSharing\nWhen you tap Share Vacation or Share Event, Vagor opens Android\'s share menu with that vacation or event as text. The text goes only to the app you choose, and that app\'s privacy policy applies to it.\n\nReminders\nVagor uses notifications and alarms on your device to remind you on the day a vacation starts or ends and on the day of each event. Reminders are scheduled on your device, and nothing is sent over the internet.\n\nBackup\nVagor turns off Android cloud backup, so your trips aren\'t copied to Google Drive. If you move to a new phone with a direct device-to-device transfer, Android may copy Vagor\'s data to the new phone.\n\nKeeping and deleting your information\nYour information stays on your device until you delete it. Delete a vacation or event in the app, or uninstall Vagor or clear its storage in Android Settings to remove all of it.\n\nSecurity\nAndroid keeps Vagor\'s data in the app\'s private storage, which other apps can\'t access.\n\nChildren\nVagor doesn\'t collect information from anyone, including children.\n\nChanges\nIf this policy changes, the new version will be included in an app update and posted where this policy is published, with a new effective date.\n\nContact\nFor privacy questions, open an issue at https://github.com/jabbott-iii/Vagor/issues. Issues are public, so don\'t include personal details in them.</string>
     <string name="no_vacations_yet">No vacations yet. Tap Add Vacation to plan one.</string>
     <string name="past_vacations">Past</string>
     <string name="vacation_date_range">%1$s – %2$s</string>
@@ -68,10 +77,25 @@
     <string name="edit_vacation">Edit Vacation</string>
     <string name="no_events_yet">No events yet. Tap Add Event to plan one.</string>
     <string name="choose_date">Choose date</string>
+    <string name="choose_time">Choose time</string>
+    <string name="choose_time_zone">Choose time zone</string>
+    <string name="search_time_zones">Search by city, country or name</string>
+    <string name="no_matching_time_zones">No matching time zones</string>
+    <!-- A zone in the time zone list: "Tokyo, Japan", then "Japan Standard Time (GMT+09:00)". -->
+    <string name="time_zone_city_and_country">%1$s, %2$s</string>
+    <string name="time_zone_name_and_offset">%1$s (%2$s)</string>
+    <!-- The event form's time zone field, such as "Japan Standard Time (Tokyo)". -->
+    <string name="time_zone_name_and_city">%1$s (%2$s)</string>
+    <string name="selected">Selected</string>
+    <!-- An event's date and time on one line, such as "07/06/2031, 2:30 PM JST". -->
+    <string name="event_date_and_time">%1$s, %2$s</string>
+    <!-- An event's time and its zone's short name, such as "2:30 PM JST". -->
+    <string name="event_time_and_zone">%1$s %2$s</string>
     <string name="previous_month">Previous month</string>
     <string name="next_month">Next month</string>
     <string name="today">Today</string>
-    <!-- How a date field is read out by screen readers: its name, then the picked date. -->
-    <string name="date_field_with_value">%1$s, %2$s</string>
+    <!-- How a date, time or time zone field is read out by screen readers: its name, then the
+         picked value. -->
+    <string name="picked_field_with_value">%1$s, %2$s</string>
     <string name="reminders_need_notifications">Notifications are off for Vagor, so trip reminders won\'t appear. You can turn them on in Android Settings.</string>
 </resources>

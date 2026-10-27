@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.room.Room.databaseBuilder
 import com.example.vagor.database.AppDatabase
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
@@ -23,12 +22,7 @@ class HomeActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) {
             // A force stop clears alarms and an app update may predate them, so rebuild on launch.
-            val db = databaseBuilder<AppDatabase>(
-                getApplicationContext(),
-                AppDatabase::class.java, "vacation_database"
-            )
-                .allowMainThreadQueries()
-                .build()
+            val db = AppDatabase.open(getApplicationContext())
             ReminderScheduler.rescheduleAll(this, db)
             db.close()
 

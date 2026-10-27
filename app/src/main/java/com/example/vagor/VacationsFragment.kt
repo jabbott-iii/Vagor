@@ -18,7 +18,6 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.room.Room.databaseBuilder
 import com.example.vagor.database.AppDatabase
 import com.example.vagor.entities.Vacation
 import java.time.LocalDate
@@ -37,12 +36,7 @@ class VacationsFragment : Fragment(R.layout.fragment_vacations) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        db = databaseBuilder<AppDatabase>(
-            requireContext().applicationContext,
-            AppDatabase::class.java, "vacation_database"
-        )
-            .allowMainThreadQueries()
-            .build()
+        db = AppDatabase.open(requireContext().applicationContext)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

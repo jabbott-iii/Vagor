@@ -44,6 +44,12 @@ class ThemeContrastTest {
             "onSurfaceVariant" to "surfaceContainer",
             // Drop-down calendar: weekday labels and days; the selected day is onPrimary on primary.
             "onSurfaceVariant" to "surfaceContainerHigh",
+            // Event time clock (ThemeOverlay.Vagor.MaterialTimePicker): the dial's numbers, and
+            // the number under the clock hand. Its selected hour or minute is onPrimaryContainer on
+            // primaryContainer, its selected AM or PM onPrimary on primary, and the rest onSurface
+            // or onSurfaceVariant on the dialog (all above).
+            "onBackground" to "surfaceContainerHighest",
+            "surface" to "primary",
         )
         assertPairs(pairs, 4.5)
     }
@@ -68,6 +74,9 @@ class ThemeContrastTest {
                 // Drop-down calendar: today's ring and the selected day's circle against the
                 // calendar; its focus ring is onSurface (checked as text above).
                 "primary" to "surfaceContainerHigh",
+                // Event time clock: the AM/PM outline. The selected AM or PM against the dialog is
+                // primary on surfaceContainerHigh, like the time zone list's tick (above).
+                "outline" to "surfaceContainerHigh",
             ),
             3.0
         )

@@ -18,7 +18,6 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.ConfigurationCompat
 import androidx.core.os.LocaleListCompat
 import androidx.core.view.ViewCompat
-import androidx.room.Room
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
@@ -57,9 +56,7 @@ import java.util.UUID
 @RunWith(AndroidJUnit4::class)
 class CalendarDropdownInstrumentedTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
-    private val db: AppDatabase = Room.databaseBuilder(context, AppDatabase::class.java, "vacation_database")
-        .allowMainThreadQueries()
-        .build()
+    private val db: AppDatabase = AppDatabase.open(context)
     private val insertedVacations = mutableListOf<Vacation>()
 
     @After

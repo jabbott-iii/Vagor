@@ -1,14 +1,14 @@
 # Vagor Privacy Policy
 
-Effective October 26, 2026
+Effective October 27, 2026
 
 Vagor is a vacation planner made by Joseph Anthony Abbott III. This policy explains how Vagor
 handles your information. The same text is in the app under Settings > Privacy Policy.
 
 ## Information Vagor stores
 
-Vagor stores the vacations and events you enter (titles, trip details and dates) and your dark mode
-setting. They are stored only on your device, in Vagor's private app storage.
+Vagor stores the vacations and events you enter (titles, details, dates, times and time zones) and
+your dark mode setting. They are stored only on your device, in Vagor's private app storage.
 
 ## Information Vagor collects or shares
 

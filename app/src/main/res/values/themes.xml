@@ -49,5 +49,18 @@
         <item name="focusRingsEnabled" tools:ignore="PrivateResource">true</item>
     </style>
 
-    <style name="Theme.Vagor" parent="Base.Theme.Vagor" />
+    <style name="Theme.Vagor" parent="Base.Theme.Vagor">
+        <item name="materialTimePickerTheme">@style/ThemeOverlay.Vagor.MaterialTimePicker</item>
+    </style>
+
+    <!-- The event time clock (MaterialTimePicker). Material fills the selected AM or PM with
+         tertiaryContainer (a purple) about as light as the unselected one, so only its hue told
+         them apart; here it's the scheme's primary blue, which stands out by lightness too. The
+         selected hour or minute keeps Material's primaryContainer: the dial's numbers (1 to 12 or
+         00 to 55) also show which is being set, and a primary fill would hide the primary text
+         cursor when the hour and minute are typed. -->
+    <style name="ThemeOverlay.Vagor.MaterialTimePicker" parent="ThemeOverlay.Material3.MaterialTimePicker">
+        <item name="colorTertiaryContainer">?attr/colorPrimary</item>
+        <item name="colorOnTertiaryContainer">?attr/colorOnPrimary</item>
+    </style>
 </resources>

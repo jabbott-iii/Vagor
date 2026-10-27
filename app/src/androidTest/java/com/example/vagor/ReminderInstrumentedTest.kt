@@ -9,7 +9,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.SystemClock
 import android.service.notification.StatusBarNotification
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -33,11 +32,7 @@ import java.util.UUID
 @RunWith(AndroidJUnit4::class)
 class ReminderInstrumentedTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
-    private val db: AppDatabase = Room.databaseBuilder(
-        context,
-        AppDatabase::class.java,
-        "vacation_database"
-    ).allowMainThreadQueries().build()
+    private val db: AppDatabase = AppDatabase.open(context)
     private val insertedVacations = mutableListOf<Vacation>()
     private val insertedEvents = mutableListOf<Event>()
 
@@ -167,11 +162,11 @@ class ReminderInstrumentedTest {
             eventStack.map { it.component!!.className }
         )
         assertEquals(vacation.id, eventStack[1].getIntExtra("vacationId", -1))
+        // The event form reads the event from the database, so a reminder tapped after an edit
+        // can't bring back what the event held when the reminder was posted.
         assertEquals(event.id, eventStack[2].getIntExtra("eventId", -1))
-        // The event form fills its fields from these.
-        assertEquals(event.title, eventStack[2].getStringExtra("title"))
-        assertEquals(event.date, eventStack[2].getStringExtra("date"))
         assertEquals(vacation.id, eventStack[2].getIntExtra("vacationId", -1))
+        assertNull(eventStack[2].getStringExtra("title"))
         assertEquals(eventKey.toUriString(), eventStack[2].dataString)
     }
 

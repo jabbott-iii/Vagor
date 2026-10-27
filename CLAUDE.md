@@ -20,14 +20,19 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
    Trip details replaced the hotel field on 2026-10-26 (asked for by the user): free text over
    several lines, and optional.
    Current: implemented.
-2. **Events**: each one is planned on a date inside its vacation's date range.
+2. **Events**: each one is planned on a date inside its vacation's date range, at a time in a
+   time zone, with optional details (time, time zone and details asked for by the user on
+   2026-10-26). The time is required and picked from a clock; the time zone is picked from a
+   searchable list and starts on the phone's zone. Events saved before 2026-10-27 have no time
+   until they're next edited, and can't be saved again without one.
    Current: implemented.
 3. **Reminders**: system notifications for vacation start, vacation end and each event.
    Current: implemented. Automatic for every item: a notification around 9:00 AM local time on
    each vacation's start and end dates and on each event's date. See "Reminders" below.
 4. **Sharing**: vacations and events can be shared with other people.
    Current: implemented as plain text through the Sharesheet. The vacation text lists its
-   events, and each event has its own Share button. Importing a shared trip isn't supported.
+   events with their dates and times, and each event has its own Share button, whose text adds
+   its time zone and details. Importing a shared trip isn't supported.
 5. **Local-only**: see the next section.
 6. **Dark mode**: a switch on the Settings tab, on by default (asked for by the user on
    2026-10-25 as an on/off switch, not a follow-system option).
@@ -37,7 +42,10 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
    themes; `ThemeContrastTest` enforces this. Don't convey anything by colour alone, and don't
    add DynamicColors (it would replace the blue with wallpaper colours). Keyboard focus must be
    visible: the theme turns on Material's focus rings (`focusRingsEnabled`, not yet public API),
-   the dashboard list has its own focus ring, and the calendar's days have one.
+   the dashboard and time zone lists have their own focus rings, and the calendar's days have
+   one. Material's time picker marks its selected AM/PM by hue alone, so
+   `ThemeOverlay.Vagor.MaterialTimePicker` fills it with the primary blue instead (the selected
+   hour or minute keeps Material's colours: the dial's numbers also show which is being set).
 8. **Google Play compliance**: see [PLAY_RELEASE.md](PLAY_RELEASE.md). Play Console steps are the
    developer's to do.
 9. **Dashboard and navigation** (asked for by the user on 2026-10-25): the app opens on a
@@ -54,7 +62,9 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
    Current: implemented. The app draws the calendar itself. Don't switch to the framework
    `CalendarView`: it follows the phone's calendar system (a Thai phone would store Buddhist-era
    years) and marks today by colour alone. The calendar is always Gregorian and marks today
-   with a ring.
+   with a ring. An event's time and time zone fields can't be typed into either: the time comes
+   from Material's clock (`MaterialTimePicker`, in the phone's 12- or 24-hour style) and the
+   zone from `TimeZonePickerDialog`. All three use `makePickOnly()` (`PickOnlyField.kt`).
 
 ## Local-only rules (never break these)
 
@@ -72,10 +82,13 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   Issues page (picked as the default on 2026-10-25; the user may want an email address instead).
 - All user data lives in the Room database file `vacation_database`, and there is no other copy.
   Never rename that file, never use `fallbackToDestructiveMigration`, and never clear tables
-  outside tests. For a schema change, bump `AppDatabase.version` and add a `Migration`. Before the
-  first one, turn on `exportSchema` with a schema directory and export the current version 1
-  schema, so migrations can be tested with `MigrationTestHelper`. The only other stored state is
-  the dark mode switch, in the SharedPreferences file `settings`.
+  outside tests. For a schema change, bump `AppDatabase.version`, add a `Migration` to
+  `AppDatabase.MIGRATIONS`, keep the schema JSON Room exports to `app/schemas` (it's in git), and
+  test the upgrade in `MigrationInstrumentedTest` with `MigrationTestHelper`. Version 2
+  (2026-10-27, `MIGRATION_1_2`) added the event columns `details`, `time` and `timeZone`.
+  Everything that opens the database does so through `AppDatabase.open()`, which adds every
+  migration; a `Room.databaseBuilder` without them would crash on an older database. The only
+  other stored state is the dark mode switch, in the SharedPreferences file `settings`.
 
 ## Code layout and patterns
 
@@ -85,10 +98,13 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   Vacation buttons, and its events. `VacationDetailActivity` is the add/edit vacation form, and
   `EventDetailActivity` the add/edit event form. Also there: `entities/` (`Vacation`, `Event`),
   `dao/`, `database/AppDatabase.kt`, `DateValidators.kt`, `Dashboard.kt` (plain-Kotlin dashboard
-  order and trip status), `TripText.kt` (dates and status as display text), `CalendarDropdown.kt`
-  (the date fields' drop-down calendar), `CalendarMonth.kt` (plain-Kotlin month grid for the
-  calendar), `CalendarDayBackground.kt` (the calendar days' circles and rings, drawn to fit their
-  cells), `ReminderSchedule.kt` (plain-Kotlin reminder times and
+  order and trip status), `TripText.kt` (dates, times and status as display text),
+  `EventTimes.kt` (plain-Kotlin event start times and order), `PickOnlyField.kt` (fields filled
+  only from a picker), `CalendarDropdown.kt` (the date fields' drop-down calendar),
+  `CalendarMonth.kt` (plain-Kotlin month grid for the calendar), `CalendarDayBackground.kt` (the
+  calendar days' circles and rings, drawn to fit their cells), `TimeZonePicker.kt` (the event
+  form's searchable time zone list, labelled from Android's ICU time zone names),
+  `ReminderSchedule.kt` (plain-Kotlin reminder times and
   identities), `ReminderScheduler.kt` (sets and cancels alarms), `MyReceiver.kt` (the alarm
   receiver; posts the notification), `ReminderRescheduleReceiver.kt`, `ThemeSettings.kt`,
   `VagorApplication.kt` (applies the saved theme before any screen) and `EdgeToEdge.kt`.
@@ -96,6 +112,8 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
 - The `Event` entity maps to the table `excursions` (`@Entity(tableName = "excursions")`), and
   `EventDAO` queries that table. Don't rename the table without a migration. Likewise
   `Vacation.details` (trip details) maps to the old column `hotel` (`@ColumnInfo(name = "hotel")`).
+  `Event.details` is blank when empty; `Event.time` and `Event.timeZone` are null on events saved
+  before database version 2, and every save since stores both.
 - Every screen except `HomeActivity` calls `setEdgeToEdgeContentView()` instead of
   `setContentView()`, so content stays clear of the system bars (required at targetSdk 36).
   While the keyboard is open, that helper also ends the root view at the keyboard's top edge. The
@@ -118,14 +136,18 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   `findViewById`, and `ListView` with `ArrayAdapter` for the dashboard. The vacation page shows
   its few events as plain rows in a `ScrollView`, so focus follows the screen. The code uses no Compose, ViewBinding,
   ViewModel, DI framework or coroutines. Don't introduce them without the user's approval.
-- Every Activity or Fragment that reads or writes data builds its own Room instance with
-  `allowMainThreadQueries()`, and DAOs are synchronous. Follow that pattern in small changes.
-  A shared instance or background threading is a refactor: propose it first.
+- Every Activity, Fragment or receiver that reads or writes data opens its own Room instance with
+  `AppDatabase.open()` (main-thread queries allowed), and DAOs are synchronous. Follow that
+  pattern in small changes. A shared instance or background threading is a refactor: propose it
+  first.
 - Screens pass data through Intent extras with literal keys (`vacationId`, `title`, `details`,
-  `startDate`, `endDate`, `eventId`, `date`). The instrumented tests and the reminder
-  notifications use the same keys. Detail screens prefill from the extras; the vacation page
-  (`EventListActivity`) takes only `vacationId` and reloads the vacation from the database on
-  every resume, closing itself if the vacation was deleted.
+  `startDate`, `endDate`, `eventId`). The instrumented tests and the reminder notifications use
+  the same keys. The vacation form prefills from the extras. The event form takes only `eventId`
+  (none for a new event) and `vacationId`, and reads the event from the database, because a
+  reminder's extras are copied when it's posted and Save would write old values back; it closes
+  itself if the event was deleted. The vacation page (`EventListActivity`) takes only
+  `vacationId` and reloads the vacation from the database on every resume, closing itself if the
+  vacation was deleted.
 - User-visible text goes in `res/values/strings.xml`.
 - Dates are stored as `MM/dd/yyyy` strings. Parse and validate them only through
   `DateValidators`, which is strict: exactly two-digit month and day, four-digit year, a real
@@ -134,7 +156,16 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   `DateValidators.formatDate`; the save-time checks still run, because saved rows may hold older
   loose dates. Put new date or reminder math in plain Kotlin beside it so it can be unit tested
   (`java.time` is available at minSdk 26).
-- Rules enforced today: every field except trip details is required; vacation end date is on or after the start date;
+- Event times are stored as 24-hour `HH:mm` strings and time zones as IANA zone IDs such as
+  `Asia/Tokyo`; parse them only through `DateValidators.parseLocalTime` and `parseZone`. The
+  event form keeps the picked time and zone in fields of its own (saved across rotation) and
+  shows them as text: the time in the phone's 12- or 24-hour style, the zone by name and city
+  ("Japan Standard Time (Tokyo)", so it isn't read as the event's place). Display text uses ICU
+  (`android.icu`), which knows the phone's own names and patterns; `java.time` formatting is for
+  stored values. Check each ICU call's API level against minSdk 26: some, such as
+  `SystemTimeZoneType.CANONICAL_LOCATION`, arrived later.
+- Rules enforced today: every field except trip details and event details is required (an
+  event's time zone always has a value); vacation end date is on or after the start date;
   an event's date falls within its vacation's start and end dates, inclusive; and a vacation
   that has events can't be deleted. That last check exists only in `VacationDetailActivity`,
   because `excursions.vacationId` has no foreign key.
@@ -157,11 +188,13 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
 ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.example.vagor.HomeFlowInstrumentedTest
 ```
 
-- IMPORTANT: `HomeFlowInstrumentedTest`, `ReminderInstrumentedTest` and
-  `CalendarDropdownInstrumentedTest` write to the app's real `vacation_database`;
-  `HomeFlowInstrumentedTest` and `ReminderInstrumentedTest` also set real alarms, and
-  `ReminderInstrumentedTest` posts real notifications. All three delete only the rows they create,
+- IMPORTANT: `HomeFlowInstrumentedTest`, `ReminderInstrumentedTest`,
+  `CalendarDropdownInstrumentedTest` and `EventFormInstrumentedTest` write to the app's real
+  `vacation_database`; all but the calendar test also set real alarms, and
+  `ReminderInstrumentedTest` posts real notifications. All four delete only the rows they create,
   in `@After`, so a run that is killed partway can leave a test trip behind.
+  `MigrationInstrumentedTest` upgrades a database file of its own (`migration-test`) and deletes
+  it.
   `SettingsInstrumentedTest` opens the real home screen, which reads the database and re-arms
   every stored trip's reminders as a normal launch does, and it flips the dark mode setting and
   restores it. `CalendarDropdownInstrumentedTest` switches the app's language to Thai for one test
@@ -183,7 +216,8 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
 ## Reminders
 
 Decided with the user on 2026-10-25: reminders are automatic for every item, fire around 9:00 AM
-local time on the stored date with no lead time, and events stay date-only. Alarms are inexact:
+local time on the stored date with no lead time. Events have had a time and time zone since
+2026-10-27, but their reminders still use only the date. Alarms are inexact:
 on Android 12+ they usually arrive within an hour; on Android 8–11 (`setWindow`) Doze can hold
 them until the phone wakes. Changing any of
 these is the user's call.

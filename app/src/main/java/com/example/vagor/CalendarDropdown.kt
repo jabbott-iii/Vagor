@@ -3,26 +3,20 @@ package com.example.vagor
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.graphics.Rect
-import android.os.Bundle
 import android.text.format.DateFormat
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityNodeInfo
-import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.PopupWindow
-import android.widget.Spinner
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.os.ConfigurationCompat
-import androidx.core.view.AccessibilityDelegateCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
-import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
-import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.shape.ShapeAppearanceModel
@@ -46,33 +40,7 @@ fun EditText.attachCalendarDropdown(
     earliest: () -> LocalDate? = { null },
     latest: () -> LocalDate? = { null },
 ) {
-    keyListener = null
-    // A tap clicks the field instead of focusing it, so the keyboard never opens for it.
-    isFocusableInTouchMode = false
-    isCursorVisible = false
-    isLongClickable = false
-    setOnClickListener { showCalendarDropdown(earliest(), latest()) }
-    ViewCompat.replaceAccessibilityAction(
-        this, AccessibilityActionCompat.ACTION_CLICK, context.getString(R.string.choose_date), null
-    )
-    // To screen readers and other accessibility services the field is a drop-down list, not an
-    // edit box: they can't type into it, and they read its name and then the picked date.
-    ViewCompat.setAccessibilityDelegate(this, object : AccessibilityDelegateCompat() {
-        override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfoCompat) {
-            super.onInitializeAccessibilityNodeInfo(host, info)
-            info.className = Spinner::class.java.name
-            info.isEditable = false
-            info.removeAction(AccessibilityActionCompat.ACTION_SET_TEXT)
-            info.contentDescription = if (text.isNullOrEmpty()) {
-                hint
-            } else {
-                context.getString(R.string.date_field_with_value, hint, text)
-            }
-        }
-
-        override fun performAccessibilityAction(host: View, action: Int, args: Bundle?): Boolean =
-            action != AccessibilityNodeInfo.ACTION_SET_TEXT && super.performAccessibilityAction(host, action, args)
-    })
+    makePickOnly(context.getString(R.string.choose_date)) { showCalendarDropdown(earliest(), latest()) }
 }
 
 // A popup's content has no parent view to inflate into.
@@ -80,8 +48,6 @@ fun EditText.attachCalendarDropdown(
 private fun EditText.showCalendarDropdown(earliest: LocalDate?, latest: LocalDate?) {
     // A screen reader can still activate the field behind an open calendar; don't open a second.
     if (!isAttachedToWindow || (getTag(R.id.calendar) as? PopupWindow)?.isShowing == true) return
-    // Close the keyboard another field may have open; it would cover the calendar.
-    context.getSystemService(InputMethodManager::class.java)?.hideSoftInputFromWindow(windowToken, 0)
 
     // A range that ends before it starts comes from bad saved dates; offer every day instead.
     var first = earliest?.coerceIn(CalendarMonth.FIRST_DAY, CalendarMonth.LAST_DAY) ?: CalendarMonth.FIRST_DAY

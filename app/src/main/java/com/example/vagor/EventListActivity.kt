@@ -9,13 +9,12 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import androidx.room.Room.databaseBuilder
 import com.example.vagor.database.AppDatabase
 import com.example.vagor.entities.Event
 import com.example.vagor.entities.Vacation
 
 // A vacation's page, opened by tapping it on the dashboard: its details, Edit and Share
-// buttons, and its events in date order.
+// buttons, and its events in date and time order.
 class EventListActivity : AppCompatActivity() {
     private var eventRows: LinearLayout? = null
     private var emptyEvents: View? = null
@@ -42,12 +41,7 @@ class EventListActivity : AppCompatActivity() {
         vacationId = getIntent().getIntExtra("vacationId", -1)
         focusedEventIdToRestore = savedInstanceState?.getInt("focusedEventId", -1)?.takeIf { it != -1 }
 
-        db = databaseBuilder<AppDatabase>(
-            getApplicationContext(),
-            AppDatabase::class.java, "vacation_database"
-        )
-            .allowMainThreadQueries()
-            .build()
+        db = AppDatabase.open(getApplicationContext())
 
         findViewById<Button>(R.id.buttonEditVacation).setOnClickListener {
             val current = vacation ?: return@setOnClickListener
@@ -71,7 +65,7 @@ class EventListActivity : AppCompatActivity() {
             val shareText = if (events.isEmpty()) {
                 vacationText
             } else {
-                val eventLines = events.joinToString("\n") { getString(R.string.event_share_line, it.title, it.date) }
+                val eventLines = events.joinToString("\n") { getString(R.string.event_share_line, it.title, eventWhenText(it)) }
                 getString(R.string.vacation_share_with_events, vacationText, eventLines)
             }
             val shareIntent = Intent(Intent.ACTION_SEND)
@@ -102,10 +96,7 @@ class EventListActivity : AppCompatActivity() {
         detailsView!!.text = current.details
         detailsView!!.isVisible = current.details.isNotBlank()
 
-        events = db!!.eventDAO().getEventsForVacation(vacationId).sortedWith(
-            compareBy<Event, Long?>(nullsLast()) { DateValidators.parseLocalDate(it.date)?.toEpochDay() }
-                .thenBy(String.CASE_INSENSITIVE_ORDER) { it.title }
-        )
+        events = db!!.eventDAO().getEventsForVacation(vacationId).sortedWith(EventTimes.ORDER)
         emptyEvents!!.visibility = if (events.isEmpty()) View.VISIBLE else View.GONE
         showEvents()
     }
@@ -126,12 +117,14 @@ class EventListActivity : AppCompatActivity() {
         for (event in events) {
             val row = layoutInflater.inflate(R.layout.item_event, rows, false)
             row.findViewById<TextView>(R.id.eventTitle).text = event.title
-            row.findViewById<TextView>(R.id.eventDate).text = event.date
+            row.findViewById<TextView>(R.id.eventDate).text = eventWhenText(event)
+            row.findViewById<TextView>(R.id.eventDetails).apply {
+                text = event.details
+                isVisible = event.details.isNotBlank()
+            }
             row.setOnClickListener {
                 val intent = Intent(this@EventListActivity, EventDetailActivity::class.java)
                 intent.putExtra("eventId", event.id)
-                intent.putExtra("title", event.title)
-                intent.putExtra("date", event.date)
                 intent.putExtra("vacationId", event.vacationId)
                 startActivity(intent)
             }

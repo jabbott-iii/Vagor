@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.widget.ListView
-import androidx.room.Room
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.closeSoftKeyboard
@@ -42,9 +41,7 @@ import java.util.UUID
 @RunWith(AndroidJUnit4::class)
 class HomeFlowInstrumentedTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
-    private val db: AppDatabase = Room.databaseBuilder(context, AppDatabase::class.java, "vacation_database")
-        .allowMainThreadQueries()
-        .build()
+    private val db: AppDatabase = AppDatabase.open(context)
     private val titles = mutableListOf<String>()
 
     // Saving a vacation leads to the notification permission prompt, which would cover the list.
