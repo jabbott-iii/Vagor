@@ -28,14 +28,17 @@
             android:hint="@string/vacation_title"
             android:inputType="text" />
 
+        <!-- Optional, and grows with each line typed. -->
         <EditText
-            android:id="@+id/editHotel"
+            android:id="@+id/editTripDetails"
             android:layout_width="match_parent"
-            android:layout_height="57dp"
+            android:layout_height="wrap_content"
+            android:minHeight="57dp"
             android:layout_marginTop="8dp"
             android:autofillHints="none"
-            android:hint="@string/hotel"
-            android:inputType="text" />
+            android:gravity="top|start"
+            android:hint="@string/trip_details"
+            android:inputType="textMultiLine|textCapSentences" />
 
         <EditText
             android:id="@+id/editStartDate"

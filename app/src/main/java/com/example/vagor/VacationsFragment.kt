@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.room.Room.databaseBuilder
 import com.example.vagor.database.AppDatabase
@@ -130,7 +131,10 @@ class VacationsFragment : Fragment(R.layout.fragment_vacations) {
             val vacation = row.vacation
             view.findViewById<TextView>(R.id.vacationTitle).text = vacation.title
             view.findViewById<TextView>(R.id.vacationDates).text = context.vacationDateRange(vacation)
-            view.findViewById<TextView>(R.id.vacationHotel).text = context.getString(R.string.vacation_hotel, vacation.hotel)
+            view.findViewById<TextView>(R.id.vacationTripDetails).apply {
+                text = vacation.details
+                isVisible = vacation.details.isNotBlank()
+            }
             view.findViewById<TextView>(R.id.vacationStatus).text = context.tripStatusText(row.status)
             view.findViewById<View>(R.id.vacationCard).setOnClickListener { openVacation(vacation) }
             return view

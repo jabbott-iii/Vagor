@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.room.Room.databaseBuilder
 import com.example.vagor.database.AppDatabase
 import com.example.vagor.entities.Event
@@ -20,7 +21,7 @@ class EventListActivity : AppCompatActivity() {
     private var emptyEvents: View? = null
     private var titleView: TextView? = null
     private var datesView: TextView? = null
-    private var hotelView: TextView? = null
+    private var detailsView: TextView? = null
     private var db: AppDatabase? = null
     private var vacationId = 0
     private var vacation: Vacation? = null
@@ -36,7 +37,7 @@ class EventListActivity : AppCompatActivity() {
         emptyEvents = findViewById(R.id.emptyEvents)
         titleView = findViewById(R.id.vacationPageTitle)
         datesView = findViewById(R.id.vacationPageDates)
-        hotelView = findViewById(R.id.vacationPageHotel)
+        detailsView = findViewById(R.id.vacationPageTripDetails)
 
         vacationId = getIntent().getIntExtra("vacationId", -1)
         focusedEventIdToRestore = savedInstanceState?.getInt("focusedEventId", -1)?.takeIf { it != -1 }
@@ -53,7 +54,7 @@ class EventListActivity : AppCompatActivity() {
             val intent = Intent(this@EventListActivity, VacationDetailActivity::class.java)
             intent.putExtra("vacationId", current.id)
             intent.putExtra("title", current.title)
-            intent.putExtra("hotel", current.hotel)
+            intent.putExtra("details", current.details)
             intent.putExtra("startDate", current.startDate)
             intent.putExtra("endDate", current.endDate)
             startActivity(intent)
@@ -61,13 +62,12 @@ class EventListActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.buttonShareVacation).setOnClickListener {
             val current = vacation ?: return@setOnClickListener
-            val vacationText = getString(
-                R.string.vacation_share_template,
-                current.title,
-                current.hotel,
-                current.startDate,
-                current.endDate
-            )
+            val withoutDetails = getString(R.string.vacation_share_template, current.title, current.startDate, current.endDate)
+            val vacationText = if (current.details.isBlank()) {
+                withoutDetails
+            } else {
+                getString(R.string.vacation_share_details, withoutDetails, current.details)
+            }
             val shareText = if (events.isEmpty()) {
                 vacationText
             } else {
@@ -99,7 +99,8 @@ class EventListActivity : AppCompatActivity() {
         vacation = current
         titleView!!.text = current.title
         datesView!!.text = vacationDateRange(current)
-        hotelView!!.text = getString(R.string.vacation_hotel, current.hotel)
+        detailsView!!.text = current.details
+        detailsView!!.isVisible = current.details.isNotBlank()
 
         events = db!!.eventDAO().getEventsForVacation(vacationId).sortedWith(
             compareBy<Event, Long?>(nullsLast()) { DateValidators.parseLocalDate(it.date)?.toEpochDay() }

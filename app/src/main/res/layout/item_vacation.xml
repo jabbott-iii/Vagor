@@ -39,11 +39,14 @@
                 android:textAppearance="?attr/textAppearanceBodyLarge"
                 android:textColor="?attr/colorOnSurface" />
 
+            <!-- The start of the trip details; hidden when there are none. -->
             <TextView
-                android:id="@+id/vacationHotel"
+                android:id="@+id/vacationTripDetails"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:maxLines="2"
                 android:textAppearance="?attr/textAppearanceBodyMedium"
                 android:textColor="?attr/colorOnSurfaceVariant" />
 

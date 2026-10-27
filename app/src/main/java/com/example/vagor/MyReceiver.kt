@@ -58,9 +58,17 @@ class MyReceiver : BroadcastReceiver() {
                 } else {
                     R.string.vacation_ending_today
                 }
+                val dates = context.vacationDateRange(vacation)
                 builder.setContentTitle(context.getString(message, vacation.title))
-                    .setContentText(context.getString(R.string.reminder_hotel, vacation.hotel))
+                    .setContentText(dates)
                     .setContentIntent(vacationReminderStack(context, vacation, key).getPendingIntent(0, PENDING_INTENT_FLAGS))
+                // Expanded, the reminder also shows the trip details.
+                if (vacation.details.isNotBlank()) {
+                    builder.setStyle(
+                        NotificationCompat.BigTextStyle()
+                            .bigText(context.getString(R.string.reminder_dates_and_details, dates, vacation.details))
+                    )
+                }
             }
             ReminderType.EVENT -> {
                 val event = db.eventDAO().getEventById(key.itemId) ?: return

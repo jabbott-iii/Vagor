@@ -130,6 +130,10 @@ class ReminderInstrumentedTest {
             vacationNotification.notification.extras.getString("android.title")
         )
         assertEquals(
+            context.vacationDateRange(vacation),
+            vacationNotification.notification.extras.getCharSequence("android.text")?.toString()
+        )
+        assertEquals(
             context.getString(R.string.event_happening_today, event.title),
             eventNotification!!.notification.extras.getString("android.title")
         )

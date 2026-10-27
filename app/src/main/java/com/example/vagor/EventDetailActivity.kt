@@ -122,8 +122,7 @@ class EventDetailActivity : AppCompatActivity() {
                 R.string.event_share_template,
                 editEventTitle!!.getText().toString().trim { it <= ' ' },
                 editEventDate!!.getText().toString().trim { it <= ' ' },
-                vacation.title,
-                vacation.hotel
+                vacation.title
             )
             val shareIntent = Intent(Intent.ACTION_SEND)
             shareIntent.setType("text/plain")

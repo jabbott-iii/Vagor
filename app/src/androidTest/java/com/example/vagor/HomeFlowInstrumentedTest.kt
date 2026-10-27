@@ -72,6 +72,7 @@ class HomeFlowInstrumentedTest {
         db.close()
     }
 
+    // Trip details are optional, so they're left empty here.
     @Test
     fun canCreateVacationFromTheDashboard() {
         val uniqueTitle = uniqueTitle()
@@ -79,7 +80,6 @@ class HomeFlowInstrumentedTest {
         ActivityScenario.launch(HomeActivity::class.java).use {
             onView(withId(R.id.buttonAddVacation)).perform(click())
             onView(withId(R.id.editTitle)).perform(replaceText(uniqueTitle))
-            onView(withId(R.id.editHotel)).perform(replaceText("Hotel Vagor"))
             onView(withId(R.id.editStartDate)).perform(replaceText(date(10)))
             onView(withId(R.id.editEndDate)).perform(replaceText(date(12)))
             closeSoftKeyboard()
@@ -152,12 +152,18 @@ class HomeFlowInstrumentedTest {
         ActivityScenario.launch(HomeActivity::class.java).use {
             onData(tripTitled(vacation.title)).inAdapterView(withId(R.id.vacationListView)).perform(click())
             onView(withId(R.id.buttonEditVacation)).perform(click())
-            onView(withId(R.id.editHotel)).perform(replaceText("Hotel Two"))
+            onView(withId(R.id.editTripDetails)).perform(replaceText("Hotel Two\nFlight AB123"))
             closeSoftKeyboard()
             onView(withId(R.id.buttonSave)).perform(scrollTo(), click())
 
-            onView(withId(R.id.vacationPageHotel))
-                .check(matches(withText(context.getString(R.string.vacation_hotel, "Hotel Two"))))
+            onView(withId(R.id.vacationPageTripDetails)).check(matches(withText("Hotel Two\nFlight AB123")))
+
+            onView(withId(R.id.buttonEditVacation)).perform(click())
+            onView(withId(R.id.editTripDetails)).perform(replaceText(""))
+            closeSoftKeyboard()
+            onView(withId(R.id.buttonSave)).perform(scrollTo(), click())
+
+            onView(withId(R.id.vacationPageTripDetails)).check(matches(withEffectiveVisibility(Visibility.GONE)))
         }
     }
 

@@ -16,7 +16,9 @@ accounts.
 These define "done" for feature work. Events were called excursions until 2026-10-25; the UI and
 code now say **events**, but the Room table keeps its old name `excursions` (see Code layout).
 
-1. **Vacations**: create, edit and delete, with title, hotel, start date and end date.
+1. **Vacations**: create, edit and delete, with title, trip details, start date and end date.
+   Trip details replaced the hotel field on 2026-10-26 (asked for by the user): free text over
+   several lines, and optional.
    Current: implemented.
 2. **Events**: each one is planned on a date inside its vacation's date range.
    Current: implemented.
@@ -92,7 +94,8 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   `VagorApplication.kt` (applies the saved theme before any screen) and `EdgeToEdge.kt`.
   `MainActivity` and `activity_main.xml` are unused template leftovers.
 - The `Event` entity maps to the table `excursions` (`@Entity(tableName = "excursions")`), and
-  `EventDAO` queries that table. Don't rename the table without a migration.
+  `EventDAO` queries that table. Don't rename the table without a migration. Likewise
+  `Vacation.details` (trip details) maps to the old column `hotel` (`@ColumnInfo(name = "hotel")`).
 - Every screen except `HomeActivity` calls `setEdgeToEdgeContentView()` instead of
   `setContentView()`, so content stays clear of the system bars (required at targetSdk 36).
   While the keyboard is open, that helper also ends the root view at the keyboard's top edge. The
@@ -118,7 +121,7 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
 - Every Activity or Fragment that reads or writes data builds its own Room instance with
   `allowMainThreadQueries()`, and DAOs are synchronous. Follow that pattern in small changes.
   A shared instance or background threading is a refactor: propose it first.
-- Screens pass data through Intent extras with literal keys (`vacationId`, `title`, `hotel`,
+- Screens pass data through Intent extras with literal keys (`vacationId`, `title`, `details`,
   `startDate`, `endDate`, `eventId`, `date`). The instrumented tests and the reminder
   notifications use the same keys. Detail screens prefill from the extras; the vacation page
   (`EventListActivity`) takes only `vacationId` and reloads the vacation from the database on
@@ -131,7 +134,7 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   `DateValidators.formatDate`; the save-time checks still run, because saved rows may hold older
   loose dates. Put new date or reminder math in plain Kotlin beside it so it can be unit tested
   (`java.time` is available at minSdk 26).
-- Rules enforced today: all fields are required; vacation end date is on or after the start date;
+- Rules enforced today: every field except trip details is required; vacation end date is on or after the start date;
   an event's date falls within its vacation's start and end dates, inclusive; and a vacation
   that has events can't be deleted. That last check exists only in `VacationDetailActivity`,
   because `excursions.vacationId` has no foreign key.

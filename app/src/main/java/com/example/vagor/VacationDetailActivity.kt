@@ -12,7 +12,7 @@ import com.example.vagor.entities.Vacation
 
 class VacationDetailActivity : AppCompatActivity() {
     private var editTitle: EditText? = null
-    private var editHotel: EditText? = null
+    private var editTripDetails: EditText? = null
     private var editStartDate: EditText? = null
     private var editEndDate: EditText? = null
     private var buttonSave: Button? = null
@@ -24,7 +24,7 @@ class VacationDetailActivity : AppCompatActivity() {
         setEdgeToEdgeContentView(R.layout.activity_vacation_detail)
 
         editTitle = findViewById<EditText>(R.id.editTitle)
-        editHotel = findViewById<EditText>(R.id.editHotel)
+        editTripDetails = findViewById<EditText>(R.id.editTripDetails)
         editStartDate = findViewById<EditText>(R.id.editStartDate)
         editEndDate = findViewById<EditText>(R.id.editEndDate)
         buttonSave = findViewById<Button>(R.id.buttonSave)
@@ -32,13 +32,13 @@ class VacationDetailActivity : AppCompatActivity() {
 
         val vacationId = getIntent().getIntExtra("vacationId", -1)
         val title = getIntent().getStringExtra("title")
-        val hotel = getIntent().getStringExtra("hotel")
+        val details = getIntent().getStringExtra("details")
         val startDate = getIntent().getStringExtra("startDate")
         val endDate = getIntent().getStringExtra("endDate")
 
         if (vacationId != -1) {
             editTitle!!.setText(title)
-            editHotel!!.setText(hotel)
+            editTripDetails!!.setText(details)
             editStartDate!!.setText(startDate)
             editEndDate!!.setText(endDate)
         }
@@ -64,13 +64,13 @@ class VacationDetailActivity : AppCompatActivity() {
         //Save button logic
         buttonSave!!.setOnClickListener(View.OnClickListener setOnClickListener@{ _: View? ->
             val updatedTitle = editTitle!!.getText().toString().trim { it <= ' ' }
-            val updatedHotel = editHotel!!.getText().toString().trim { it <= ' ' }
+            val updatedDetails = editTripDetails!!.getText().toString().trim { it <= ' ' }
             val updatedStartDate = editStartDate!!.getText().toString().trim { it <= ' ' }
             val updatedEndDate = editEndDate!!.getText().toString().trim { it <= ' ' }
 
-            //vacation date validation
-            if (updatedTitle.isEmpty() || updatedHotel.isEmpty() || updatedStartDate.isEmpty() || updatedEndDate.isEmpty()) {
-                Toast.makeText(this@VacationDetailActivity, R.string.please_fill_all_fields, Toast.LENGTH_SHORT).show()
+            // Trip details are optional; everything else is required.
+            if (updatedTitle.isEmpty() || updatedStartDate.isEmpty() || updatedEndDate.isEmpty()) {
+                Toast.makeText(this@VacationDetailActivity, R.string.vacation_needs_title_and_dates, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -85,12 +85,12 @@ class VacationDetailActivity : AppCompatActivity() {
             }
 
             if (vacationId == -1) {
-                val vacation = Vacation(updatedTitle, updatedHotel, updatedStartDate, updatedEndDate)
+                val vacation = Vacation(updatedTitle, updatedDetails, updatedStartDate, updatedEndDate)
                 val newId = db!!.vacationDAO().insert(vacation).toInt()
                 ReminderScheduler.scheduleVacation(this@VacationDetailActivity, vacation.copy(id = newId))
                 Toast.makeText(this@VacationDetailActivity, R.string.vacation_saved, Toast.LENGTH_SHORT).show()
             } else {
-                val vacation = Vacation(updatedTitle, updatedHotel, updatedStartDate, updatedEndDate, vacationId)
+                val vacation = Vacation(updatedTitle, updatedDetails, updatedStartDate, updatedEndDate, vacationId)
                 db!!.vacationDAO().update(vacation)
                 ReminderScheduler.scheduleVacation(this@VacationDetailActivity, vacation)
                 Toast.makeText(this@VacationDetailActivity, R.string.vacation_updated, Toast.LENGTH_SHORT).show()
@@ -110,7 +110,7 @@ class VacationDetailActivity : AppCompatActivity() {
 
                 val vacation = Vacation(
                     editTitle!!.getText().toString().trim { it <= ' ' },
-                    editHotel!!.getText().toString().trim { it <= ' ' },
+                    editTripDetails!!.getText().toString().trim { it <= ' ' },
                     editStartDate!!.getText().toString().trim { it <= ' ' },
                     editEndDate!!.getText().toString().trim { it <= ' ' },
                     vacationId
