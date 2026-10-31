@@ -120,8 +120,10 @@ section in both copies.
   reminders to the minute either: they depend on Alarms & reminders and the phone's battery
   settings.
 - **Graphics:** a 512×512 PNG icon, a 1024×500 feature graphic, and at least two phone
-  screenshots. The launcher icon is still the Android template robot (now on a blue background);
-  a custom icon is recommended before launch.
+  screenshots. The icon and the feature graphic are in `fastlane/metadata/android/en-US/images/`
+  (`icon.png`, a full-square 32-bit PNG, since Play rounds the corners itself, and
+  `featureGraphic.png`, a 24-bit PNG with no alpha). Both are drawn from the launcher icon's
+  suitcase (`app/src/main/res/drawable/ic_launcher_foreground.xml`) on its blue `#0072B2`.
 
 ## 6. Testing before production
 

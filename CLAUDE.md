@@ -141,6 +141,13 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   the keyboard: a text field added to a home tab would need its own keyboard handling.
 - Colours come from theme attributes only (`res/values/colors.xml`, `values/themes.xml`,
   `values-night/themes.xml`). Never hard-code a text or background colour in a layout.
+- The launcher icon (made 2026-10-31, replacing the template robot) is a white rolling suitcase
+  (`drawable/ic_launcher_foreground.xml`) on the Okabe-Ito blue `#0072B2`
+  (`ic_launcher_background.xml`), inside the adaptive icon's 66dp safe circle, so the Android 12+
+  splash screen shows it whole. The foreground is also the monochrome layer for themed icons, so
+  keep it one flat colour with no shadow. minSdk 26 always uses `mipmap-anydpi`, so there are no
+  density PNGs. The Play icon and feature graphic (`fastlane/metadata/android/en-US/images/`)
+  are drawn from the same paths: redraw them when the icon changes.
 - Every button on a page is the same size (asked for by the user on 2026-10-26): full width,
   one above the other, styled `Widget.Vagor.Button` or `Widget.Vagor.Button.Outlined` with
   `layout_width="match_parent"` and `layout_height="wrap_content"`. The style sets one height
@@ -362,7 +369,6 @@ phone was off isn't shown late. Changing any of these is the user's call.
 - Not yet on Google Play. The remaining steps are Play Console work listed in PLAY_RELEASE.md:
   hosting PRIVACY.md at a public URL, the upload key, Data safety and other declarations, store
   assets, and a 12-tester, 14-day closed test for new personal developer accounts.
-- The launcher icon is still the Android template robot, now on a blue background.
 - The system draws the launch window before any app code runs. On Android 8–11 it follows the
   system light/dark setting on every cold start, so a dark-mode user on a light-themed phone sees
   a brief light flash. On Android 12+ only the very first launch does; later launches match the
