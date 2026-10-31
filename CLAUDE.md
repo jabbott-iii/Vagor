@@ -9,7 +9,9 @@ Block-level HTML comments like this one are stripped before Claude reads the fil
 Vagor is an offline Android vacation planner written in Kotlin: a single `:app` module. Its
 application ID (the Play and device identity) is `io.github.jabbott_iii.vagor`; the Kotlin package
 and `namespace` are still `com.example.vagor`. It runs entirely on the phone, with no backend and no
-accounts.
+accounts. It's proprietary, all rights reserved by Joseph Anthony Abbott III (`LICENSE`; made
+proprietary on 2026-10-31 at the user's request, Apache 2.0 before), and `NOTICE` lists the
+third-party software that ships in the app.
 
 ## Product requirements
 
@@ -321,6 +323,8 @@ phone was off isn't shown late. Changing any of these is the user's call.
   after the first Play upload a new ID is a different app.
 - `local.properties` (machine-specific `sdk.dir`) is tracked in git even though its own header
   says it shouldn't be. Don't commit changes to it.
+- Don't add open-source license text to the project. When a library that ships in the app is
+  added, add it and its license to `NOTICE`.
 - Finish with: files changed, commands run and their results, checks not run, assumptions, and
   open risks.
 

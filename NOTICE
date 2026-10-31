@@ -1,5 +1,17 @@
 Vagor
+Copyright (c) 2026 Joseph Anthony Abbott III. All rights reserved. See LICENSE.
 
-Copyright 2026 Joseph Anthony Abbott III
+Vagor includes third-party software, which remains under its own license:
 
-This product includes third-party software:
+- AndroidX libraries (Activity, AppCompat, ConstraintLayout, Core, Room and the AndroidX
+  libraries they depend on), from the Android Open Source Project: Apache License 2.0
+- Material Components for Android, from Google: Apache License 2.0
+- The Kotlin standard library, kotlinx.coroutines and JetBrains annotations, from JetBrains:
+  Apache License 2.0
+- Guava ListenableFuture and Error Prone annotations, from Google: Apache License 2.0
+- JSpecify annotations: Apache License 2.0
+
+The Gradle wrapper (gradlew, gradlew.bat and gradle/wrapper/) is from Gradle and is under the
+Apache License 2.0.
+
+The Apache License 2.0 is at https://www.apache.org/licenses/LICENSE-2.0
