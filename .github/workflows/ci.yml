@@ -91,6 +91,22 @@ jobs:
         sudo udevadm control --reload-rules
         sudo udevadm trigger --name-match=kvm
 
+    # The runner's preinstalled command-line tools are too old for minor-versioned images such as
+    # android-37.0: with 12.0 (Ubuntu 24.04), avdmanager writes target=android-0 into the AVD, and
+    # the emulator boots it as the wrong API level and can stall. The emulator runner uses the
+    # runner's cmdline-tools/latest whenever one exists, so replace it with 22.0, which writes
+    # target=android-37.0. The checksum is printed so the download can be pinned later.
+    - name: Install Android command-line tools 22.0
+      run: |
+        set -euo pipefail
+        curl -fsSL --retry 3 -o "$RUNNER_TEMP/cmdline-tools.zip" \
+          https://dl.google.com/android/repository/commandlinetools-linux-15859902_latest.zip
+        sha256sum "$RUNNER_TEMP/cmdline-tools.zip"
+        unzip -q "$RUNNER_TEMP/cmdline-tools.zip" -d "$RUNNER_TEMP/cmdline-tools"
+        rm -rf "$ANDROID_HOME/cmdline-tools/latest"
+        mv "$RUNNER_TEMP/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+        "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
+
     # Android 17 (API 37), where the instrumented tests are checked locally. The level is quoted
     # because YAML would read 37.0 as the number 37, and there is no android-37 image.
     - name: Run Connected Tests
@@ -102,6 +118,10 @@ jobs:
         force-avd-creation: false
         emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-metrics
         disable-animations: true
+        # Annotate the run if the AVD still has the wrong target. The action boots it anyway.
+        pre-emulator-launch-script: |
+          grep '^target=' "$ANDROID_AVD_HOME/test.ini"
+          grep -qx 'target=android-37.0' "$ANDROID_AVD_HOME/test.ini" || { echo "::error::The AVD target isn't android-37.0; avdmanager is too old for this image."; exit 1; }
         script: ./gradlew connectedAndroidTest --no-daemon
 
     - name: Upload Instrumented Test Results

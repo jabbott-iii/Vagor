@@ -232,7 +232,10 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
 - CI (`.github/workflows/`, fixed on 2026-10-31 at the user's request) runs on GitHub's Ubuntu
   runners, which come with the Android SDK. `ci.yml` runs `lint`, `detekt`, `ktlintCheck`,
   `assembleDebug` and `testDebugUnitTest`, then `connectedAndroidTest` on an API 37 (`'37.0'`,
-  quoted) `google_apis` emulator, which needs the Enable KVM step to run fast enough.
+  quoted) `google_apis` emulator, which needs the Enable KVM step to run fast enough. It also
+  needs the step that installs command-line tools 22.0 (added 2026-10-31 after the emulator
+  timed out booting): the runner's own tools, 12.0 on Ubuntu 24.04, give an `android-37.0` AVD
+  `target=android-0`, and the emulator runner uses them whenever they exist.
   `security.yml` runs CodeQL, which analyses Kotlin only by watching a build
   (`build-mode: manual`). CI calls only Gradle tasks that exist: SonarQube, OWASP
   dependency-check and coverage steps were removed, because no plugin provided their tasks and
