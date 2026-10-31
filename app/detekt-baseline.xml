@@ -1,0 +1,94 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:CalendarDropdown.kt:MonthGrid$@SuppressLint("AccessibilityFocus") private fun show</ID>
+    <ID>CyclomaticComplexMethod:EventDetailActivity.kt:EventDetailActivity$override fun onCreate</ID>
+    <ID>EmptyFunctionBlock:CalendarDropdown.kt:&lt;no name provided&gt;${}</ID>
+    <ID>LongMethod:EventDetailActivity.kt:EventDetailActivity$override fun onCreate</ID>
+    <ID>LongMethod:VacationDetailActivity.kt:VacationDetailActivity$override fun onCreate</ID>
+    <ID>MagicNumber:CalendarDayBackground.kt:DayCircle$255</ID>
+    <ID>MagicNumber:CalendarDropdown.kt:MonthGrid$7</ID>
+    <ID>MagicNumber:CalendarMonth.kt:CalendarMonth$7</ID>
+    <ID>MagicNumber:TripText.kt:1000L</ID>
+    <ID>MatchingDeclarationName:CalendarInsert.kt:CalendarTimes</ID>
+    <ID>MaxLineLength:CalendarDropdown.kt:MaterialColors.getColor(this@showCalendarDropdown, com.google.android.material.R.attr.colorSurfaceContainerHigh)</ID>
+    <ID>MaxLineLength:CalendarDropdown.kt:MonthGrid$ContextCompat.getColorStateList(context, if (isToday) R.color.calendar_today_text else R.color.calendar_day_text)</ID>
+    <ID>MaxLineLength:CalendarDropdown.kt:MonthGrid$if (hadAccessibilityFocus) target?.performAccessibilityAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null)</ID>
+    <ID>MaxLineLength:CalendarDropdown.kt:MonthGrid$private val locale: Locale = ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.getDefault()</ID>
+    <ID>MaxLineLength:CalendarDropdownInstrumentedTest.kt:CalendarDropdownInstrumentedTest$DayCircle(blue, strokeWidth = 4f, maxDiameter = 80f, clearance = 3f).apply { setBounds(0, 0, 60, size) }.draw(Canvas(narrow))</ID>
+    <ID>MaxLineLength:CalendarDropdownInstrumentedTest.kt:CalendarDropdownInstrumentedTest$InstrumentationRegistry.getInstrumentation().runOnMainSync { AppCompatDelegate.setApplicationLocales(locales) }</ID>
+    <ID>MaxLineLength:CalendarDropdownInstrumentedTest.kt:CalendarDropdownInstrumentedTest$val locales = if (languageTag == null) LocaleListCompat.getEmptyLocaleList() else LocaleListCompat.forLanguageTags(languageTag)</ID>
+    <ID>MaxLineLength:CalendarDropdownInstrumentedTest.kt:CalendarDropdownInstrumentedTest$val vacation = Vacation("Trip-${UUID.randomUUID().toString().take(8)}", "Hotel Vagor", "07/04/2031", "07/09/2031")</ID>
+    <ID>MaxLineLength:CalendarInsert.kt:eventTimeText(event)?.let { getString(R.string.event_share_time, it, TimeZoneChoices.label(this, start.zone.id)) }</ID>
+    <ID>MaxLineLength:CalendarInsertInstrumentedTest.kt:CalendarInsertInstrumentedTest$// The Add to Calendar buttons, which open Google Calendar first. The intent each one sends is caught before it starts, so no</ID>
+    <ID>MaxLineLength:CalendarInsertInstrumentedTest.kt:CalendarInsertInstrumentedTest$assertEquals(CalendarTimes.allDayEndMillis(LocalDate.of(2031, 7, 9), zone), sent.getLongExtra(CalendarContract.EXTRA_EVENT_END_TIME, 0))</ID>
+    <ID>MaxLineLength:CalendarInsertInstrumentedTest.kt:CalendarInsertInstrumentedTest$assertEquals(CalendarTimes.allDayMillis(LocalDate.of(2031, 7, 4), zone), sent.getLongExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, 0))</ID>
+    <ID>MaxLineLength:CalendarInsertInstrumentedTest.kt:CalendarInsertInstrumentedTest$val event = insertEvent(Event("Dinner", "07/05/2031", vacation.id, details = "Table for two", time = "19:30", timeZone = "Asia/Tokyo"))</ID>
+    <ID>MaxLineLength:CalendarInsertInstrumentedTest.kt:CalendarInsertInstrumentedTest$val events = context.getString(R.string.calendar_vacation_events, context.getString(R.string.event_share_line, "Dinner", context.eventWhenText(dinner)))</ID>
+    <ID>MaxLineLength:CalendarInsertInstrumentedTest.kt:CalendarInsertInstrumentedTest$val time = context.getString(R.string.event_share_time, context.eventTimeText(event), TimeZoneChoices.label(context, "Asia/Tokyo"))</ID>
+    <ID>MaxLineLength:CalendarTimesTest.kt:CalendarTimesTest$val (begin, end) = CalendarTimes.vacationSpanMillis(Vacation("Trip", "", "10/27/2026", "10/29/2026"), zone)!!</ID>
+    <ID>MaxLineLength:CalendarTimesTest.kt:CalendarTimesTest$val cases = mapOf("Atlantic/Azores" to LocalDate.of(2026, 10, 25), "America/Havana" to LocalDate.of(2026, 11, 1))</ID>
+    <ID>MaxLineLength:EdgeToEdge.kt:view.setPadding(left + bars.left, top + bars.top, right + bars.right, bottom + if (keyboard &gt; 0) 0 else bars.bottom)</ID>
+    <ID>MaxLineLength:EventDetailActivity.kt:EventDetailActivity$Toast.makeText(this@EventDetailActivity, R.string.associated_vacation_not_found, Toast.LENGTH_SHORT).show()</ID>
+    <ID>MaxLineLength:EventDetailActivity.kt:EventDetailActivity$Toast.makeText(this@EventDetailActivity, R.string.event_needs_title_date_and_time, Toast.LENGTH_SHORT).show()</ID>
+    <ID>MaxLineLength:EventDetailActivity.kt:EventDetailActivity$earliest = { db!!.vacationDAO().getVacationById(vacationId)?.let { DateValidators.parseLocalDate(it.startDate) } }</ID>
+    <ID>MaxLineLength:EventDetailActivity.kt:EventDetailActivity$latest = { db!!.vacationDAO().getVacationById(vacationId)?.let { DateValidators.parseLocalDate(it.endDate) } }</ID>
+    <ID>MaxLineLength:EventFormInstrumentedTest.kt:EventFormInstrumentedTest$assertEquals(context.getString(R.string.event_date_and_time, breakfast.date, context.eventTimeText(breakfast)), text(1, R.id.eventDate))</ID>
+    <ID>MaxLineLength:EventFormInstrumentedTest.kt:EventFormInstrumentedTest$assertEquals(listOf("Old event", "Breakfast", "Dinner"), (0 until rows.childCount).map { text(it, R.id.eventTitle) })</ID>
+    <ID>MaxLineLength:EventFormInstrumentedTest.kt:EventFormInstrumentedTest$onData(anything()).inAdapterView(withId(R.id.timeZoneList)).inRoot(isDialog()).atPosition(0).perform(click())</ID>
+    <ID>MaxLineLength:EventFormInstrumentedTest.kt:EventFormInstrumentedTest$onView(withId(R.id.editEventTimeZone)).check(matches(withText(TimeZoneChoices.fieldText(context, "Asia/Tokyo"))))</ID>
+    <ID>MaxLineLength:EventFormInstrumentedTest.kt:EventFormInstrumentedTest$onView(withId(R.id.editEventTimeZone)).check(matches(withText(TimeZoneChoices.fieldText(context, "Europe/Paris"))))</ID>
+    <ID>MaxLineLength:EventFormInstrumentedTest.kt:EventFormInstrumentedTest$onView(withId(R.id.editEventTimeZone)).check(matches(withText(TimeZoneChoices.fieldText(context, ZoneId.systemDefault().id))))</ID>
+    <ID>MaxLineLength:EventFormInstrumentedTest.kt:EventFormInstrumentedTest$onView(withId(com.google.android.material.R.id.material_timepicker_ok_button)).inRoot(isDialog()).check(matches(isDisplayed()))</ID>
+    <ID>MaxLineLength:EventFormInstrumentedTest.kt:EventFormInstrumentedTest$onView(withId(com.google.android.material.R.id.material_timepicker_ok_button)).inRoot(isDialog()).perform(click())</ID>
+    <ID>MaxLineLength:EventFormInstrumentedTest.kt:EventFormInstrumentedTest$val breakfast = insertEvent(Event("Breakfast", "07/05/2031", vacation.id, details = "Hotel lobby", time = "08:00", timeZone = "Asia/Tokyo"))</ID>
+    <ID>MaxLineLength:EventFormInstrumentedTest.kt:EventFormInstrumentedTest$val event = insertEvent(Event("Louvre", "07/07/2031", vacation.id, details = "Pyramid entrance", time = "14:30", timeZone = "Europe/Paris"))</ID>
+    <ID>MaxLineLength:EventListActivity.kt:EventListActivity$val eventLines = events.joinToString("\n") { getString(R.string.event_share_line, it.title, eventWhenText(it)) }</ID>
+    <ID>MaxLineLength:EventListActivity.kt:EventListActivity$val withoutDetails = getString(R.string.vacation_share_template, current.title, current.startDate, current.endDate)</ID>
+    <ID>MaxLineLength:MigrationInstrumentedTest.kt:MigrationInstrumentedTest$assertEquals(Vacation("Rome", "Hotel Roma", "07/04/2031", "07/09/2031", 3), db.vacationDAO().getVacationById(3))</ID>
+    <ID>MaxLineLength:MigrationInstrumentedTest.kt:MigrationInstrumentedTest$db.execSQL("INSERT INTO vacations (title, hotel, startDate, endDate, id) VALUES ('Rome', 'Hotel Roma', '07/04/2031', '07/09/2031', 3)")</ID>
+    <ID>MaxLineLength:MyReceiver.kt:MyReceiver$.</ID>
+    <ID>MaxLineLength:MyReceiver.kt:MyReceiver$ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED</ID>
+    <ID>MaxLineLength:MyReceiver.kt:MyReceiver$val</ID>
+    <ID>MaxLineLength:MyReceiver.kt:MyReceiver.Companion$internal</ID>
+    <ID>MaxLineLength:ReminderInstrumentedTest.kt:ReminderInstrumentedTest$.</ID>
+    <ID>MaxLineLength:ReminderInstrumentedTest.kt:ReminderInstrumentedTest$listOf(HomeActivity::class.java.name, EventListActivity::class.java.name, EventDetailActivity::class.java.name)</ID>
+    <ID>MaxLineLength:ReminderInstrumentedTest.kt:ReminderInstrumentedTest$val event = Event("Event-${UUID.randomUUID().toString().take(8)}", date, vacation.id, details = details, time = time, timeZone = zone)</ID>
+    <ID>MaxLineLength:ReminderInstrumentedTest.kt:ReminderInstrumentedTest$val event = insertEvent(vacation, daysFromNow(1), time = "19:30", zone = "Asia/Tokyo", details = "Table for two")</ID>
+    <ID>MaxLineLength:ReminderScheduleTest.kt:ReminderScheduleTest$assertTrue(ReminderTimes.dateReminderMayBeDue("09/16/2026", zone, nineAm.plusMinutes(30).toInstant().toEpochMilli()))</ID>
+    <ID>MaxLineLength:ReminderScheduler.kt:ReminderScheduler$AlarmManagerCompat.setExactAndAllowWhileIdle(alarmManager, AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)</ID>
+    <ID>MaxLineLength:ReminderScheduler.kt:ReminderScheduler$alarmManager.setWindow(AlarmManager.RTC_WAKEUP, triggerAt, ReminderTimes.INEXACT_EVENT_WINDOW.toMillis(), pendingIntent)</ID>
+    <ID>MaxLineLength:SettingsInstrumentedTest.kt:SettingsInstrumentedTest$InstrumentationRegistry.getInstrumentation().uiAutomation.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)</ID>
+    <ID>MaxLineLength:TimeZonePicker.kt:TimeZoneChoices$private</ID>
+    <ID>MaxLineLength:TimeZonePicker.kt:TimeZoneChoices$return Locale.Builder().setRegion(region).build().getDisplayCountry(locale).takeIf { it.isNotEmpty() &amp;&amp; it != region }</ID>
+    <ID>MaxLineLength:TimeZonePicker.kt:TimeZoneChoices$val description = if (name == null) offset else context.getString(R.string.time_zone_name_and_offset, name, offset)</ID>
+    <ID>MaxLineLength:TimeZonePicker.kt:TimeZonePickerDialog$parentFragmentManager.setFragmentResult(REQUEST_KEY, Bundle().apply { putString(RESULT_ZONE_ID, adapter.getItem(position).id) })</ID>
+    <ID>MaxLineLength:TimeZonePicker.kt:TimeZonePickerDialog.TimeZoneAdapter$fun selectedPosition: Int?</ID>
+    <ID>MaxLineLength:TimeZonePicker.kt:TimeZonePickerDialog.TimeZoneAdapter$private inner</ID>
+    <ID>MaxLineLength:TripText.kt:val format = IcuDateFormat.getInstanceForSkeleton(if (DateFormat.is24HourFormat(this)) "Hm" else "hm", displayLocale())</ID>
+    <ID>MaxLineLength:VacationDetailActivity.kt:VacationDetailActivity$Toast.makeText(this@VacationDetailActivity, R.string.cannot_delete_vacation_with_events, Toast.LENGTH_LONG).show()</ID>
+    <ID>MaxLineLength:VacationDetailActivity.kt:VacationDetailActivity$Toast.makeText(this@VacationDetailActivity, R.string.end_date_must_follow_start, Toast.LENGTH_LONG).show()</ID>
+    <ID>MaxLineLength:VacationDetailActivity.kt:VacationDetailActivity$Toast.makeText(this@VacationDetailActivity, R.string.vacation_needs_title_and_dates, Toast.LENGTH_SHORT).show()</ID>
+    <ID>MaxLineLength:VacationsFragment.kt:VacationsFragment$ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED</ID>
+    <ID>NewLineAtEndOfFile:ExampleInstrumentedTest.kt:com.example.vagor.ExampleInstrumentedTest.kt</ID>
+    <ID>NewLineAtEndOfFile:ExampleUnitTest.kt:com.example.vagor.ExampleUnitTest.kt</ID>
+    <ID>NewLineAtEndOfFile:MainActivity.kt:com.example.vagor.MainActivity.kt</ID>
+    <ID>NewLineAtEndOfFile:Vacation.kt:com.example.vagor.entities.Vacation.kt</ID>
+    <ID>NewLineAtEndOfFile:VacationDAO.kt:com.example.vagor.dao.VacationDAO.kt</ID>
+    <ID>NewLineAtEndOfFile:VacationDetailActivity.kt:com.example.vagor.VacationDetailActivity.kt</ID>
+    <ID>ReturnCount:CalendarInsert.kt:CalendarTimes$fun vacationSpanMillis: Pair&lt;Long, Long&gt;?</ID>
+    <ID>ReturnCount:EventTimes.kt:EventTimes$fun startOf: ZonedDateTime?</ID>
+    <ID>ReturnCount:ExactAlarmOffer.kt:ExactAlarmOfferDialog.Companion$fun showAfterSave: Boolean</ID>
+    <ID>ReturnCount:MyReceiver.kt:MyReceiver$private fun showReminder</ID>
+    <ID>ReturnCount:ReminderSchedule.kt:ReminderKey.Companion$fun fromUriString: ReminderKey?</ID>
+    <ID>ReturnCount:ReminderScheduler.kt:ReminderScheduler$fun scheduleEvent</ID>
+    <ID>ReturnCount:ReminderScheduler.kt:ReminderScheduler$private fun schedule</ID>
+    <ID>ReturnCount:TimeZonePicker.kt:TimeZoneChoices$fun fieldText: String</ID>
+    <ID>ReturnCount:TimeZonePicker.kt:TimeZoneChoices$private fun label: String</ID>
+    <ID>ReturnCount:TripText.kt:fun Context.eventTimeText: String?</ID>
+    <ID>TooManyFunctions:ReminderScheduler.kt:ReminderScheduler</ID>
+    <ID>WildcardImport:ExampleInstrumentedTest.kt:import org.junit.Assert.*</ID>
+    <ID>WildcardImport:ExampleUnitTest.kt:import org.junit.Assert.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

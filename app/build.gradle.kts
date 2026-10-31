@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.ktlint)
 }
 
 android {
@@ -52,6 +54,27 @@ android {
 // migration can be tested against the version it upgrades from.
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
+}
+
+// detekt and ktlint were added on 2026-10-31. Their baselines list what they found in the code
+// then, so only findings in newer code fail the build.
+detekt {
+    buildUponDefaultConfig = true
+    source.setFrom("src/main/java", "src/test/java", "src/androidTest/java")
+    baseline = file("detekt-baseline.xml")
+}
+// The IntelliJ IDEA style is the Kotlin coding conventions (kotlin.code.style=official), and it
+// matched the existing code best, more so without trailing commas.
+ktlint {
+    version = libs.versions.ktlint.get()
+    baseline = file("ktlint-baseline.xml")
+    additionalEditorconfig.set(
+        mapOf(
+            "ktlint_code_style" to "intellij_idea",
+            "ij_kotlin_allow_trailing_comma" to "false",
+            "ij_kotlin_allow_trailing_comma_on_call_site" to "false"
+        )
+    )
 }
 
 dependencies {

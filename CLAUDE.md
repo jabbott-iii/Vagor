@@ -199,6 +199,7 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
 ./gradlew testDebugUnitTest                  # JVM tests in app/src/test
 ./gradlew testDebugUnitTest --tests 'com.example.vagor.DateValidatorsTest'
 ./gradlew lint
+./gradlew detekt ktlintCheck                 # Kotlin static analysis and style, against baselines
 ./gradlew connectedDebugAndroidTest          # Espresso tests; needs an emulator or device
 ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.example.vagor.HomeFlowInstrumentedTest
 ```
@@ -228,14 +229,23 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
   environment variables; without them `bundleRelease` is unsigned. Never commit a keystore or
   password.
 - CI (`.github/workflows/`, fixed on 2026-10-31 at the user's request) runs on GitHub's Ubuntu
-  runners, which come with the Android SDK. `ci.yml` runs `lint`, `assembleDebug` and
-  `testDebugUnitTest`, then `connectedAndroidTest` on an API 37 (`'37.0'`, quoted) `google_apis`
-  emulator, which needs the Enable KVM step to run fast enough. `security.yml` runs CodeQL, which
-  analyses Kotlin only by watching a build (`build-mode: manual`). CI calls only Gradle tasks that
-  exist: detekt, ktlint, SonarQube, OWASP dependency-check and coverage steps were removed,
-  because no plugin provided their tasks and `|| true` hid that. Adding one back means adding its
-  Gradle plugin first. CI can only be checked by pushing, so never report a workflow change as
-  passing until a run on GitHub shows it.
+  runners, which come with the Android SDK. `ci.yml` runs `lint`, `detekt`, `ktlintCheck`,
+  `assembleDebug` and `testDebugUnitTest`, then `connectedAndroidTest` on an API 37 (`'37.0'`,
+  quoted) `google_apis` emulator, which needs the Enable KVM step to run fast enough.
+  `security.yml` runs CodeQL, which analyses Kotlin only by watching a build
+  (`build-mode: manual`). CI calls only Gradle tasks that exist: SonarQube, OWASP
+  dependency-check and coverage steps were removed, because no plugin provided their tasks and
+  `|| true` hid that. Adding one back means adding its Gradle plugin first. CI can only be
+  checked by pushing, so never report a workflow change as passing until a run on GitHub shows it.
+- detekt and ktlint (added on 2026-10-31, asked for by the user) fail only on findings that
+  aren't in `app/detekt-baseline.xml` or `app/ktlint-baseline.xml`, which list what the code had
+  then. ktlint uses the IntelliJ IDEA code style without trailing commas; detekt uses its default
+  rules (lines up to 120 characters). detekt matches its baseline by rule and declaration, but
+  ktlint's records line numbers, so editing a file can bring back that file's old ktlint findings
+  below the edit: fix those by hand in that file. Never add new findings to a baseline to make a
+  check pass, and never run `ktlintFormat`: it ignores the baseline and reformats every file.
+  detekt is the 2.0 alpha, because the last stable release (1.23.8) predates Kotlin 2.1, AGP 9
+  and JDK 25.
 - Report exactly what you ran. If a change can only be checked on a device, say that it wasn't
   verified.
 
