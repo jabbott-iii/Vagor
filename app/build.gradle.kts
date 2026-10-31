@@ -56,23 +56,24 @@ ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
 }
 
-// detekt and ktlint were added on 2026-10-31. Their baselines list what they found in the code
-// then, so only findings in newer code fail the build.
+// detekt was added on 2026-10-31. Its baseline lists what it found in the code then, so only
+// findings in newer code fail the build.
 detekt {
     buildUponDefaultConfig = true
     source.setFrom("src/main/java", "src/test/java", "src/androidTest/java")
     baseline = file("detekt-baseline.xml")
 }
 // The IntelliJ IDEA style is the Kotlin coding conventions (kotlin.code.style=official), and it
-// matched the existing code best, more so without trailing commas.
+// matched the existing code best, more so without trailing commas. The code was formatted to it
+// once, on 2026-10-31, so ktlint needs no baseline. Lines wrap at detekt's 120 characters.
 ktlint {
     version = libs.versions.ktlint.get()
-    baseline = file("ktlint-baseline.xml")
     additionalEditorconfig.set(
         mapOf(
             "ktlint_code_style" to "intellij_idea",
             "ij_kotlin_allow_trailing_comma" to "false",
-            "ij_kotlin_allow_trailing_comma_on_call_site" to "false"
+            "ij_kotlin_allow_trailing_comma_on_call_site" to "false",
+            "max_line_length" to "120"
         )
     )
 }

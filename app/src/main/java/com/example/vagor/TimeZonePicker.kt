@@ -5,7 +5,6 @@ import android.app.Dialog
 import android.content.Context
 import android.icu.text.TimeZoneFormat
 import android.icu.text.TimeZoneNames
-import android.icu.util.TimeZone as IcuTimeZone
 import android.icu.util.ULocale
 import android.os.Bundle
 import android.util.AttributeSet
@@ -27,6 +26,7 @@ import java.text.Collator
 import java.text.Normalizer
 import java.util.Date
 import java.util.Locale
+import android.icu.util.TimeZone as IcuTimeZone
 
 // A time zone as the event form offers it: its main city and country, such as "Tokyo, Japan",
 // then its name and offset from GMT today, such as "Japan Standard Time (GMT+09:00)".
@@ -74,11 +74,24 @@ object TimeZoneChoices {
 
     private fun canonical(id: String): String = IcuTimeZone.getCanonicalID(id) ?: id
 
-    private fun choice(context: Context, id: String, locale: Locale, names: TimeZoneNames, gmt: TimeZoneFormat, now: Date): TimeZoneChoice {
+    private fun choice(
+        context: Context,
+        id: String,
+        locale: Locale,
+        names: TimeZoneNames,
+        gmt: TimeZoneFormat,
+        now: Date
+    ): TimeZoneChoice {
         val canonicalId = canonical(id)
         val offset = gmt.format(TimeZoneFormat.Style.LOCALIZED_GMT, IcuTimeZone.getTimeZone(canonicalId), now.time)
         val name = longName(canonicalId, names, now)
-        val description = if (name == null) offset else context.getString(R.string.time_zone_name_and_offset, name, offset)
+        val description = if (name ==
+            null
+        ) {
+            offset
+        } else {
+            context.getString(R.string.time_zone_name_and_offset, name, offset)
+        }
         return TimeZoneChoice(id, label(context, canonicalId, locale, names, now), description)
     }
 
@@ -98,7 +111,10 @@ object TimeZoneChoices {
 
     private fun country(id: String, locale: Locale): String? {
         val region = region(id) ?: return null
-        return Locale.Builder().setRegion(region).build().getDisplayCountry(locale).takeIf { it.isNotEmpty() && it != region }
+        return Locale.Builder().setRegion(region).build().getDisplayCountry(locale).takeIf {
+            it.isNotEmpty() &&
+                it != region
+        }
     }
 
     // The zone's country or region code, such as "JP"; null for zones that belong to none (ICU
@@ -133,7 +149,12 @@ class TimeZonePickerDialog : DialogFragment() {
         list.adapter = adapter
         list.emptyView = content.findViewById(R.id.timeZoneNoMatches)
         list.setOnItemClickListener { _, _, position, _ ->
-            parentFragmentManager.setFragmentResult(REQUEST_KEY, Bundle().apply { putString(RESULT_ZONE_ID, adapter.getItem(position).id) })
+            parentFragmentManager.setFragmentResult(
+                REQUEST_KEY,
+                Bundle().apply {
+                    putString(RESULT_ZONE_ID, adapter.getItem(position).id)
+                }
+            )
             dismiss()
         }
         search.doAfterTextChanged { adapter.filter(it.toString()) }
@@ -152,7 +173,8 @@ class TimeZonePickerDialog : DialogFragment() {
         return dialog
     }
 
-    private inner class TimeZoneAdapter(private val all: List<TimeZoneChoice>, private val selectedId: String?) : BaseAdapter() {
+    private inner class TimeZoneAdapter(private val all: List<TimeZoneChoice>, private val selectedId: String?) :
+        BaseAdapter() {
         private var shown = all
 
         // Zones whose label, name or ID contains every word typed.
@@ -162,7 +184,12 @@ class TimeZonePickerDialog : DialogFragment() {
             notifyDataSetChanged()
         }
 
-        fun selectedPosition(): Int? = selectedId?.let { id -> shown.indexOfFirst { TimeZoneChoices.sameZone(it.id, id) }.takeIf { it >= 0 } }
+        fun selectedPosition(): Int? = selectedId?.let { id ->
+            shown.indexOfFirst { TimeZoneChoices.sameZone(it.id, id) }.takeIf {
+                it >=
+                    0
+            }
+        }
 
         override fun getCount() = shown.size
         override fun getItem(position: Int) = shown[position]

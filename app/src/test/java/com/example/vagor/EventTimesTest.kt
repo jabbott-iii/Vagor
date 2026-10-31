@@ -52,7 +52,7 @@ class EventTimesTest {
             event("Breakfast", "07/06/2031", "08:00"),
             event("Old event", "07/06/2031"),
             event("Arrival", "07/05/2031", "22:00"),
-            event("aquarium", "07/06/2031", "12:00"),
+            event("aquarium", "07/06/2031", "12:00")
         )
 
         assertEquals(

@@ -24,7 +24,7 @@ class DashboardTest {
             listOf(
                 vacation(1, "12/20/2026", "12/27/2026", "Winter"),
                 vacation(2, "10/30/2026", "11/02/2026", "Soon"),
-                vacation(3, "03/01/2027", "03/05/2027", "Spring"),
+                vacation(3, "03/01/2027", "03/05/2027", "Spring")
             ),
             today
         )
@@ -37,7 +37,7 @@ class DashboardTest {
         val rows = Dashboard.rows(
             listOf(
                 vacation(1, "10/26/2026", "10/28/2026", "Tomorrow"),
-                vacation(2, "10/20/2026", "10/30/2026", "Now"),
+                vacation(2, "10/20/2026", "10/30/2026", "Now")
             ),
             today
         )
@@ -51,7 +51,7 @@ class DashboardTest {
             listOf(
                 vacation(1, "01/01/2025", "01/05/2025", "Long ago"),
                 vacation(2, "11/01/2026", "11/03/2026", "Upcoming"),
-                vacation(3, "10/01/2026", "10/24/2026", "Just ended"),
+                vacation(3, "10/01/2026", "10/24/2026", "Just ended")
             ),
             today
         )
@@ -78,7 +78,7 @@ class DashboardTest {
                 vacation(1, "9/16/2026", "09/18/2026", "Loose date"),
                 vacation(2, "01/01/2025", "01/05/2025", "Old"),
                 vacation(3, "11/05/2026", "11/01/2026", "Backwards"),
-                vacation(4, "11/01/2026", "11/03/2026", "Upcoming"),
+                vacation(4, "11/01/2026", "11/03/2026", "Upcoming")
             ),
             today
         )
@@ -92,7 +92,7 @@ class DashboardTest {
             listOf(
                 vacation(1, "11/01/2026", "11/09/2026", "Long"),
                 vacation(2, "11/01/2026", "11/03/2026", "b short"),
-                vacation(3, "11/01/2026", "11/03/2026", "A short"),
+                vacation(3, "11/01/2026", "11/03/2026", "A short")
             ),
             today
         )

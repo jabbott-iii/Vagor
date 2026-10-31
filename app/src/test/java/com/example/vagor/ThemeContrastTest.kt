@@ -49,7 +49,7 @@ class ThemeContrastTest {
             // primaryContainer, its selected AM or PM onPrimary on primary, and the rest onSurface
             // or onSurfaceVariant on the dialog (all above).
             "onBackground" to "surfaceContainerHighest",
-            "surface" to "primary",
+            "surface" to "primary"
         )
         assertPairs(pairs, 4.5)
     }
@@ -76,7 +76,7 @@ class ThemeContrastTest {
                 "primary" to "surfaceContainerHigh",
                 // Event time clock: the AM/PM outline. The selected AM or PM against the dialog is
                 // primary on surfaceContainerHigh, like the time zone list's tick (above).
-                "outline" to "surfaceContainerHigh",
+                "outline" to "surfaceContainerHigh"
             ),
             3.0
         )

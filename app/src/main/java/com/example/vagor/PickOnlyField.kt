@@ -28,20 +28,23 @@ fun EditText.makePickOnly(actionLabel: String, pick: () -> Unit) {
     ViewCompat.replaceAccessibilityAction(this, AccessibilityActionCompat.ACTION_CLICK, actionLabel, null)
     // To screen readers and other accessibility services the field is a drop-down list, not an
     // edit box: they can't type into it, and they read its name and then the picked value.
-    ViewCompat.setAccessibilityDelegate(this, object : AccessibilityDelegateCompat() {
-        override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfoCompat) {
-            super.onInitializeAccessibilityNodeInfo(host, info)
-            info.className = Spinner::class.java.name
-            info.isEditable = false
-            info.removeAction(AccessibilityActionCompat.ACTION_SET_TEXT)
-            info.contentDescription = if (text.isNullOrEmpty()) {
-                hint
-            } else {
-                context.getString(R.string.picked_field_with_value, hint, text)
+    ViewCompat.setAccessibilityDelegate(
+        this,
+        object : AccessibilityDelegateCompat() {
+            override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfoCompat) {
+                super.onInitializeAccessibilityNodeInfo(host, info)
+                info.className = Spinner::class.java.name
+                info.isEditable = false
+                info.removeAction(AccessibilityActionCompat.ACTION_SET_TEXT)
+                info.contentDescription = if (text.isNullOrEmpty()) {
+                    hint
+                } else {
+                    context.getString(R.string.picked_field_with_value, hint, text)
+                }
             }
-        }
 
-        override fun performAccessibilityAction(host: View, action: Int, args: Bundle?): Boolean =
-            action != AccessibilityNodeInfo.ACTION_SET_TEXT && super.performAccessibilityAction(host, action, args)
-    })
+            override fun performAccessibilityAction(host: View, action: Int, args: Bundle?): Boolean =
+                action != AccessibilityNodeInfo.ACTION_SET_TEXT && super.performAccessibilityAction(host, action, args)
+        }
+    )
 }

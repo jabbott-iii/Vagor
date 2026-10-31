@@ -31,9 +31,9 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
 
-// The Add to Calendar buttons, which open Google Calendar first. The intent each one sends is caught before it starts, so no
-// calendar app opens. Uses the app's vacation_database but deletes only the rows it inserts, and
-// cancels the alarms saving them set.
+// The Add to Calendar buttons, which open Google Calendar first. The intent each one sends is
+// caught before it starts, so no calendar app opens. Uses the app's vacation_database but deletes
+// only the rows it inserts, and cancels the alarms saving them set.
 @RunWith(AndroidJUnit4::class)
 class CalendarInsertInstrumentedTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
@@ -96,17 +96,36 @@ class CalendarInsertInstrumentedTest {
         assertTrue(sent.getBooleanExtra(CalendarContract.EXTRA_EVENT_ALL_DAY, false))
         assertNull(sent.getStringExtra(CalendarContract.Events.EVENT_TIMEZONE))
         val zone = ZoneId.systemDefault()
-        assertEquals(CalendarTimes.allDayMillis(LocalDate.of(2031, 7, 4), zone), sent.getLongExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, 0))
-        assertEquals(CalendarTimes.allDayEndMillis(LocalDate.of(2031, 7, 9), zone), sent.getLongExtra(CalendarContract.EXTRA_EVENT_END_TIME, 0))
+        assertEquals(
+            CalendarTimes.allDayMillis(LocalDate.of(2031, 7, 4), zone),
+            sent.getLongExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, 0)
+        )
+        assertEquals(
+            CalendarTimes.allDayEndMillis(LocalDate.of(2031, 7, 9), zone),
+            sent.getLongExtra(CalendarContract.EXTRA_EVENT_END_TIME, 0)
+        )
         assertEquals(vacation.title, sent.getStringExtra(CalendarContract.Events.TITLE))
-        val events = context.getString(R.string.calendar_vacation_events, context.getString(R.string.event_share_line, "Dinner", context.eventWhenText(dinner)))
+        val events = context.getString(
+            R.string.calendar_vacation_events,
+            context.getString(R.string.event_share_line, "Dinner", context.eventWhenText(dinner))
+        )
         assertEquals("Hotel Sakura\n\n$events", sent.getStringExtra(CalendarContract.Events.DESCRIPTION))
     }
 
     @Test
     fun anEventGoesInAtItsTimeInItsZoneForAnHour() {
         val vacation = insertVacation()
-        val event = insertEvent(Event("Dinner", "07/05/2031", vacation.id, details = "Table for two", time = "19:30", timeZone = "Asia/Tokyo"))
+        val event =
+            insertEvent(
+                Event(
+                    "Dinner",
+                    "07/05/2031",
+                    vacation.id,
+                    details = "Table for two",
+                    time = "19:30",
+                    timeZone = "Asia/Tokyo"
+                )
+            )
         val intent = Intent(context, EventDetailActivity::class.java)
             .putExtra("eventId", event.id)
             .putExtra("vacationId", vacation.id)
@@ -124,7 +143,11 @@ class CalendarInsertInstrumentedTest {
         assertEquals(false, sent.getBooleanExtra(CalendarContract.EXTRA_EVENT_ALL_DAY, false))
         assertEquals("Dinner", sent.getStringExtra(CalendarContract.Events.TITLE))
         // Some calendar apps show the time in the phone's zone, so the description names the event's.
-        val time = context.getString(R.string.event_share_time, context.eventTimeText(event), TimeZoneChoices.label(context, "Asia/Tokyo"))
+        val time = context.getString(
+            R.string.event_share_time,
+            context.eventTimeText(event),
+            TimeZoneChoices.label(context, "Asia/Tokyo")
+        )
         val partOf = context.getString(R.string.reminder_part_of_vacation, vacation.title)
         assertEquals(
             context.getString(R.string.calendar_event_description, "Table for two", "$time\n$partOf"),

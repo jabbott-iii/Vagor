@@ -28,6 +28,7 @@ fun calendarDayBackground(context: Context, isToday: Boolean): Drawable {
     )
     val todayRing = ContextCompat.getColorStateList(context, R.color.calendar_today_ring)!!
     val ringWidth = resources.getDimension(R.dimen.calendar_today_ring_width)
+
     // A drawable can sit in only one place, so each state gets its own.
     fun circle() = DayCircle(primary, 0f, maxDiameter, clearance)
     fun ring() = DayCircle(todayRing, ringWidth, maxDiameter, clearance)
@@ -51,7 +52,7 @@ class DayCircle(
     private val color: ColorStateList,
     private val strokeWidth: Float,
     private val maxDiameter: Float,
-    private val clearance: Float,
+    private val clearance: Float
 ) : Drawable() {
     private var drawableAlpha = 255
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).also {

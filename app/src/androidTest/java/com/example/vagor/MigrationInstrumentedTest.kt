@@ -32,7 +32,10 @@ class MigrationInstrumentedTest {
     @Test
     fun version1To2KeepsEveryVacationAndEvent() {
         helper.createDatabase(TEST_DATABASE, 1).use { db ->
-            db.execSQL("INSERT INTO vacations (title, hotel, startDate, endDate, id) VALUES ('Rome', 'Hotel Roma', '07/04/2031', '07/09/2031', 3)")
+            db.execSQL(
+                "INSERT INTO vacations (title, hotel, startDate, endDate, id) " +
+                    "VALUES ('Rome', 'Hotel Roma', '07/04/2031', '07/09/2031', 3)"
+            )
             db.execSQL("INSERT INTO excursions (title, date, vacationId, id) VALUES ('Colosseum', '07/05/2031', 3, 8)")
         }
 
@@ -45,7 +48,10 @@ class MigrationInstrumentedTest {
             .allowMainThreadQueries()
             .build()
         try {
-            assertEquals(Vacation("Rome", "Hotel Roma", "07/04/2031", "07/09/2031", 3), db.vacationDAO().getVacationById(3))
+            assertEquals(
+                Vacation("Rome", "Hotel Roma", "07/04/2031", "07/09/2031", 3),
+                db.vacationDAO().getVacationById(3)
+            )
             assertEquals(
                 Event("Colosseum", "07/05/2031", 3, 8, details = "", time = null, timeZone = null),
                 db.eventDAO().getEventById(8)

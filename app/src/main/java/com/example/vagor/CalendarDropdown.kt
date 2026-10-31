@@ -36,10 +36,7 @@ import java.util.Locale
 // The app draws the calendar itself rather than using the framework CalendarView, which follows
 // the phone's calendar system (a Buddhist-era year in Thai, for example) and marks today by colour
 // alone. This one is always Gregorian, like the stored dates, and marks today with a ring.
-fun EditText.attachCalendarDropdown(
-    earliest: () -> LocalDate? = { null },
-    latest: () -> LocalDate? = { null },
-) {
+fun EditText.attachCalendarDropdown(earliest: () -> LocalDate? = { null }, latest: () -> LocalDate? = { null }) {
     makePickOnly(context.getString(R.string.choose_date)) { showCalendarDropdown(earliest(), latest()) }
 }
 
@@ -74,7 +71,10 @@ private fun EditText.showCalendarDropdown(earliest: LocalDate?, latest: LocalDat
                 .build()
         ).apply {
             fillColor = ColorStateList.valueOf(
-                MaterialColors.getColor(this@showCalendarDropdown, com.google.android.material.R.attr.colorSurfaceContainerHigh)
+                MaterialColors.getColor(
+                    this@showCalendarDropdown,
+                    com.google.android.material.R.attr.colorSurfaceContainerHigh
+                )
             )
         }
     )
@@ -131,10 +131,11 @@ private class MonthGrid(
     private val first: LocalDate,
     private val last: LocalDate,
     private val selected: LocalDate,
-    private val onPick: (LocalDate) -> Unit,
+    private val onPick: (LocalDate) -> Unit
 ) {
     private val context = content.context
-    private val locale: Locale = ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.getDefault()
+    private val locale: Locale =
+        ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.getDefault()
     private val firstDayOfWeek = WeekFields.of(locale).firstDayOfWeek
     private val titleFormat = monthTitleFormat(locale)
     private val dayDescription = DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)
@@ -214,7 +215,10 @@ private class MonthGrid(
             day.isEnabled = !date.isBefore(first) && !date.isAfter(last)
             day.background = calendarDayBackground(context, isToday)
             day.setTextColor(
-                ContextCompat.getColorStateList(context, if (isToday) R.color.calendar_today_text else R.color.calendar_day_text)
+                ContextCompat.getColorStateList(
+                    context,
+                    if (isToday) R.color.calendar_today_text else R.color.calendar_day_text
+                )
             )
             // Accessibility services can click a disabled view, so check again.
             day.setOnClickListener { if (day.isEnabled) onPick(date) }
@@ -225,7 +229,12 @@ private class MonthGrid(
             val target = shownDays.firstOrNull { it.isSelected } ?: shownDays.firstOrNull()
                 ?: (if (leaving === next) previous.takeIf { showPrevious } else next.takeIf { showNext })
             if (hadFocus) target?.requestFocus()
-            if (hadAccessibilityFocus) target?.performAccessibilityAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null)
+            if (hadAccessibilityFocus) {
+                target?.performAccessibilityAction(
+                    AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS,
+                    null
+                )
+            }
         }
         // Invisible rather than gone, so the title stays centred.
         previous.visibility = if (showPrevious) View.VISIBLE else View.INVISIBLE

@@ -26,6 +26,7 @@ class EventListActivity : AppCompatActivity() {
     private var vacationId = 0
     private var vacation: Vacation? = null
     private var events: List<Event> = emptyList()
+
     // The event row that had keyboard focus before the screen was recreated (a rotation).
     private var focusedEventIdToRestore: Int? = null
 
@@ -57,7 +58,8 @@ class EventListActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.buttonShareVacation).setOnClickListener {
             val current = vacation ?: return@setOnClickListener
-            val withoutDetails = getString(R.string.vacation_share_template, current.title, current.startDate, current.endDate)
+            val withoutDetails =
+                getString(R.string.vacation_share_template, current.title, current.startDate, current.endDate)
             val vacationText = if (current.details.isBlank()) {
                 withoutDetails
             } else {
@@ -66,7 +68,9 @@ class EventListActivity : AppCompatActivity() {
             val shareText = if (events.isEmpty()) {
                 vacationText
             } else {
-                val eventLines = events.joinToString("\n") { getString(R.string.event_share_line, it.title, eventWhenText(it)) }
+                val eventLines = events.joinToString("\n") {
+                    getString(R.string.event_share_line, it.title, eventWhenText(it))
+                }
                 getString(R.string.vacation_share_with_events, vacationText, eventLines)
             }
             val shareIntent = Intent(Intent.ACTION_SEND)

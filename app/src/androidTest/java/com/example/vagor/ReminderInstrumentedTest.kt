@@ -201,7 +201,8 @@ class ReminderInstrumentedTest {
     @Test
     fun anEventReminderGivesItsStartTimeAndDetails() {
         val vacation = insertVacation(daysFromNow(0), daysFromNow(2))
-        val event = insertEvent(vacation, daysFromNow(1), time = "19:30", zone = "Asia/Tokyo", details = "Table for two")
+        val event =
+            insertEvent(vacation, daysFromNow(1), time = "19:30", zone = "Asia/Tokyo", details = "Table for two")
         val key = ReminderKey(ReminderType.EVENT, event.id)
 
         MyReceiver().onReceive(context, alarmIntentFor(key))
@@ -240,7 +241,11 @@ class ReminderInstrumentedTest {
 
         val eventStack = MyReceiver.eventReminderStack(context, vacation, event, eventKey).intents
         assertEquals(
-            listOf(HomeActivity::class.java.name, EventListActivity::class.java.name, EventDetailActivity::class.java.name),
+            listOf(
+                HomeActivity::class.java.name,
+                EventListActivity::class.java.name,
+                EventDetailActivity::class.java.name
+            ),
             eventStack.map { it.component!!.className }
         )
         assertEquals(vacation.id, eventStack[1].getIntExtra("vacationId", -1))
@@ -289,9 +294,17 @@ class ReminderInstrumentedTest {
         date: String,
         time: String? = null,
         zone: String? = null,
-        details: String = "",
+        details: String = ""
     ): Event {
-        val event = Event("Event-${UUID.randomUUID().toString().take(8)}", date, vacation.id, details = details, time = time, timeZone = zone)
+        val event =
+            Event(
+                "Event-${UUID.randomUUID().toString().take(8)}",
+                date,
+                vacation.id,
+                details = details,
+                time = time,
+                timeZone = zone
+            )
         val saved = event.copy(id = db.eventDAO().insert(event).toInt())
         insertedEvents += saved
         return saved
@@ -312,7 +325,12 @@ class ReminderInstrumentedTest {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         context.getSystemService(AlarmManager::class.java)
-            .setWindow(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 24 * 60 * 60 * 1000L, 10 * 60 * 1000L, pendingIntent)
+            .setWindow(
+                AlarmManager.RTC_WAKEUP,
+                System.currentTimeMillis() + 24 * 60 * 60 * 1000L,
+                10 * 60 * 1000L,
+                pendingIntent
+            )
     }
 
     private fun daysFromNow(days: Long): String =

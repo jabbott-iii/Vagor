@@ -1,7 +1,7 @@
 package com.example.vagor
 
-import android.content.Context
 import android.app.LocaleManager
+import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
@@ -139,7 +139,8 @@ class CalendarDropdownInstrumentedTest {
 
     @Test
     fun eventCalendarOffersOnlyTheVacationsDays() {
-        val vacation = Vacation("Trip-${UUID.randomUUID().toString().take(8)}", "Hotel Vagor", "07/04/2031", "07/09/2031")
+        val vacation =
+            Vacation("Trip-${UUID.randomUUID().toString().take(8)}", "Hotel Vagor", "07/04/2031", "07/09/2031")
         val saved = vacation.copy(id = db.vacationDAO().insert(vacation).toInt())
         insertedVacations += saved
         val intent = Intent(context, EventDetailActivity::class.java).putExtra("vacationId", saved.id)
@@ -193,7 +194,9 @@ class CalendarDropdownInstrumentedTest {
 
         // In a cell narrower than the circle's full size, it shrinks to fit instead of being cut off.
         val narrow = Bitmap.createBitmap(60, size, Bitmap.Config.ARGB_8888)
-        DayCircle(blue, strokeWidth = 4f, maxDiameter = 80f, clearance = 3f).apply { setBounds(0, 0, 60, size) }.draw(Canvas(narrow))
+        DayCircle(blue, strokeWidth = 4f, maxDiameter = 80f, clearance = 3f).apply {
+            setBounds(0, 0, 60, size)
+        }.draw(Canvas(narrow))
         assertEquals(Color.BLUE, narrow.getPixel(5, 50))
         assertEquals(Color.TRANSPARENT, narrow.getPixel(1, 50))
     }
@@ -235,8 +238,16 @@ class CalendarDropdownInstrumentedTest {
             context.getSystemService(LocaleManager::class.java).applicationLocales =
                 if (languageTag == null) LocaleList.getEmptyLocaleList() else LocaleList.forLanguageTags(languageTag)
         } else {
-            val locales = if (languageTag == null) LocaleListCompat.getEmptyLocaleList() else LocaleListCompat.forLanguageTags(languageTag)
-            InstrumentationRegistry.getInstrumentation().runOnMainSync { AppCompatDelegate.setApplicationLocales(locales) }
+            val locales = if (languageTag ==
+                null
+            ) {
+                LocaleListCompat.getEmptyLocaleList()
+            } else {
+                LocaleListCompat.forLanguageTags(languageTag)
+            }
+            InstrumentationRegistry.getInstrumentation().runOnMainSync {
+                AppCompatDelegate.setApplicationLocales(locales)
+            }
         }
     }
 

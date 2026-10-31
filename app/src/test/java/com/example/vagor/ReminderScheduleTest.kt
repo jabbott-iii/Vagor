@@ -111,7 +111,9 @@ class ReminderScheduleTest {
         val nineAm = ZonedDateTime.of(2026, 9, 16, 9, 0, 0, 0, zone)
         val midnight = ZonedDateTime.of(2026, 9, 17, 0, 0, 0, 0, zone).toInstant().toEpochMilli()
 
-        assertTrue(ReminderTimes.dateReminderMayBeDue("09/16/2026", zone, nineAm.plusMinutes(30).toInstant().toEpochMilli()))
+        assertTrue(
+            ReminderTimes.dateReminderMayBeDue("09/16/2026", zone, nineAm.plusMinutes(30).toInstant().toEpochMilli())
+        )
         assertTrue(ReminderTimes.dateReminderMayBeDue("09/16/2026", zone, midnight - 1))
         assertFalse(ReminderTimes.dateReminderMayBeDue("09/16/2026", zone, midnight))
         assertFalse(ReminderTimes.dateReminderMayBeDue("9/16/2026", zone, 0))
@@ -132,7 +134,7 @@ class ReminderScheduleTest {
             ReminderKey(ReminderType.VACATION_START, 7),
             ReminderKey(ReminderType.VACATION_END, 7),
             ReminderKey(ReminderType.EVENT, 7),
-            ReminderKey(ReminderType.VACATION_START, 2001),
+            ReminderKey(ReminderType.VACATION_START, 2001)
         )
         for (key in keys) {
             assertEquals(key, ReminderKey.fromUriString(key.toUriString()))

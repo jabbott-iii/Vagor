@@ -20,12 +20,11 @@ import java.time.ZoneId
 
 // The Alarms & reminders screen for Vagor, or null before Android 12, where exact alarms need no
 // permission.
-fun Context.exactAlarmSettingsIntent(): Intent? =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.fromParts("package", packageName, null))
-    } else {
-        null
-    }
+fun Context.exactAlarmSettingsIntent(): Intent? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.fromParts("package", packageName, null))
+} else {
+    null
+}
 
 // Opens Alarms & reminders, or Vagor's App info screen on a phone that lacks it.
 fun Context.openExactAlarmSettings() {
@@ -43,16 +42,15 @@ fun Context.openExactAlarmSettings() {
 // Offered after saving an event whose reminder can't be exact. Whichever way it's closed, the
 // event form behind it closes too, as it does after any save.
 class ExactAlarmOfferDialog : DialogFragment() {
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.exact_reminders_title)
-            .setMessage(R.string.exact_reminders_message)
-            .setPositiveButton(R.string.open_settings) { _, _ ->
-                requireContext().openExactAlarmSettings()
-                requireActivity().finish()
-            }
-            .setNegativeButton(R.string.not_now) { _, _ -> requireActivity().finish() }
-            .create()
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = MaterialAlertDialogBuilder(requireContext())
+        .setTitle(R.string.exact_reminders_title)
+        .setMessage(R.string.exact_reminders_message)
+        .setPositiveButton(R.string.open_settings) { _, _ ->
+            requireContext().openExactAlarmSettings()
+            requireActivity().finish()
+        }
+        .setNegativeButton(R.string.not_now) { _, _ -> requireActivity().finish() }
+        .create()
 
     // Back, or a tap outside the dialog.
     override fun onCancel(dialog: DialogInterface) {

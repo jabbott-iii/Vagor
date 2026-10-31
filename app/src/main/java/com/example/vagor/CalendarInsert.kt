@@ -43,7 +43,7 @@ object CalendarTimes {
     // midnight again, and where they skip from midnight to 1:00, 1:00 is the day's first moment.
     fun allDayEndMillis(date: LocalDate, phoneZone: ZoneId): Long = maxOf(
         allDayMillis(date, phoneZone) + ALL_DAY_END_INTO_DAY.toMillis(),
-        date.atTime(ALL_DAY_END_TIME).atZone(phoneZone).toInstant().toEpochMilli(),
+        date.atTime(ALL_DAY_END_TIME).atZone(phoneZone).toInstant().toEpochMilli()
     )
 
     // A vacation's first day and the end of its last, or null when a stored date is invalid.
@@ -65,7 +65,7 @@ fun Context.vacationCalendarIntent(vacation: Vacation, events: List<Event>): Int
     val eventLines = events.joinToString("\n") { getString(R.string.event_share_line, it.title, eventWhenText(it)) }
     val description = listOfNotNull(
         vacation.details.takeIf { it.isNotBlank() },
-        eventLines.takeIf { it.isNotEmpty() }?.let { getString(R.string.calendar_vacation_events, it) },
+        eventLines.takeIf { it.isNotEmpty() }?.let { getString(R.string.calendar_vacation_events, it) }
     ).joinToString("\n\n")
     return insertIntent(vacation.title, description, begin, end)
         .putExtra(CalendarContract.EXTRA_EVENT_ALL_DAY, true)
@@ -77,8 +77,10 @@ fun Context.eventCalendarIntent(event: Event, vacation: Vacation): Intent? {
     val start = EventTimes.startOf(event, ZoneId.systemDefault()) ?: return null
     val begin = start.toInstant().toEpochMilli()
     val timeAndVacation = listOfNotNull(
-        eventTimeText(event)?.let { getString(R.string.event_share_time, it, TimeZoneChoices.label(this, start.zone.id)) },
-        getString(R.string.reminder_part_of_vacation, vacation.title),
+        eventTimeText(event)?.let {
+            getString(R.string.event_share_time, it, TimeZoneChoices.label(this, start.zone.id))
+        },
+        getString(R.string.reminder_part_of_vacation, vacation.title)
     ).joinToString("\n")
     val description = if (event.details.isBlank()) {
         timeAndVacation

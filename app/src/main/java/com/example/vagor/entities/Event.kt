@@ -19,5 +19,5 @@ data class Event(
     @ColumnInfo(defaultValue = "")
     var details: String = "",
     var time: String? = null,
-    var timeZone: String? = null,
+    var timeZone: String? = null
 )

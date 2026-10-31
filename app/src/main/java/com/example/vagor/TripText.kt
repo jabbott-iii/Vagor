@@ -1,8 +1,6 @@
 package com.example.vagor
 
 import android.content.Context
-import android.icu.text.DateFormat as IcuDateFormat
-import android.icu.util.TimeZone as IcuTimeZone
 import android.text.format.DateFormat
 import androidx.core.os.ConfigurationCompat
 import com.example.vagor.entities.Event
@@ -12,14 +10,15 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.Date
 import java.util.Locale
+import android.icu.text.DateFormat as IcuDateFormat
+import android.icu.util.TimeZone as IcuTimeZone
 
 // Text shown for a vacation on the dashboard and on its own page.
-fun Context.vacationDateRange(vacation: Vacation): String =
-    if (vacation.startDate == vacation.endDate) {
-        vacation.startDate
-    } else {
-        getString(R.string.vacation_date_range, vacation.startDate, vacation.endDate)
-    }
+fun Context.vacationDateRange(vacation: Vacation): String = if (vacation.startDate == vacation.endDate) {
+    vacation.startDate
+} else {
+    getString(R.string.vacation_date_range, vacation.startDate, vacation.endDate)
+}
 
 fun Context.tripStatusText(status: TripStatus): String = when (status) {
     is TripStatus.Upcoming -> if (status.daysUntilStart == 1L) {
@@ -28,6 +27,7 @@ fun Context.tripStatusText(status: TripStatus): String = when (status) {
         val days = status.daysUntilStart.toInt()
         resources.getQuantityString(R.plurals.trip_starts_in_days, days, days)
     }
+
     is TripStatus.InProgress -> getString(
         when {
             status.startsToday && status.endsToday -> R.string.trip_today_only
@@ -36,17 +36,21 @@ fun Context.tripStatusText(status: TripStatus): String = when (status) {
             else -> R.string.trip_in_progress
         }
     )
+
     TripStatus.Past -> getString(R.string.trip_ended)
+
     TripStatus.InvalidDates -> getString(R.string.trip_check_dates)
 }
 
 // The language the app's text is shown in.
-fun Context.displayLocale(): Locale =
-    ConfigurationCompat.getLocales(resources.configuration)[0] ?: Locale.getDefault()
+fun Context.displayLocale(): Locale = ConfigurationCompat.getLocales(resources.configuration)[0] ?: Locale.getDefault()
 
 // A time of day in the phone's 12- or 24-hour style, such as "2:30 PM" or "14:30".
 fun Context.timeOfDayText(time: LocalTime): String {
-    val format = IcuDateFormat.getInstanceForSkeleton(if (DateFormat.is24HourFormat(this)) "Hm" else "hm", displayLocale())
+    val format = IcuDateFormat.getInstanceForSkeleton(
+        if (DateFormat.is24HourFormat(this)) "Hm" else "hm",
+        displayLocale()
+    )
     format.timeZone = IcuTimeZone.GMT_ZONE
     return format.format(Date(time.toSecondOfDay() * 1000L))
 }

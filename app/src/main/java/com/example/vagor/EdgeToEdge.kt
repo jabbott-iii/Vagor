@@ -30,7 +30,12 @@ fun AppCompatActivity.setEdgeToEdgeContentView(@LayoutRes layoutResId: Int) {
     ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
         val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
         val keyboard = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
-        view.setPadding(left + bars.left, top + bars.top, right + bars.right, bottom + if (keyboard > 0) 0 else bars.bottom)
+        view.setPadding(
+            left + bars.left,
+            top + bars.top,
+            right + bars.right,
+            bottom + if (keyboard > 0) 0 else bars.bottom
+        )
         view.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin = keyboard }
         // Passed on rather than consumed: on Android 10 and lower, consuming here would stop the
         // insets from reaching sibling views.
@@ -45,7 +50,7 @@ fun AppCompatActivity.setEdgeToEdgeContentView(@LayoutRes layoutResId: Int) {
 fun AppCompatActivity.setEdgeToEdgeContentViewWithBottomBar(
     @LayoutRes layoutResId: Int,
     @IdRes contentId: Int,
-    @IdRes barId: Int,
+    @IdRes barId: Int
 ) {
     // The bar gives the navigation bar its background, so no translucent scrim is drawn over it
     // with 3-button navigation. A fixed light or dark style, not auto: auto turns the system's

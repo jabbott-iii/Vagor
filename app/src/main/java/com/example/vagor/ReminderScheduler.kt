@@ -61,7 +61,12 @@ object ReminderScheduler {
         val pendingIntent = alarmIntent(context, key, PendingIntent.FLAG_UPDATE_CURRENT) ?: return
         if (AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) {
             try {
-                AlarmManagerCompat.setExactAndAllowWhileIdle(alarmManager, AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
+                AlarmManagerCompat.setExactAndAllowWhileIdle(
+                    alarmManager,
+                    AlarmManager.RTC_WAKEUP,
+                    triggerAt,
+                    pendingIntent
+                )
                 return
             } catch (_: SecurityException) {
                 // The permission was taken away since the check.
@@ -70,7 +75,12 @@ object ReminderScheduler {
         // Without exact alarms (Android 12 and later, until the user allows them): 50 to 60 minutes
         // before. Doze and Battery Saver can hold it until the phone wakes or Vagor is opened, which
         // may be after the event has started.
-        alarmManager.setWindow(AlarmManager.RTC_WAKEUP, triggerAt, ReminderTimes.INEXACT_EVENT_WINDOW.toMillis(), pendingIntent)
+        alarmManager.setWindow(
+            AlarmManager.RTC_WAKEUP,
+            triggerAt,
+            ReminderTimes.INEXACT_EVENT_WINDOW.toMillis(),
+            pendingIntent
+        )
     }
 
     // After the event form saves [event]. When its date, time or time zone changed, a reminder

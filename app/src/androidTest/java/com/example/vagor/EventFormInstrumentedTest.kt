@@ -90,7 +90,9 @@ class EventFormInstrumentedTest {
 
             // The clock opens at 9:00 AM for a new event.
             onView(withId(R.id.editEventTime)).perform(scrollTo(), click())
-            onView(withId(com.google.android.material.R.id.material_timepicker_ok_button)).inRoot(isDialog()).perform(click())
+            onView(
+                withId(com.google.android.material.R.id.material_timepicker_ok_button)
+            ).inRoot(isDialog()).perform(click())
             onView(withId(R.id.editEventTime)).check(matches(withText(context.timeOfDayText(LocalTime.of(9, 0)))))
             onView(withId(R.id.editEventDetails)).perform(replaceText("Tickets at the door\nBring ID"))
             closeSoftKeyboard()
@@ -110,16 +112,22 @@ class EventFormInstrumentedTest {
         val vacation = insertVacation()
 
         ActivityScenario.launch<EventDetailActivity>(newEventIntent(vacation)).use {
-            onView(withId(R.id.editEventTimeZone)).check(matches(withText(TimeZoneChoices.fieldText(context, ZoneId.systemDefault().id))))
+            onView(
+                withId(R.id.editEventTimeZone)
+            ).check(matches(withText(TimeZoneChoices.fieldText(context, ZoneId.systemDefault().id))))
             onView(withId(R.id.editEventTimeZone)).perform(scrollTo(), click())
 
             searchTimeZones("tokyo")
             onView(withId(R.id.timeZoneList)).inRoot(isDialog()).check { view, _ ->
                 assertEquals(1, (view as ListView).adapter.count)
             }
-            onData(anything()).inAdapterView(withId(R.id.timeZoneList)).inRoot(isDialog()).atPosition(0).perform(click())
+            onData(
+                anything()
+            ).inAdapterView(withId(R.id.timeZoneList)).inRoot(isDialog()).atPosition(0).perform(click())
             onView(withId(R.id.timeZoneList)).check(doesNotExist())
-            onView(withId(R.id.editEventTimeZone)).check(matches(withText(TimeZoneChoices.fieldText(context, "Asia/Tokyo"))))
+            onView(
+                withId(R.id.editEventTimeZone)
+            ).check(matches(withText(TimeZoneChoices.fieldText(context, "Asia/Tokyo"))))
 
             // Accents and case don't matter, and a search with no match says so.
             onView(withId(R.id.editEventTimeZone)).perform(scrollTo(), click())
@@ -130,7 +138,9 @@ class EventFormInstrumentedTest {
             searchTimeZones("nowhere at all")
             onView(withId(R.id.timeZoneNoMatches)).inRoot(isDialog()).check(matches(isDisplayed()))
             onView(withText(android.R.string.cancel)).inRoot(isDialog()).perform(click())
-            onView(withId(R.id.editEventTimeZone)).check(matches(withText(TimeZoneChoices.fieldText(context, "Asia/Tokyo"))))
+            onView(
+                withId(R.id.editEventTimeZone)
+            ).check(matches(withText(TimeZoneChoices.fieldText(context, "Asia/Tokyo"))))
 
             onView(withId(R.id.editEventTitle)).perform(replaceText("Sushi"))
             onView(withId(R.id.editEventDate)).perform(replaceText("07/05/2031"))
@@ -144,16 +154,30 @@ class EventFormInstrumentedTest {
     @Test
     fun anEventOpensWithItsTimeZoneAndDetails() {
         val vacation = insertVacation()
-        val event = insertEvent(Event("Louvre", "07/07/2031", vacation.id, details = "Pyramid entrance", time = "14:30", timeZone = "Europe/Paris"))
+        val event =
+            insertEvent(
+                Event(
+                    "Louvre",
+                    "07/07/2031",
+                    vacation.id,
+                    details = "Pyramid entrance",
+                    time = "14:30",
+                    timeZone = "Europe/Paris"
+                )
+            )
 
         ActivityScenario.launch<EventDetailActivity>(editEventIntent(event)).use {
             onView(withId(R.id.editEventTime)).check(matches(withText(context.timeOfDayText(LocalTime.of(14, 30)))))
-            onView(withId(R.id.editEventTimeZone)).check(matches(withText(TimeZoneChoices.fieldText(context, "Europe/Paris"))))
+            onView(
+                withId(R.id.editEventTimeZone)
+            ).check(matches(withText(TimeZoneChoices.fieldText(context, "Europe/Paris"))))
             onView(withId(R.id.editEventDetails)).check(matches(withText("Pyramid entrance")))
 
             // The clock opens at the event's time.
             onView(withId(R.id.editEventTime)).perform(scrollTo(), click())
-            onView(withId(com.google.android.material.R.id.material_timepicker_ok_button)).inRoot(isDialog()).perform(click())
+            onView(
+                withId(com.google.android.material.R.id.material_timepicker_ok_button)
+            ).inRoot(isDialog()).perform(click())
             onView(withId(R.id.buttonSaveEvent)).perform(scrollTo(), click())
         }
 
@@ -179,7 +203,9 @@ class EventFormInstrumentedTest {
 
         ActivityScenario.launch<EventDetailActivity>(editEventIntent(event)).use {
             onView(withId(R.id.editEventTime)).check(matches(withText("")))
-            onView(withId(R.id.editEventTimeZone)).check(matches(withText(TimeZoneChoices.fieldText(context, ZoneId.systemDefault().id))))
+            onView(
+                withId(R.id.editEventTimeZone)
+            ).check(matches(withText(TimeZoneChoices.fieldText(context, ZoneId.systemDefault().id))))
             onView(withId(R.id.buttonSaveEvent)).perform(scrollTo(), click())
             assertEquals(event, db.eventDAO().getEventById(event.id))
 
@@ -199,20 +225,30 @@ class EventFormInstrumentedTest {
         ActivityScenario.launch<EventDetailActivity>(newEventIntent(vacation)).use { scenario ->
             onView(withId(R.id.editEventTimeZone)).perform(scrollTo(), click())
             searchTimeZones("tokyo")
-            onData(anything()).inAdapterView(withId(R.id.timeZoneList)).inRoot(isDialog()).atPosition(0).perform(click())
-            onView(withId(R.id.editEventTimeZone)).check(matches(withText(TimeZoneChoices.fieldText(context, "Asia/Tokyo"))))
+            onData(
+                anything()
+            ).inAdapterView(withId(R.id.timeZoneList)).inRoot(isDialog()).atPosition(0).perform(click())
+            onView(
+                withId(R.id.editEventTimeZone)
+            ).check(matches(withText(TimeZoneChoices.fieldText(context, "Asia/Tokyo"))))
             onView(withId(R.id.editEventTime)).perform(scrollTo(), click())
-            onView(withId(com.google.android.material.R.id.material_timepicker_ok_button)).inRoot(isDialog()).check(matches(isDisplayed()))
+            onView(
+                withId(com.google.android.material.R.id.material_timepicker_ok_button)
+            ).inRoot(isDialog()).check(matches(isDisplayed()))
 
             scenario.recreate()
 
-            onView(withId(com.google.android.material.R.id.material_timepicker_ok_button)).inRoot(isDialog()).perform(click())
+            onView(
+                withId(com.google.android.material.R.id.material_timepicker_ok_button)
+            ).inRoot(isDialog()).perform(click())
             onView(withId(R.id.editEventTime)).check(matches(withText(context.timeOfDayText(LocalTime.of(9, 0)))))
 
             scenario.recreate()
 
             onView(withId(R.id.editEventTime)).check(matches(withText(context.timeOfDayText(LocalTime.of(9, 0)))))
-            onView(withId(R.id.editEventTimeZone)).check(matches(withText(TimeZoneChoices.fieldText(context, "Asia/Tokyo"))))
+            onView(
+                withId(R.id.editEventTimeZone)
+            ).check(matches(withText(TimeZoneChoices.fieldText(context, "Asia/Tokyo"))))
             onView(withId(R.id.editEventTitle)).perform(replaceText("Ramen"))
             onView(withId(R.id.editEventDate)).perform(replaceText("07/05/2031"))
             onView(withId(R.id.buttonSaveEvent)).perform(scrollTo(), click())
@@ -238,7 +274,17 @@ class EventFormInstrumentedTest {
     fun vacationPageShowsEachEventsTimeAndDetailsInTimeOrder() {
         val vacation = insertVacation()
         val dinner = insertEvent(Event("Dinner", "07/05/2031", vacation.id, time = "19:00", timeZone = "Asia/Tokyo"))
-        val breakfast = insertEvent(Event("Breakfast", "07/05/2031", vacation.id, details = "Hotel lobby", time = "08:00", timeZone = "Asia/Tokyo"))
+        val breakfast =
+            insertEvent(
+                Event(
+                    "Breakfast",
+                    "07/05/2031",
+                    vacation.id,
+                    details = "Hotel lobby",
+                    time = "08:00",
+                    timeZone = "Asia/Tokyo"
+                )
+            )
         val old = insertEvent(Event("Old event", "07/05/2031", vacation.id))
         val intent = Intent(context, EventListActivity::class.java).putExtra("vacationId", vacation.id)
 
@@ -248,9 +294,17 @@ class EventFormInstrumentedTest {
                 fun row(index: Int): View = rows.getChildAt(index)
                 fun text(index: Int, id: Int) = row(index).findViewById<TextView>(id).text.toString()
 
-                assertEquals(listOf("Old event", "Breakfast", "Dinner"), (0 until rows.childCount).map { text(it, R.id.eventTitle) })
+                assertEquals(
+                    listOf("Old event", "Breakfast", "Dinner"),
+                    (0 until rows.childCount).map {
+                        text(it, R.id.eventTitle)
+                    }
+                )
                 assertEquals(old.date, text(0, R.id.eventDate))
-                assertEquals(context.getString(R.string.event_date_and_time, breakfast.date, context.eventTimeText(breakfast)), text(1, R.id.eventDate))
+                assertEquals(
+                    context.getString(R.string.event_date_and_time, breakfast.date, context.eventTimeText(breakfast)),
+                    text(1, R.id.eventDate)
+                )
                 assertTrue(text(1, R.id.eventDate).contains(context.timeOfDayText(LocalTime.of(8, 0))))
                 assertEquals("Hotel lobby", text(1, R.id.eventDetails))
                 assertTrue(row(1).findViewById<View>(R.id.eventDetails).isVisible)
@@ -373,7 +427,9 @@ class EventFormInstrumentedTest {
 
     private fun pickDefaultTime() {
         onView(withId(R.id.editEventTime)).perform(scrollTo(), click())
-        onView(withId(com.google.android.material.R.id.material_timepicker_ok_button)).inRoot(isDialog()).perform(click())
+        onView(
+            withId(com.google.android.material.R.id.material_timepicker_ok_button)
+        ).inRoot(isDialog()).perform(click())
     }
 
     private fun assertPickOnly(view: View, nameId: Int) {
@@ -395,8 +451,7 @@ class EventFormInstrumentedTest {
         Intent(context, EventDetailActivity::class.java).putExtra("vacationId", vacation.id)
 
     // What the vacation page and a reminder send; the form reads the event itself.
-    private fun editEventIntent(event: Event) =
-        Intent(context, EventDetailActivity::class.java)
-            .putExtra("eventId", event.id)
-            .putExtra("vacationId", event.vacationId)
+    private fun editEventIntent(event: Event) = Intent(context, EventDetailActivity::class.java)
+        .putExtra("eventId", event.id)
+        .putExtra("vacationId", event.vacationId)
 }

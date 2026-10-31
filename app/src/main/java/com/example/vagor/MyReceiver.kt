@@ -33,7 +33,8 @@ class MyReceiver : BroadcastReceiver() {
 
     private fun showReminder(context: Context, db: AppDatabase, key: ReminderKey) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
         ) {
             return
         }
@@ -55,7 +56,9 @@ class MyReceiver : BroadcastReceiver() {
                 val dates = context.vacationDateRange(vacation)
                 builder.setContentTitle(context.getString(message, vacation.title))
                     .setContentText(dates)
-                    .setContentIntent(vacationReminderStack(context, vacation, key).getPendingIntent(0, PENDING_INTENT_FLAGS))
+                    .setContentIntent(
+                        vacationReminderStack(context, vacation, key).getPendingIntent(0, PENDING_INTENT_FLAGS)
+                    )
                 // Expanded, the reminder also shows the trip details.
                 if (vacation.details.isNotBlank()) {
                     builder.setStyle(
@@ -64,17 +67,21 @@ class MyReceiver : BroadcastReceiver() {
                     )
                 }
             }
+
             ReminderType.EVENT -> {
                 val event = db.eventDAO().getEventById(key.itemId) ?: return
                 val vacation = db.vacationDAO().getVacationById(event.vacationId) ?: return
                 // An hour ahead the reminder gives the start time, which stays true however late
                 // it's read. An event saved without a time is reminded on the morning of its date.
-                val title = context.eventTimeText(event)?.let { context.getString(R.string.event_starts_at, event.title, it) }
-                    ?: context.getString(R.string.event_happening_today, event.title)
+                val title =
+                    context.eventTimeText(event)?.let { context.getString(R.string.event_starts_at, event.title, it) }
+                        ?: context.getString(R.string.event_happening_today, event.title)
                 val partOf = context.getString(R.string.reminder_part_of_vacation, vacation.title)
                 builder.setContentTitle(title)
                     .setContentText(partOf)
-                    .setContentIntent(eventReminderStack(context, vacation, event, key).getPendingIntent(0, PENDING_INTENT_FLAGS))
+                    .setContentIntent(
+                        eventReminderStack(context, vacation, event, key).getPendingIntent(0, PENDING_INTENT_FLAGS)
+                    )
                 // Expanded, the reminder also shows the event's details.
                 if (event.details.isNotBlank()) {
                     builder.setStyle(
@@ -99,20 +106,23 @@ class MyReceiver : BroadcastReceiver() {
                 .addNextIntent(Intent(context, HomeActivity::class.java))
                 .addNextIntent(vacationPageIntent(context, vacation).setData(key.toUriString().toUri()))
 
-        internal fun eventReminderStack(context: Context, vacation: Vacation, event: Event, key: ReminderKey): TaskStackBuilder =
-            TaskStackBuilder.create(context)
-                .addNextIntent(Intent(context, HomeActivity::class.java))
-                .addNextIntent(vacationPageIntent(context, vacation))
-                .addNextIntent(eventDetailIntent(context, event).setData(key.toUriString().toUri()))
+        internal fun eventReminderStack(
+            context: Context,
+            vacation: Vacation,
+            event: Event,
+            key: ReminderKey
+        ): TaskStackBuilder = TaskStackBuilder.create(context)
+            .addNextIntent(Intent(context, HomeActivity::class.java))
+            .addNextIntent(vacationPageIntent(context, vacation))
+            .addNextIntent(eventDetailIntent(context, event).setData(key.toUriString().toUri()))
 
         // The vacation's page, with its details and events.
         private fun vacationPageIntent(context: Context, vacation: Vacation) =
             Intent(context, EventListActivity::class.java)
                 .putExtra("vacationId", vacation.id)
 
-        private fun eventDetailIntent(context: Context, event: Event) =
-            Intent(context, EventDetailActivity::class.java)
-                .putExtra("eventId", event.id)
-                .putExtra("vacationId", event.vacationId)
+        private fun eventDetailIntent(context: Context, event: Event) = Intent(context, EventDetailActivity::class.java)
+            .putExtra("eventId", event.id)
+            .putExtra("vacationId", event.vacationId)
     }
 }

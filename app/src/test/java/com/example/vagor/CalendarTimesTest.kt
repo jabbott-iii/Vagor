@@ -42,7 +42,10 @@ class CalendarTimesTest {
     @Test
     fun aVacationEndsInsideItsLastDay() {
         for (zone in zones) {
-            val (begin, end) = CalendarTimes.vacationSpanMillis(Vacation("Trip", "", "10/27/2026", "10/29/2026"), zone)!!
+            val (begin, end) = CalendarTimes.vacationSpanMillis(
+                Vacation("Trip", "", "10/27/2026", "10/29/2026"),
+                zone
+            )!!
 
             for (readIn in listOf(zone, ZoneOffset.UTC)) {
                 assertEquals("$zone read in $readIn", LocalDate.of(2026, 10, 27), dateOf(begin, readIn))
@@ -55,7 +58,8 @@ class CalendarTimesTest {
     // is midnight again.
     @Test
     fun aVacationEndingWhenClocksGoBackOverMidnightEndsInsideItsLastDay() {
-        val cases = mapOf("Atlantic/Azores" to LocalDate.of(2026, 10, 25), "America/Havana" to LocalDate.of(2026, 11, 1))
+        val cases =
+            mapOf("Atlantic/Azores" to LocalDate.of(2026, 10, 25), "America/Havana" to LocalDate.of(2026, 11, 1))
         for ((id, last) in cases) {
             val zone = ZoneId.of(id)
             val end = CalendarTimes.allDayEndMillis(last, zone)
