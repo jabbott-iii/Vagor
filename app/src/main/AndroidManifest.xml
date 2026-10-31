@@ -20,7 +20,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Vagor">
 
-        <activity android:name=".MainActivity" />
         <activity
             android:name=".VacationDetailActivity"
             android:windowSoftInputMode="adjustResize|stateHidden" />

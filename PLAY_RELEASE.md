@@ -27,6 +27,9 @@ can only be done by the developer.
   permissions declaration at the first upload, answer it with that use (a reminder an hour before
   each event the user plans), and allow for a review that can take several weeks.
 - **No native code**, so the 16 KB page size requirement doesn't apply.
+- **R8 on release builds** (added 2026-10-31): the code is shrunk and obfuscated and unused
+  resources are removed. The bundle carries R8's mapping file, and Play uses it to deobfuscate
+  crash reports, so there's no separate deobfuscation file to upload.
 - **Signed App Bundle** support (below).
 
 ## 1. Create an upload key (once)

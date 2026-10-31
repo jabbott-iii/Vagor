@@ -123,7 +123,6 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   receiver; posts the notification), `ReminderRescheduleReceiver.kt`, `ThemeSettings.kt`,
   `VagorApplication.kt` (applies the saved theme before any screen and rebuilds the reminders in
   each new process) and `EdgeToEdge.kt`.
-  `MainActivity` and `activity_main.xml` are unused template leftovers.
 - The `Event` entity maps to the table `excursions` (`@Entity(tableName = "excursions")`), and
   `EventDAO` queries that table. Don't rename the table without a migration. Likewise
   `Vacation.details` (trip details) maps to the old column `hotel` (`@ColumnInfo(name = "hotel")`).
@@ -163,7 +162,9 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   itself if the event was deleted. The vacation page (`EventListActivity`) takes only
   `vacationId` and reloads the vacation from the database on every resume, closing itself if the
   vacation was deleted.
-- User-visible text goes in `res/values/strings.xml`.
+- User-visible text goes in `res/values/strings.xml`. The app is English only, and
+  `androidResources.localeFilters` keeps the libraries' translations out, so their text (the time
+  picker's, for example) stays English too. Adding a language means adding it there.
 - Dates are stored as `MM/dd/yyyy` strings. Parse and validate them only through
   `DateValidators`, which is strict: exactly two-digit month and day, four-digit year, a real
   calendar date, nothing before or after. Date fields are filled only from the drop-down calendar
@@ -229,9 +230,19 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
   `VAGOR_UPLOAD_KEYSTORE_PASSWORD`, `VAGOR_UPLOAD_KEY_ALIAS` and `VAGOR_UPLOAD_KEY_PASSWORD`
   environment variables; without them `bundleRelease` is unsigned. Never commit a keystore or
   password.
+- Release builds run R8 (`optimization { enable = true }`, turned on 2026-10-31): it shrinks,
+  optimizes and obfuscates the code and removes unused resources. Debug builds and the
+  instrumented tests don't use it, so check a change that relies on reflection, class names or
+  resources looked up by name in a release build on an emulator. Keep rules go in
+  `app/src/main/keepRules/*.keep`; none are needed today, because the libraries ship their own
+  (Room keeps its generated `_Impl`, and Fragment keeps every fragment's no-argument constructor).
+  The bundle carries R8's mapping file, which Play uses to deobfuscate crash reports; keep
+  `app/build/outputs/mapping/release/mapping.txt` with each uploaded build to read stack traces
+  yourself.
 - CI (`.github/workflows/`, fixed on 2026-10-31 at the user's request) runs on GitHub's Ubuntu
   runners, which come with the Android SDK. `ci.yml` runs `lint`, `detekt`, `ktlintCheck`,
-  `assembleDebug` and `testDebugUnitTest`, then `connectedAndroidTest` on an API 37 (`'37.0'`,
+  `assembleDebug`, an unsigned `bundleRelease` (to run R8 and lint's release checks) and
+  `testDebugUnitTest`, then `connectedAndroidTest` on an API 37 (`'37.0'`,
   quoted) `google_apis` emulator, which needs the Enable KVM step to run fast enough. It also
   needs the step that installs command-line tools 22.0 (added 2026-10-31 after the emulator
   timed out booting): the runner's own tools, 12.0 on Ubuntu 24.04, give an `android-37.0` AVD

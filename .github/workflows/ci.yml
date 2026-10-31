@@ -44,6 +44,11 @@ jobs:
     - name: Build Debug APK
       run: ./gradlew assembleDebug --no-daemon
 
+    # The bundle that goes to Play, unsigned because CI has no upload key. Only release builds run
+    # R8 and lint's release checks (lintVital).
+    - name: Build Release Bundle
+      run: ./gradlew bundleRelease --no-daemon
+
     - name: Run Unit Tests
       run: ./gradlew testDebugUnitTest --no-daemon
 

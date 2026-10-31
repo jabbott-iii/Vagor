@@ -36,9 +36,19 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8 shrinks, optimizes and obfuscates the code and removes unused resources, with
+            // Android's default keep rules plus the app's own in src/main/keepRules. The bundle
+            // carries R8's mapping file, which Play uses to deobfuscate crash reports.
+            optimization {
+                enable = true
+            }
             signingConfig = signingConfigs.findByName("release")
         }
+    }
+    // Vagor's own text is only in English. Without this, the libraries' translations would show
+    // some of their text (the time picker's, for example) in the phone's language.
+    androidResources {
+        localeFilters += "en"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
