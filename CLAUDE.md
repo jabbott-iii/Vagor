@@ -227,10 +227,15 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
   `VAGOR_UPLOAD_KEYSTORE_PASSWORD`, `VAGOR_UPLOAD_KEY_ALIAS` and `VAGOR_UPLOAD_KEY_PASSWORD`
   environment variables; without them `bundleRelease` is unsigned. Never commit a keystore or
   password.
-- CI (`.github/workflows/`) also calls `detekt`, `ktlintCheck`, `sonarqube`,
-  `dependencyCheckAnalyze` and `testDebugUnitTestCoverage`. None of those tasks
-  exist in this build because no plugin provides them. Those steps use `|| true` or
-  `continue-on-error`, so a green run says nothing about them. Never report them as passing.
+- CI (`.github/workflows/`, fixed on 2026-10-31 at the user's request) runs on GitHub's Ubuntu
+  runners, which come with the Android SDK. `ci.yml` runs `lint`, `assembleDebug` and
+  `testDebugUnitTest`, then `connectedAndroidTest` on an API 37 (`'37.0'`, quoted) `google_apis`
+  emulator, which needs the Enable KVM step to run fast enough. `security.yml` runs CodeQL, which
+  analyses Kotlin only by watching a build (`build-mode: manual`). CI calls only Gradle tasks that
+  exist: detekt, ktlint, SonarQube, OWASP dependency-check and coverage steps were removed,
+  because no plugin provided their tasks and `|| true` hid that. Adding one back means adding its
+  Gradle plugin first. CI can only be checked by pushing, so never report a workflow change as
+  passing until a run on GitHub shows it.
 - Report exactly what you ran. If a change can only be checked on a device, say that it wasn't
   verified.
 
