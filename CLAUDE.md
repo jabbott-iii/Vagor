@@ -123,8 +123,10 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   `CalendarTimes`), `ReminderSchedule.kt` (plain-Kotlin reminder times and
   identities), `ReminderScheduler.kt` (sets and cancels alarms), `ExactAlarmOffer.kt` (offers
   Android's Alarms & reminders screen), `NotificationsOff.kt` (the notifications-off dialog and
-  the way to Android's notification settings), `LicenseText.kt` (reflows the license text for
-  the Third-Party Licenses dialog), `MyReceiver.kt` (the alarm
+  the way to Android's notification settings), `Hibernation.kt` (whether Android may pause an
+  unused Vagor, the way to its App info, and the offer after saving a trip far ahead),
+  `MessageDialog.kt` (a message with an OK button, as a `DialogFragment`), `LicenseText.kt`
+  (reflows the license text for the Third-Party Licenses dialog), `MyReceiver.kt` (the alarm
   receiver; posts the notification), `ReminderRescheduleReceiver.kt`, `ThemeSettings.kt`,
   `VagorApplication.kt` (applies the saved theme before any screen and rebuilds the reminders in
   each new process) and `EdgeToEdge.kt`.
@@ -151,8 +153,10 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   (`ic_launcher_background.xml`), inside the adaptive icon's 66dp safe circle, so the Android 12+
   splash screen shows it whole. The foreground is also the monochrome layer for themed icons, so
   keep it one flat colour with no shadow. minSdk 26 always uses `mipmap-anydpi`, so there are no
-  density PNGs. The Play icon and feature graphic (`fastlane/metadata/android/en-US/images/`)
-  are drawn from the same paths: redraw them when the icon changes.
+  density PNGs. The Play icon (`fastlane/metadata/android/en-US/images/`) is drawn from the same
+  paths: redraw it when the icon changes. The feature graphic is the name and tagline above a
+  dotted route between two map pins, with no icon, device or screenshot, as Play's feature graphic
+  guidelines ask (redrawn 2026-11-01).
 - The store listing lives in `fastlane/metadata/android/en-US/` (fastlane's layout, though nothing
   uses fastlane): the title, descriptions and release notes as text files, the Play graphics, and
   six phone screenshots of invented trips (taken 2026-11-01 at 1080×1920). PLAY_RELEASE.md step 6
@@ -178,6 +182,10 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   `findViewById`, and `ListView` with `ArrayAdapter` for the dashboard. The vacation page shows
   its few events as plain rows in a `ScrollView`, so focus follows the screen. The code uses no Compose, ViewBinding,
   ViewModel, DI framework or coroutines. Don't introduce them without the user's approval.
+- Every dialog is a `DialogFragment` (`MessageDialog` for a message with an OK button), so it's
+  still open after a rotation; a dialog shown straight from `MaterialAlertDialogBuilder` closes
+  when the screen is recreated (fixed 2026-11-01). A form that closes after a save disables its
+  buttons first, so a second tap, or one behind an offer that keeps it open, can't save twice.
 - Every Activity, Fragment or receiver that reads or writes data opens its own Room instance with
   `AppDatabase.open()` (main-thread queries allowed) and closes it again (screens in `onDestroy`,
   receivers in `finally`), and DAOs are synchronous. Follow that
@@ -262,7 +270,11 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
   and it flips the dark mode setting and restores it. `CalendarDropdownInstrumentedTest` switches the app's language to Thai, US English
   and British English in two tests and back. The home flow, reminder, settings and event form tests grant the notification
   permission and leave it granted. `SettingsInstrumentedTest` opens Android's Alarms & reminders
-  screen and leaves it with Back. The event form's tests of the exact alarm offer run only while
+  screen and Vagor's App info and leaves them with Back, and the event form and home flow tests
+  open them from their offers and leave them through `leaveOtherAppsScreen()`, which waits until
+  Android has closed the screen (an unhandled Back once closed the next test's screen on CI). The
+  home flow's tests of the hibernation offer run only on Android 12+ while Android may pause
+  Vagor, as it may after any install. The event form's tests of the exact alarm offer run only while
   exact alarms are off, as they are after a fresh install on Android 14+; never take
   `SCHEDULE_EXACT_ALARM` away during a test, because Android stops the app, test and all.
   Run instrumented tests
@@ -317,10 +329,20 @@ wakes. Decided on 2026-10-26: an event's reminder fires an hour before it starts
 time zone (`ReminderTimes.eventTriggerAtMillis`), with an exact alarm
 (`setExactAndAllowWhileIdle`) whenever Android allows one: always below Android 12, and on
 Android 12+ while Alarms & reminders (`SCHEDULE_EXACT_ALARM`) is on, which it is by default only
-on Android 12 and 13. Without that it uses `setWindow` for 50 to 60 minutes before, which Doze
-holds to its next maintenance window and Battery Saver holds until it's off or Vagor is opened,
-so it can come after the event. An event saved before events had a time keeps the 9:00 AM
-reminder on its date. A reminder whose moment has passed is never set, so one missed while the
+on Android 12 and 13. Without that it uses an inexact allow-while-idle alarm
+(`setAndAllowWhileIdle`, like the vacation reminders on Android 12+), which Android 12+ delivers
+within an hour after its moment, so any time in the hour before the event, and near its start on
+a phone that nothing else wakes in that hour (Android delivers a wakeup alarm when one reaches the
+end of its window). Changed from `setWindow` for 50 to 60 minutes before on 2026-11-01, with the
+user: Doze and Battery Saver could hold that until after the event, and allow-while-idle fires
+through both, within a quota.
+Android 12+ gives an app's inexact allow-while-idle alarms `FLAG_ALLOW_WHILE_IDLE_COMPAT`, which
+app standby buckets still limit: once Android puts an unused Vagor in the restricted bucket
+(after 8 days without opening it or tapping its notifications, on Android 13+), only one inexact
+alarm a day is sure to come on time. A Vagor notification the user sees moves Vagor to the working
+set bucket for 12 hours, and charging suspends bucket limits, but no alarm an app can set without
+exact-alarm permission escapes them. Allowing Alarms & reminders does, which the app's text says. An event saved before
+events had a time keeps the 9:00 AM reminder on its date. A reminder whose moment has passed is never set, so one missed while the
 phone was off isn't shown late. Changing any of these is the user's call.
 
 - Post a `NotificationCompat` notification on an app notification channel (channels are required
@@ -349,7 +371,7 @@ phone was off isn't shown late. Changing any of these is the user's call.
   it rebuilds. On `TIME_SET` and `TIMEZONE_CHANGED` (dates saved without a time zone follow the
   phone's) it always rebuilds, because they can reach a process that is already running. Taking
   exact alarms away sends nothing: Android deletes the exact alarms and kills the app (not a force
-  stop), and the event reminders come back as `setWindow` the next time anything starts the app.
+  stop), and the event reminders come back inexact the next time anything starts the app.
   Setting Vagor's battery use to Unrestricted also allows exact alarms, with no broadcast.
 - A rebuild never cancels a reminder whose moment has passed but which may still be on its way,
   since inexact alarms can come late: an event's is kept until the event starts, and a 9:00 AM
@@ -365,6 +387,20 @@ phone was off isn't shown late. Changing any of these is the user's call.
   gives every notification without a timeout one of 72 hours anyway. The timeout is a duration
   fixed when the reminder is posted, so a 9:00 AM one leaves at midnight in the zone the phone had
   then, even if the phone's zone changes after.
+- From Android 12, Android hibernates an app that hasn't been opened for about three months
+  (checked about every 15 days): it stops the app, which cancels every alarm, and reminders that
+  fire don't count as use. The alarms come back only when Vagor is next started, so a trip planned
+  further ahead could lose its reminders. Decided with the user on 2026-11-01: after saving a
+  vacation that ends more than two months ahead (`ReminderTimes.mayOutlastHibernation`) while
+  Android may hibernate Vagor (`mayHibernate`: Android 12+, `PackageManager.isAutoRevokeWhitelisted`
+  false, and not a work profile, which Android exempts), `HibernationOfferDialog` offers Vagor's App
+  info, where the user turns off the unused app setting, once per launch. Not only while
+  notifications are on: on Android 13+ the dashboard asks for them after the first trip is saved,
+  and that first trip is the one the offer is most for. Android also exempts company-managed
+  phones, and some makers turn hibernation off, which no public API reveals, so the app's text
+  says Android "may" pause Vagor. The Settings tab says whether Android may pause Vagor and has an App
+  Info button. The setting's name differs between Android versions ("Manage app if unused" on API
+  37), so the app's text doesn't name it.
 - Keep scheduling in `ReminderScheduler`. Detail screens call it on every save and delete.
 - Android lets an app hold 500 alarms at a time, and past that every set call throws, even one
   that replaces an alarm already set (`IllegalStateException`, or `SecurityException` on some

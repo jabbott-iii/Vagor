@@ -107,18 +107,20 @@ class VacationDetailActivity : AppCompatActivity() {
                     return@setOnClickListener
                 }
 
+                val saved: Vacation
                 if (vacationId == -1) {
                     val vacation = Vacation(updatedTitle, updatedDetails, updatedStartDate, updatedEndDate)
                     val newId = db!!.vacationDAO().insert(vacation).toInt()
-                    ReminderScheduler.scheduleVacation(this@VacationDetailActivity, vacation.copy(id = newId))
+                    saved = vacation.copy(id = newId)
+                    ReminderScheduler.scheduleVacation(this@VacationDetailActivity, saved)
                     Toast.makeText(this@VacationDetailActivity, R.string.vacation_saved, Toast.LENGTH_SHORT).show()
                 } else {
-                    val vacation = Vacation(updatedTitle, updatedDetails, updatedStartDate, updatedEndDate, vacationId)
-                    db!!.vacationDAO().update(vacation)
-                    ReminderScheduler.scheduleVacation(this@VacationDetailActivity, vacation)
+                    saved = Vacation(updatedTitle, updatedDetails, updatedStartDate, updatedEndDate, vacationId)
+                    db!!.vacationDAO().update(saved)
+                    ReminderScheduler.scheduleVacation(this@VacationDetailActivity, saved)
                     Toast.makeText(this@VacationDetailActivity, R.string.vacation_updated, Toast.LENGTH_SHORT).show()
                 }
-                finish()
+                closeAfterSave(saved)
             }
         )
 
@@ -153,6 +155,14 @@ class VacationDetailActivity : AppCompatActivity() {
                 }
             }
         )
+    }
+
+    // The form closes after a save, so a second tap mustn't save, or insert, again. For a trip far
+    // ahead, the offer to keep Android from pausing Vagor closes the form instead.
+    private fun closeAfterSave(saved: Vacation) {
+        buttonSave!!.isEnabled = false
+        buttonDelete!!.isEnabled = false
+        if (!HibernationOfferDialog.showAfterSave(supportFragmentManager, this, saved)) finish()
     }
 
     override fun onDestroy() {

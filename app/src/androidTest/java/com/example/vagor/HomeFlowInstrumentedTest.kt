@@ -5,6 +5,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.SystemClock
+import android.view.View
 import android.widget.ListView
 import android.widget.TextView
 import androidx.core.view.ViewCompat
@@ -14,11 +16,13 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.closeSoftKeyboard
 import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.Espresso.pressBackUnconditionally
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.Visibility
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
@@ -34,8 +38,10 @@ import org.hamcrest.Matcher
 import org.hamcrest.TypeSafeMatcher
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -48,10 +54,12 @@ class HomeFlowInstrumentedTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val db: AppDatabase = AppDatabase.open(context)
     private val titles = mutableListOf<String>()
+    private var hibernationOffered = false
 
     // Saving a vacation leads to the notification permission prompt, which would cover the list.
+    // Saving offers to keep Android from pausing Vagor only in the tests of that offer.
     @Before
-    fun grantNotifications() {
+    fun grantNotificationsAndSkipHibernationOffer() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val instrumentation = InstrumentationRegistry.getInstrumentation()
             instrumentation.uiAutomation.grantRuntimePermission(
@@ -59,10 +67,13 @@ class HomeFlowInstrumentedTest {
                 Manifest.permission.POST_NOTIFICATIONS
             )
         }
+        hibernationOffered = HibernationOfferDialog.offered
+        HibernationOfferDialog.offered = true
     }
 
     @After
     fun deleteCreatedRows() {
+        HibernationOfferDialog.offered = hibernationOffered
         db.vacationDAO().getAllVacations().filter { it.title in titles }.forEach { vacation ->
             db.eventDAO().getEventsForVacation(vacation.id).forEach {
                 ReminderScheduler.cancelEvent(context, it.id)
@@ -198,6 +209,71 @@ class HomeFlowInstrumentedTest {
         }
     }
 
+    // From Android 12, while Android may pause Vagor when it's unused, as it may after a test
+    // install. A trip ending within two months isn't offered; one ending later is, once per launch.
+    @Test
+    fun savingAFarOffVacationOffersToKeepItsRemindersOnce() {
+        offerHibernationOnNextSave()
+
+        ActivityScenario.launch(VacationDetailActivity::class.java).use { scenario ->
+            fillAndSave(date(50), date(55))
+            awaitState(scenario, Lifecycle.State.DESTROYED)
+        }
+
+        val title = uniqueTitle()
+        ActivityScenario.launch(VacationDetailActivity::class.java).use { scenario ->
+            fillAndSave(date(70), date(75), title)
+            onView(withText(R.string.hibernation_offer_title)).inRoot(isDialog()).check(matches(isDisplayed()))
+            // A second tap behind the opening offer can't save the vacation twice.
+            scenario.onActivity { assertFalse(it.findViewById<View>(R.id.buttonSave).isEnabled) }
+
+            // The offer outlasts a rotation, and whichever way it's closed, the form closes.
+            scenario.recreate()
+            onView(withText(R.string.not_now)).inRoot(isDialog()).perform(click())
+            awaitState(scenario, Lifecycle.State.DESTROYED)
+        }
+        assertEquals(1, db.vacationDAO().getAllVacations().count { it.title == title })
+
+        // Asked once per launch: the next save just closes the form.
+        ActivityScenario.launch(VacationDetailActivity::class.java).use { scenario ->
+            fillAndSave(date(80), date(85))
+            awaitState(scenario, Lifecycle.State.DESTROYED)
+        }
+    }
+
+    @Test
+    fun hibernationOfferOpensAppInfo() {
+        offerHibernationOnNextSave()
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val appInfo = watchForOwnAppInfo()
+        try {
+            ActivityScenario.launch(VacationDetailActivity::class.java).use { scenario ->
+                fillAndSave(date(70), date(75))
+                onView(withText(R.string.open_settings)).inRoot(isDialog()).perform(click())
+                awaitState(scenario, Lifecycle.State.DESTROYED)
+            }
+            assertTrue("Vagor's App info didn't open", instrumentation.checkMonitorHit(appInfo, 1))
+        } finally {
+            instrumentation.removeMonitor(appInfo)
+        }
+        // Vagor's App info is on top; Back leaves it.
+        leaveOtherAppsScreen()
+    }
+
+    @Test
+    fun backOnTheHibernationOfferClosesTheForm() {
+        offerHibernationOnNextSave()
+        val title = uniqueTitle()
+
+        ActivityScenario.launch(VacationDetailActivity::class.java).use { scenario ->
+            fillAndSave(date(70), date(75), title)
+            onView(withText(R.string.hibernation_offer_title)).inRoot(isDialog()).check(matches(isDisplayed()))
+            pressBackUnconditionally()
+            awaitState(scenario, Lifecycle.State.DESTROYED)
+        }
+        assertEquals(1, db.vacationDAO().getAllVacations().count { it.title == title })
+    }
+
     @Test
     fun newVacationsAndEventsHaveNoDeleteButton() {
         ActivityScenario.launch(VacationDetailActivity::class.java).use {
@@ -248,6 +324,27 @@ class HomeFlowInstrumentedTest {
             assertEquals(context.getString(title), heading.text.toString())
             assertTrue(ViewCompat.isAccessibilityHeading(heading))
         }
+    }
+
+    // Android 11 and earlier don't pause unused apps, and the user may have turned it off for Vagor.
+    private fun offerHibernationOnNextSave() {
+        assumeTrue("Android doesn't pause unused apps", context.mayHibernate())
+        HibernationOfferDialog.offered = false
+    }
+
+    private fun fillAndSave(start: String, end: String, title: String = uniqueTitle()) {
+        onView(withId(R.id.editTitle)).perform(replaceText(title))
+        onView(withId(R.id.editStartDate)).perform(setDate(start))
+        onView(withId(R.id.editEndDate)).perform(setDate(end))
+        closeSoftKeyboard()
+        onView(withId(R.id.buttonSave)).perform(scrollTo(), click())
+    }
+
+    // A finishing activity is destroyed after Espresso's click returns.
+    private fun awaitState(scenario: ActivityScenario<*>, state: Lifecycle.State) {
+        val deadline = SystemClock.uptimeMillis() + 5000
+        while (scenario.state != state && SystemClock.uptimeMillis() < deadline) SystemClock.sleep(50)
+        assertEquals(state, scenario.state)
     }
 
     private fun uniqueTitle() = "Trip-${UUID.randomUUID().toString().take(8)}".also { titles += it }

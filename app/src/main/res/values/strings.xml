@@ -64,7 +64,7 @@
     <!-- The event's title, then its time with its zone's short name, such as "7:00 PM GMT+9". -->
     <string name="event_starts_at">%1$s starts at %2$s</string>
     <string name="reminder_channel_name">Trip reminders</string>
-    <string name="reminder_channel_description">Reminders around 9:00 AM on the day a vacation starts or ends, and an hour before each event</string>
+    <string name="reminder_channel_description">Reminders around 9:00 AM on the day a vacation starts or ends, and within the hour before each event</string>
     <string name="reminder_dates_and_details">%1$s\n%2$s</string>
     <string name="reminder_part_of_vacation">Part of %1$s</string>
     <!-- "Part of" the vacation, then the event's details. -->
@@ -72,11 +72,18 @@
     <string name="settings">Settings</string>
     <string name="dark_mode">Dark mode</string>
     <string name="event_reminders_exact">Event reminders come an hour before each event.</string>
-    <string name="event_reminders_inexact">Event reminders come 50 to 60 minutes before each event, or later while the phone is idle or Battery Saver is on. To get them an hour before, allow alarms and reminders.</string>
+    <string name="event_reminders_inexact">Event reminders can come any time in the hour before each event, and if Vagor isn\'t used for a while, only one a day may come on time. To get them exactly an hour before, allow alarms and reminders.</string>
     <!-- The name of Android's settings screen for exact alarms. -->
     <string name="alarms_and_reminders">Alarms &amp; Reminders</string>
     <string name="exact_reminders_title">Get event reminders on time?</string>
-    <string name="exact_reminders_message">Vagor reminds you an hour before each event. Allow it to set alarms and reminders so they come on time. Otherwise they come 50 to 60 minutes before, or later while the phone is idle or Battery Saver is on.</string>
+    <string name="exact_reminders_message">Vagor reminds you an hour before each event. Allow it to set alarms and reminders so they come on time. Otherwise they can come any time in the hour before the event, and if Vagor isn\'t used for a while, only one a day may come on time.</string>
+    <!-- From Android 12. The unused app setting's own name differs between Android versions, so it isn't named. -->
+    <string name="hibernation_on">If Vagor isn\'t opened for about three months, Android may pause it, and its reminders would stop until it\'s opened again. To keep reminders for trips further ahead, turn off the unused app setting in App info.</string>
+    <string name="hibernation_off">Android won\'t pause Vagor while it\'s unused, so reminders for trips far ahead stay set.</string>
+    <!-- The name of Android's screen for an app's settings. -->
+    <string name="app_info">App Info</string>
+    <string name="hibernation_offer_title">Keep this trip\'s reminders?</string>
+    <string name="hibernation_offer_message">If Vagor isn\'t opened for about three months, Android may pause it, and its reminders would stop until it\'s opened again. To keep reminders for trips this far ahead, open Settings and turn off the unused app setting.</string>
     <string name="open_settings">Open Settings</string>
     <string name="not_now">Not now</string>
     <string name="privacy_policy">Privacy Policy</string>

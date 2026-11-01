@@ -11,7 +11,6 @@ import android.widget.TextView
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
 
 // The Settings tab on the home screen.
@@ -38,22 +37,30 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
             setOnClickListener { requireContext().openExactAlarmSettings() }
         }
 
+        // Before Android 12, Android doesn't stop an unused app, so there's nothing to turn off.
+        view.findViewById<Button>(R.id.buttonAppInfo).apply {
+            isVisible = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+            setOnClickListener { requireContext().openAppInfo() }
+        }
+
         view.findViewById<Button>(R.id.buttonPrivacyPolicy).setOnClickListener {
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.privacy_policy)
-                .setMessage(R.string.privacy_policy_text)
-                .setPositiveButton(android.R.string.ok, null)
-                .show()
+            MessageDialog.show(
+                childFragmentManager,
+                "privacyPolicy",
+                R.string.privacy_policy,
+                R.string.privacy_policy_text
+            )
         }
 
         // The bundled libraries' Apache License asks for its text to go with the app.
         view.findViewById<Button>(R.id.buttonThirdPartyLicenses).setOnClickListener {
-            val license = resources.openRawResource(R.raw.apache_license_2_0).bufferedReader().use { it.readText() }
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.third_party_licenses)
-                .setMessage(getString(R.string.third_party_licenses_text) + "\n\n" + reflowParagraphs(license))
-                .setPositiveButton(android.R.string.ok, null)
-                .show()
+            MessageDialog.show(
+                childFragmentManager,
+                "thirdPartyLicenses",
+                R.string.third_party_licenses,
+                R.string.third_party_licenses_text,
+                R.raw.apache_license_2_0
+            )
         }
 
         val packageInfo = requireContext().ownPackageInfo()
@@ -73,6 +80,11 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
         }
         requireView().findViewById<TextView>(R.id.eventRemindersStatus).setText(status)
         requireView().findViewById<Button>(R.id.buttonNotificationSettings).isVisible = !notificationsOn
+        // Back from App info, the unused app setting may have changed.
+        requireView().findViewById<TextView>(R.id.hibernationStatus).apply {
+            isVisible = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+            setText(if (context.mayHibernate()) R.string.hibernation_on else R.string.hibernation_off)
+        }
     }
 }
 

@@ -55,6 +55,23 @@
             android:layout_marginTop="8dp"
             android:text="@string/alarms_and_reminders" />
 
+        <!-- Whether Android may stop Vagor while it's unused, from Android 12; SettingsFragment
+             sets the text. -->
+        <TextView
+            android:id="@+id/hibernationStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+        <Button
+            android:id="@+id/buttonAppInfo"
+            style="@style/Widget.Vagor.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/app_info" />
+
         <Button
             android:id="@+id/buttonPrivacyPolicy"
             style="@style/Widget.Vagor.Button.Outlined"

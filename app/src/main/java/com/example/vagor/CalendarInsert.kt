@@ -1,14 +1,13 @@
 package com.example.vagor
 
-import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
 import android.provider.CalendarContract
+import androidx.fragment.app.FragmentActivity
 import com.example.vagor.entities.Event
 import com.example.vagor.entities.Vacation
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -107,7 +106,7 @@ private const val SECOND_TAP_MILLIS = 2000L
 
 // Opens Google Calendar's new-event screen, or another calendar app's when Google Calendar isn't
 // installed, or says that no app can add it. A dialog, because a toast is cut at two lines.
-fun Activity.openCalendarInsert(insert: Intent) {
+fun FragmentActivity.openCalendarInsert(insert: Intent) {
     val now = SystemClock.elapsedRealtime()
     if (now - calendarOpenedAt < SECOND_TAP_MILLIS) return
     for (intent in listOf(Intent(insert).setPackage(GOOGLE_CALENDAR), insert)) {
@@ -119,8 +118,5 @@ fun Activity.openCalendarInsert(insert: Intent) {
             // Try the next one.
         }
     }
-    MaterialAlertDialogBuilder(this)
-        .setMessage(R.string.no_calendar_app)
-        .setPositiveButton(android.R.string.ok, null)
-        .show()
+    MessageDialog.show(supportFragmentManager, "noCalendarApp", 0, R.string.no_calendar_app)
 }

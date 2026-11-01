@@ -59,15 +59,15 @@ object ReminderScheduler {
         }
         setAlarm(context, key) { alarmManager, pendingIntent ->
             if (!setExact(alarmManager, triggerAt, pendingIntent)) {
-                // Without exact alarms (Android 12 and later, until the user allows them): 50 to 60
-                // minutes before. Doze and Battery Saver can hold it until the phone wakes or Vagor
-                // is opened, which may be after the event has started.
-                alarmManager.setWindow(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerAt,
-                    ReminderTimes.INEXACT_EVENT_WINDOW.toMillis(),
-                    pendingIntent
-                )
+                // Without exact alarms (Android 12 and later, until the user allows them) it comes
+                // within the hour after this, so between an hour before the event and its start:
+                // near the start on a phone that nothing else wakes in that hour. Not setWindow,
+                // which Doze and Battery Saver can hold until after the event. Either way, once
+                // Android puts an unused Vagor in the restricted standby bucket (after 8 days on
+                // Android 13+), only one inexact alarm a day is sure to come on time (a Vagor
+                // notification the user sees, or charging, can lift that for a while); allowing
+                // exact alarms lifts it.
+                setInexact(alarmManager, triggerAt, pendingIntent)
             }
         }
     }
@@ -157,17 +157,20 @@ object ReminderScheduler {
             }
             return
         }
-        setAlarm(context, key) { alarmManager, pendingIntent ->
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                // Android 12+ caps an inexact alarm's delay at an hour, and allow-while-idle lets it
-                // fire during Doze.
-                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
-            } else {
-                // Older versions may defer an inexact alarm by up to 75% of the time left until
-                // it's due, which is months for a trip planned far ahead, so cap the window at an
-                // hour. Doze can still hold it until the phone wakes.
-                alarmManager.setWindow(AlarmManager.RTC_WAKEUP, triggerAt, ONE_HOUR_MILLIS, pendingIntent)
-            }
+        setAlarm(context, key) { alarmManager, pendingIntent -> setInexact(alarmManager, triggerAt, pendingIntent) }
+    }
+
+    private fun setInexact(alarmManager: AlarmManager, triggerAt: Long, pendingIntent: PendingIntent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Android 12+ caps an inexact alarm's delay at an hour, and allow-while-idle lets it
+            // fire during Doze and Battery Saver, within a quota. App standby buckets still limit
+            // it, as they do every inexact alarm.
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
+        } else {
+            // Older versions may defer an inexact alarm by up to 75% of the time left until
+            // it's due, which is months for a trip planned far ahead, so cap the window at an
+            // hour. Doze can still hold it until the phone wakes.
+            alarmManager.setWindow(AlarmManager.RTC_WAKEUP, triggerAt, ONE_HOUR_MILLIS, pendingIntent)
         }
     }
 

@@ -133,6 +133,36 @@ class SettingsInstrumentedTest {
     }
 
     @Test
+    fun settingsSaysWhetherAndroidMayPauseVagor() {
+        ActivityScenario.launch(HomeActivity::class.java).use { scenario ->
+            onView(withId(R.id.nav_settings)).perform(click())
+
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                // Android doesn't pause unused apps, so there's nothing to say or open.
+                onView(withId(R.id.hibernationStatus)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+                onView(withId(R.id.buttonAppInfo)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+                return@use
+            }
+            val status = if (context.mayHibernate()) R.string.hibernation_on else R.string.hibernation_off
+            onView(withId(R.id.hibernationStatus)).perform(scrollTo()).check(matches(withText(status)))
+
+            // Vagor's App info opens over Vagor, and Back returns to the tab.
+            val instrumentation = InstrumentationRegistry.getInstrumentation()
+            val appInfo = watchForOwnAppInfo()
+            try {
+                onView(withId(R.id.buttonAppInfo)).perform(scrollTo(), click())
+                awaitState(scenario, Lifecycle.State.CREATED)
+                assertTrue("Vagor's App info didn't open", instrumentation.checkMonitorHit(appInfo, 1))
+            } finally {
+                instrumentation.removeMonitor(appInfo)
+            }
+            instrumentation.uiAutomation.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
+            awaitState(scenario, Lifecycle.State.RESUMED)
+            onView(withId(R.id.hibernationStatus)).check(matches(withText(status)))
+        }
+    }
+
+    @Test
     fun notificationSettingsButtonShowsOnlyWhileNotificationsAreOff() {
         ActivityScenario.launch(HomeActivity::class.java).use {
             onView(withId(R.id.nav_settings)).perform(click())
@@ -171,10 +201,14 @@ class SettingsInstrumentedTest {
 
     @Test
     fun privacyPolicyOpensFromSettings() {
-        ActivityScenario.launch(HomeActivity::class.java).use {
+        ActivityScenario.launch(HomeActivity::class.java).use { scenario ->
             onView(withId(R.id.nav_settings)).perform(click())
             onView(withId(R.id.buttonPrivacyPolicy)).perform(scrollTo(), click())
 
+            onView(withText(R.string.privacy_policy)).inRoot(isDialog()).check(matches(isDisplayed()))
+
+            // It stays open through a rotation, which recreates the screen.
+            scenario.recreate()
             onView(withText(R.string.privacy_policy)).inRoot(isDialog()).check(matches(isDisplayed()))
         }
     }

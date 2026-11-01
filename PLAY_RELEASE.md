@@ -22,7 +22,7 @@ last checked on 2026-10-31.
   app-internal `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, which needs no declaration.
 - **Exact alarms only through `SCHEDULE_EXACT_ALARM`**, for the reminder an hour before each
   event. The user allows it in Android's Alarms & reminders screen (Android 14 and later start
-  without it), and without it the reminder comes 50 to 60 minutes before. The app doesn't declare
+  without it), and without it the reminder comes some time in the hour before. The app doesn't declare
   `USE_EXACT_ALARM`, which Play allows only for alarm clock and calendar apps. As of 2026-10-31
   Play's exact alarm policy asks for a declaration only for `USE_EXACT_ALARM`; if Play Console shows
   a permissions declaration at the first upload, answer it with this use (a reminder an hour before
@@ -228,8 +228,8 @@ Keep the text true to the app. Don't claim features Vagor doesn't have: importin
 cloud backup (Google Calendar may sync an item saved there, but that's Google Calendar, not Vagor).
 Name Google Calendar only in plain text saying what Vagor works with: no Google logo or Calendar
 icon in the graphics or screenshots, and no Google name in the app's title or icon. Don't promise
-reminders to the minute either ("about an hour before"): they depend on Alarms & reminders and
-the phone's battery settings.
+reminders at an exact time either ("within the hour before each event"): without Alarms & reminders
+they can come any time in that hour, and the phone's battery settings can hold them.
 
 **Graphics**, in `fastlane/metadata/android/en-US/images/`:
 
@@ -239,8 +239,11 @@ the phone's battery settings.
 | Feature graphic | `featureGraphic.png` | 1024×500, JPEG or 24-bit PNG with no alpha; required to publish |
 | Phone screenshots | `phoneScreenshots/01_dashboard.png` to `06_light_mode.png` | JPEG or 24-bit PNG with no alpha, 2 to 8, each side 320 to 3,840 px and the long side at most twice the short one. Four or more at 1080×1920 (9:16) let Play use them in its promotions |
 
-Upload the screenshots in filename order. The icon and feature graphic are drawn from the launcher
-icon's suitcase (`app/src/main/res/drawable/ic_launcher_foreground.xml`) on its blue `#0072B2`.
+Upload the screenshots in filename order. The icon is drawn from the launcher icon's suitcase
+(`app/src/main/res/drawable/ic_launcher_foreground.xml`) on its blue `#0072B2`. The feature graphic
+is the name and tagline in the centre, on the same blue, above a dotted route between two map pins.
+Play's feature graphic guidelines ask for no icon-like branding (Play shows the icon beside it), no
+device imagery and no main UI near the edges, so it has no suitcase, phone or screenshot.
 Leave the tablet screenshot sets empty: Vagor's layouts are phone layouts, stretched across a
 tablet, and Play shows the phone screenshots on tablets.
 
@@ -249,7 +252,7 @@ tablet, and Play shows the phone screenshots on tablets.
 | File | Alt text |
 | --- | --- |
 | `icon.png` | Vagor's icon: a white rolling suitcase on a blue square |
-| `featureGraphic.png` | Vagor's white suitcase icon on blue, beside the name Vagor and the words Your trips, planned offline |
+| `featureGraphic.png` | The name Vagor and the words Your trips, planned offline, above a dotted route between two map pins |
 | `01_dashboard.png` | The Vacations tab listing upcoming trips, soonest first, each with its dates, trip details and days until it starts |
 | `02_vacation_page.png` | A trip's page with buttons to edit, share or add it to a calendar, above its events with their dates and times |
 | `03_event_form.png` | Editing an event: its title, date, time, time zone and details, with buttons to save, delete, share or add to a calendar |
@@ -282,7 +285,10 @@ Ubuntu's `imagemagick` package; ImageMagick 7 calls it `magick` instead of `conv
 ## 7. Release: internal, then closed, then production
 
 A new personal developer account can't publish to production until a closed test has run, so the
-first upload goes to a test track.
+first upload goes to a test track. It also has to show that you have a real Android phone before
+any app can be made available: Play Console's home page shows the task, with a QR code to scan on a
+non-rooted phone running Android 10 or later, which installs the Play Console app to confirm it. An
+emulator doesn't count.
 
 Every release you create, on any track, has its own release notes: paste
 `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt` for that release's bundle between
@@ -357,6 +363,7 @@ These are the developer's to do; none of them blocks a release.
 - App signing, upload keys and Play App Signing: https://developer.android.com/studio/publish/app-signing
 - Preparing and rolling out a release: https://support.google.com/googleplay/android-developer/answer/9859348
 - Testing requirements for new personal accounts and applying for production: https://support.google.com/googleplay/android-developer/answer/14151465
+- Device verification for new developer accounts: https://support.google.com/googleplay/android-developer/answer/14316361
 - App content declarations: https://support.google.com/googleplay/android-developer/answer/9859455
 - News apps (only apps in scope are asked): https://support.google.com/googleplay/android-developer/answer/10523915
 - Trader status declaration: https://support.google.com/googleplay/android-developer/answer/17594752 (announced 2026-10-29: https://support.google.com/googleplay/android-developer/answer/18100766)

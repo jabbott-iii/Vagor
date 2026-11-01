@@ -59,6 +59,13 @@ android {
     androidResources {
         localeFilters += "en"
     }
+    // kotlinx.coroutines (through Room) ships a file only its debugger uses; its README asks apps
+    // to leave it out.
+    packaging {
+        resources {
+            excludes += "DebugProbesKt.bin"
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11

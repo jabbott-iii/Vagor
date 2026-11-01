@@ -2,7 +2,9 @@ package com.example.vagor
 
 import com.example.vagor.entities.Event
 import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalTime
+import java.time.Period
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
@@ -38,9 +40,17 @@ object ReminderTimes {
     // An event with a time is reminded this long before it starts.
     val EVENT_LEAD: Duration = Duration.ofHours(1)
 
-    // Without exact alarms an event's reminder may come up to this much after its moment, so 50 to
-    // 60 minutes before the event. Android 12 and later make shorter windows this long anyway.
-    val INEXACT_EVENT_WINDOW: Duration = Duration.ofMinutes(10)
+    // From Android 12, Android hibernates an app that hasn't been used for about three months,
+    // which cancels its alarms. A trip that ends further ahead than this may still have reminders
+    // to come by then, if Vagor isn't opened in between (HibernationOfferDialog).
+    val HIBERNATION_MARGIN: Period = Period.ofMonths(2)
+
+    // Whether a vacation ending on the stored [endDateText] is further ahead of [today] than
+    // HIBERNATION_MARGIN. False when the date can't be read.
+    fun mayOutlastHibernation(endDateText: String, today: LocalDate): Boolean {
+        val end = DateValidators.parseLocalDate(endDateText) ?: return false
+        return end.isAfter(today.plus(HIBERNATION_MARGIN))
+    }
 
     // Epoch millis of 9:00 AM in [zone] on the stored date, or null when the date is invalid
     // or that moment has already passed.

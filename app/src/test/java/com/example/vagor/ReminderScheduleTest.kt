@@ -8,6 +8,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.Duration
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
@@ -128,6 +129,20 @@ class ReminderScheduleTest {
 
         assertTrue(ReminderTimes.eventReminderMayBeDue(start, startMillis - 1))
         assertFalse(ReminderTimes.eventReminderMayBeDue(start, startMillis))
+    }
+
+    // Android may hibernate Vagor about three months after it was last opened; a trip ending more
+    // than two months ahead is offered the way to stop that.
+    @Test
+    fun aTripEndingMoreThanTwoMonthsAheadMayOutlastHibernation() {
+        val today = LocalDate.of(2026, 11, 1)
+
+        assertFalse(ReminderTimes.mayOutlastHibernation("01/01/2027", today))
+        assertTrue(ReminderTimes.mayOutlastHibernation("01/02/2027", today))
+        assertTrue(ReminderTimes.mayOutlastHibernation("07/06/2031", today))
+        assertFalse(ReminderTimes.mayOutlastHibernation("10/01/2026", today))
+        // A date that can't be read isn't offered.
+        assertFalse(ReminderTimes.mayOutlastHibernation("1/2/2027", today))
     }
 
     // A posted reminder leaves the shade once it's out of date.
