@@ -15,6 +15,7 @@ import androidx.core.net.toUri
 import com.example.vagor.database.AppDatabase
 import com.example.vagor.entities.Event
 import com.example.vagor.entities.Vacation
+import java.time.ZoneId
 
 // Fires for alarms set by ReminderScheduler and posts the reminder notification.
 class MyReceiver : BroadcastReceiver() {
@@ -44,14 +45,16 @@ class MyReceiver : BroadcastReceiver() {
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true)
 
+        val zone = ZoneId.systemDefault()
+        val now = System.currentTimeMillis()
         // The item may have been deleted since the alarm was set.
-        when (key.type) {
+        val timeout = when (key.type) {
             ReminderType.VACATION_START, ReminderType.VACATION_END -> {
                 val vacation = db.vacationDAO().getVacationById(key.itemId) ?: return
-                val message = if (key.type == ReminderType.VACATION_START) {
-                    R.string.vacation_starting_today
+                val (message, day) = if (key.type == ReminderType.VACATION_START) {
+                    R.string.vacation_starting_today to vacation.startDate
                 } else {
-                    R.string.vacation_ending_today
+                    R.string.vacation_ending_today to vacation.endDate
                 }
                 val dates = context.vacationDateRange(vacation)
                 builder.setContentTitle(context.getString(message, vacation.title))
@@ -66,6 +69,7 @@ class MyReceiver : BroadcastReceiver() {
                             .bigText(context.getString(R.string.reminder_dates_and_details, dates, vacation.details))
                     )
                 }
+                ReminderTimes.dateReminderTimeoutMillis(day, zone, now)
             }
 
             ReminderType.EVENT -> {
@@ -89,8 +93,11 @@ class MyReceiver : BroadcastReceiver() {
                             .bigText(context.getString(R.string.reminder_vacation_and_details, partOf, event.details))
                     )
                 }
+                ReminderTimes.eventReminderTimeoutMillis(event, zone, now)
             }
         }
+        // Once it's out of date, Android removes it from the shade.
+        if (timeout != null) builder.setTimeoutAfter(timeout)
 
         ReminderScheduler.ensureChannel(context)
         NotificationManagerCompat.from(context).notify(key.toUriString(), 0, builder.build())

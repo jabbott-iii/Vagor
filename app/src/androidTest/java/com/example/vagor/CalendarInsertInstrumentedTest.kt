@@ -163,7 +163,7 @@ class CalendarInsertInstrumentedTest {
 
         ActivityScenario.launch<EventDetailActivity>(intent).use {
             onView(withId(R.id.editEventTitle)).perform(replaceText("Museum"))
-            onView(withId(R.id.editEventDate)).perform(replaceText("07/06/2031"))
+            onView(withId(R.id.editEventDate)).perform(setDate("07/06/2031"))
             onView(withId(R.id.buttonEventToCalendar)).perform(scrollTo(), click())
             instrumentation.waitForIdleSync()
         }

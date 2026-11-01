@@ -22,12 +22,13 @@ To build a signed release bundle for Google Play, see [PLAY_RELEASE.md](PLAY_REL
 - **Event details** → add, update, delete, share, and add to a calendar an event, with its date, time, time zone and optional details
 - **Calendar date entry** → every date field opens a month calendar that drops down below it; an event's calendar offers only its vacation's days
 - **Time and time zone entry** → an event's time comes from a clock in the phone's 12- or 24-hour style, and its time zone from a searchable list that starts on the phone's zone
-- **Reminders** → a notification around 9:00 AM local time on the day each vacation starts and ends, and an hour before each event
+- **Reminders** → a notification around 9:00 AM local time on the day each vacation starts and ends, and an hour before each event; one that arrives on time leaves the notification shade once it's out of date, at the end of its day or an hour after the event starts, and one that Android delivers late is still shown
 - **Settings tab** → a dark mode switch (dark is the default), whether event reminders are exact (with a button to Android's Alarms & reminders screen), a Notification Settings button while notifications are off, the privacy policy, the third-party licenses, and the app's version
 - **Theme** → a blue Material 3 colour scheme chosen for colour-blind users; every text colour meets WCAG AA contrast in light and dark mode
 - **Add to Calendar** → opens Google Calendar's new-event screen (or another calendar app's when Google Calendar isn't installed) filled in with a vacation, all day over its dates, or an event at its time in its time zone; the calendar app saves it, and Vagor needs no calendar permission
 - **Persistence** → Room database storing vacations and events on the device only
-- **Validation** → strict `MM/dd/yyyy` dates (two-digit month and day, four-digit year, nothing extra), event dates constrained to the vacation window (moving or shortening a vacation can't leave its events outside it), a required event time, and prevention of deleting vacations that still have events
+- **Dates** → shown the way the phone writes them ("Jul 6, 2031" in the US, "6 Jul 2031" in the UK), always in the Gregorian calendar
+- **Validation** → dates stored as strict `MM/dd/yyyy` (two-digit month and day, four-digit year, nothing extra), event dates constrained to the vacation window (moving or shortening a vacation can't leave its events outside it), a required event time, and prevention of deleting vacations that still have events
 
 ## Notes
 

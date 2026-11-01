@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.vagor.database.AppDatabase
 import com.example.vagor.entities.Event
+import com.example.vagor.entities.Vacation
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import java.time.LocalTime
@@ -18,7 +19,7 @@ import java.time.ZoneId
 
 class EventDetailActivity : AppCompatActivity() {
     private var editEventTitle: EditText? = null
-    private var editEventDate: EditText? = null
+    private var editEventDate: DateField? = null
     private var editEventTime: EditText? = null
     private var editEventTimeZone: EditText? = null
     private var editEventDetails: EditText? = null
@@ -39,7 +40,7 @@ class EventDetailActivity : AppCompatActivity() {
         setEdgeToEdgeContentView(R.layout.activity_event_detail)
 
         editEventTitle = findViewById<EditText>(R.id.editEventTitle)
-        editEventDate = findViewById<EditText>(R.id.editEventDate)
+        editEventDate = findViewById<DateField>(R.id.editEventDate)
         editEventTime = findViewById<EditText>(R.id.editEventTime)
         editEventTimeZone = findViewById<EditText>(R.id.editEventTimeZone)
         editEventDetails = findViewById<EditText>(R.id.editEventDetails)
@@ -65,7 +66,7 @@ class EventDetailActivity : AppCompatActivity() {
 
         if (saved != null) {
             editEventTitle!!.setText(saved.title)
-            editEventDate!!.setText(saved.date)
+            editEventDate!!.date = saved.date
             editEventDetails!!.setText(saved.details)
         } else {
             // A new event has nothing to delete yet.
@@ -109,7 +110,7 @@ class EventDetailActivity : AppCompatActivity() {
         buttonSaveEvent!!.setOnClickListener(
             View.OnClickListener setOnClickListener@{ _: View? ->
                 val updatedTitle = editEventTitle!!.getText().toString().trim { it <= ' ' }
-                val updatedDate = editEventDate!!.getText().toString().trim { it <= ' ' }
+                val updatedDate = editEventDate!!.date.trim { it <= ' ' }
                 val updatedDetails = editEventDetails!!.getText().toString().trim { it <= ' ' }
                 val updatedTime = pickedTime
 
@@ -134,8 +135,9 @@ class EventDetailActivity : AppCompatActivity() {
                     return@setOnClickListener
                 }
 
-                if (!DateValidators.isDateWithinVacation(updatedDate, vacation.startDate, vacation.endDate)) {
-                    Toast.makeText(this@EventDetailActivity, R.string.event_date_out_of_range, Toast.LENGTH_LONG).show()
+                val dateProblem = dateProblem(updatedDate, vacation)
+                if (dateProblem != null) {
+                    Toast.makeText(this@EventDetailActivity, dateProblem, Toast.LENGTH_LONG).show()
                     return@setOnClickListener
                 }
 
@@ -177,7 +179,7 @@ class EventDetailActivity : AppCompatActivity() {
                 if (eventId != -1) {
                     val event = Event(
                         editEventTitle!!.getText().toString().trim { it <= ' ' },
-                        editEventDate!!.getText().toString().trim { it <= ' ' },
+                        editEventDate!!.date.trim { it <= ' ' },
                         vacationId,
                         eventId
                     )
@@ -204,7 +206,7 @@ class EventDetailActivity : AppCompatActivity() {
             }
             val shared = Event(
                 editEventTitle!!.getText().toString().trim { it <= ' ' },
-                editEventDate!!.getText().toString().trim { it <= ' ' },
+                editEventDate!!.date.trim { it <= ' ' },
                 vacationId,
                 details = editEventDetails!!.getText().toString().trim { it <= ' ' },
                 time = pickedTime?.let { DateValidators.formatTime(it) },
@@ -212,7 +214,7 @@ class EventDetailActivity : AppCompatActivity() {
             )
             val lines = mutableListOf(
                 getString(R.string.event_share_title, shared.title),
-                getString(R.string.event_share_date, shared.date)
+                getString(R.string.event_share_date, dateText(shared.date))
             )
             // Without a valid date there's no zone abbreviation, but the time still goes in.
             pickedTime?.let { time ->
@@ -241,7 +243,7 @@ class EventDetailActivity : AppCompatActivity() {
             val title = editEventTitle!!.getText().toString().trim { it <= ' ' }
             val shown = Event(
                 title,
-                editEventDate!!.getText().toString().trim { it <= ' ' },
+                editEventDate!!.date.trim { it <= ' ' },
                 vacationId,
                 details = editEventDetails!!.getText().toString().trim { it <= ' ' },
                 time = pickedTime?.let { DateValidators.formatTime(it) },
@@ -258,7 +260,7 @@ class EventDetailActivity : AppCompatActivity() {
             val insert = eventCalendarIntent(shown, vacation)
             if (insert == null) {
                 // A date saved before dates were checked strictly.
-                Toast.makeText(this@EventDetailActivity, R.string.dates_must_be_mmddyyyy, Toast.LENGTH_LONG).show()
+                Toast.makeText(this@EventDetailActivity, R.string.date_cant_be_read, Toast.LENGTH_LONG).show()
                 return@calendarClick
             }
             openCalendarInsert(insert)
@@ -275,6 +277,20 @@ class EventDetailActivity : AppCompatActivity() {
         db?.close()
         db = null
         super.onDestroy()
+    }
+
+    // Why the event can't be saved on [date], or null when it can. A date saved before dates were
+    // checked strictly, the event's or its vacation's, can't be read, and is shown as stored.
+    private fun dateProblem(date: String, vacation: Vacation): Int? = when {
+        !DateValidators.isValidDate(date) -> R.string.date_cant_be_read
+
+        !DateValidators.isValidDate(vacation.startDate) || !DateValidators.isValidDate(vacation.endDate) ->
+            R.string.vacation_date_cant_be_read
+
+        !DateValidators.isDateWithinVacation(date, vacation.startDate, vacation.endDate) ->
+            R.string.event_date_out_of_range
+
+        else -> null
     }
 
     // TalkBack announces each screen by its title; the heading shows the same words.

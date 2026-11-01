@@ -84,7 +84,7 @@ class EventFormInstrumentedTest {
 
         ActivityScenario.launch<EventDetailActivity>(newEventIntent(vacation)).use {
             onView(withId(R.id.editEventTitle)).perform(replaceText("Museum"))
-            onView(withId(R.id.editEventDate)).perform(replaceText("07/06/2031"))
+            onView(withId(R.id.editEventDate)).perform(setDate("07/06/2031"))
             onView(withId(R.id.buttonSaveEvent)).perform(scrollTo(), click())
             assertTrue(db.eventDAO().getEventsForVacation(vacation.id).isEmpty())
 
@@ -143,7 +143,7 @@ class EventFormInstrumentedTest {
             ).check(matches(withText(TimeZoneChoices.fieldText(context, "Asia/Tokyo"))))
 
             onView(withId(R.id.editEventTitle)).perform(replaceText("Sushi"))
-            onView(withId(R.id.editEventDate)).perform(replaceText("07/05/2031"))
+            onView(withId(R.id.editEventDate)).perform(setDate("07/05/2031"))
             pickDefaultTime()
             onView(withId(R.id.buttonSaveEvent)).perform(scrollTo(), click())
         }
@@ -250,7 +250,7 @@ class EventFormInstrumentedTest {
                 withId(R.id.editEventTimeZone)
             ).check(matches(withText(TimeZoneChoices.fieldText(context, "Asia/Tokyo"))))
             onView(withId(R.id.editEventTitle)).perform(replaceText("Ramen"))
-            onView(withId(R.id.editEventDate)).perform(replaceText("07/05/2031"))
+            onView(withId(R.id.editEventDate)).perform(setDate("07/05/2031"))
             onView(withId(R.id.buttonSaveEvent)).perform(scrollTo(), click())
         }
 
@@ -300,9 +300,13 @@ class EventFormInstrumentedTest {
                         text(it, R.id.eventTitle)
                     }
                 )
-                assertEquals(old.date, text(0, R.id.eventDate))
+                assertEquals(context.dateText(old.date), text(0, R.id.eventDate))
                 assertEquals(
-                    context.getString(R.string.event_date_and_time, breakfast.date, context.eventTimeText(breakfast)),
+                    context.getString(
+                        R.string.event_date_and_time,
+                        context.dateText(breakfast.date),
+                        context.eventTimeText(breakfast)
+                    ),
                     text(1, R.id.eventDate)
                 )
                 assertTrue(text(1, R.id.eventDate).contains(context.timeOfDayText(LocalTime.of(8, 0))))
@@ -413,7 +417,7 @@ class EventFormInstrumentedTest {
     // An event in 2031, so its reminder is still to come.
     private fun fillAndSave(title: String) {
         onView(withId(R.id.editEventTitle)).perform(replaceText(title))
-        onView(withId(R.id.editEventDate)).perform(replaceText("07/06/2031"))
+        onView(withId(R.id.editEventDate)).perform(setDate("07/06/2031"))
         pickDefaultTime()
         onView(withId(R.id.buttonSaveEvent)).perform(scrollTo(), click())
     }

@@ -58,24 +58,9 @@ class EventListActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.buttonShareVacation).setOnClickListener {
             val current = vacation ?: return@setOnClickListener
-            val withoutDetails =
-                getString(R.string.vacation_share_template, current.title, current.startDate, current.endDate)
-            val vacationText = if (current.details.isBlank()) {
-                withoutDetails
-            } else {
-                getString(R.string.vacation_share_details, withoutDetails, current.details)
-            }
-            val shareText = if (events.isEmpty()) {
-                vacationText
-            } else {
-                val eventLines = events.joinToString("\n") {
-                    getString(R.string.event_share_line, it.title, eventWhenText(it))
-                }
-                getString(R.string.vacation_share_with_events, vacationText, eventLines)
-            }
             val shareIntent = Intent(Intent.ACTION_SEND)
             shareIntent.setType("text/plain")
-            shareIntent.putExtra(Intent.EXTRA_TEXT, shareText)
+            shareIntent.putExtra(Intent.EXTRA_TEXT, shareText(current))
             startActivity(Intent.createChooser(shareIntent, getString(R.string.share_vacation_details)))
         }
 
@@ -84,7 +69,7 @@ class EventListActivity : AppCompatActivity() {
             val insert = vacationCalendarIntent(current, events)
             if (insert == null) {
                 // A date saved before dates were checked strictly.
-                Toast.makeText(this@EventListActivity, R.string.dates_must_be_mmddyyyy, Toast.LENGTH_LONG).show()
+                Toast.makeText(this@EventListActivity, R.string.vacation_date_cant_be_read, Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
             openCalendarInsert(insert)
@@ -128,6 +113,26 @@ class EventListActivity : AppCompatActivity() {
         db?.close()
         db = null
         super.onDestroy()
+    }
+
+    // The vacation's title, dates and trip details, and its events with their dates and times.
+    private fun shareText(current: Vacation): String {
+        val withoutDetails = getString(
+            R.string.vacation_share_template,
+            current.title,
+            dateText(current.startDate),
+            dateText(current.endDate)
+        )
+        val vacationText = if (current.details.isBlank()) {
+            withoutDetails
+        } else {
+            getString(R.string.vacation_share_details, withoutDetails, current.details)
+        }
+        if (events.isEmpty()) return vacationText
+        val eventLines = events.joinToString("\n") {
+            getString(R.string.event_share_line, it.title, eventWhenText(it))
+        }
+        return getString(R.string.vacation_share_with_events, vacationText, eventLines)
     }
 
     // A vacation has a handful of events, so they are plain rows in the scrolling page.

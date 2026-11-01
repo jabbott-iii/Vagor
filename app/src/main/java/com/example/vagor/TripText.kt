@@ -1,6 +1,8 @@
 package com.example.vagor
 
 import android.content.Context
+import android.icu.util.GregorianCalendar
+import android.icu.util.ULocale
 import android.text.format.DateFormat
 import androidx.core.os.ConfigurationCompat
 import com.example.vagor.entities.Event
@@ -15,9 +17,24 @@ import android.icu.util.TimeZone as IcuTimeZone
 
 // Text shown for a vacation on the dashboard and on its own page.
 fun Context.vacationDateRange(vacation: Vacation): String = if (vacation.startDate == vacation.endDate) {
-    vacation.startDate
+    dateText(vacation.startDate)
 } else {
-    getString(R.string.vacation_date_range, vacation.startDate, vacation.endDate)
+    getString(R.string.vacation_date_range, dateText(vacation.startDate), dateText(vacation.endDate))
+}
+
+// A stored date the way the phone writes dates, such as "Jul 6, 2031" in the US and "6 Jul 2031"
+// in the UK. Always in the Gregorian calendar, like the stored dates, even where the phone uses
+// another (a Thai phone would otherwise show the Buddhist-era year). A date that can't be read,
+// saved before dates were checked strictly, is shown as it was stored.
+fun Context.dateText(stored: String): String {
+    val date = DateValidators.parseLocalDate(stored) ?: return stored
+    val locale = ULocale.forLocale(displayLocale()).setKeywordValue("calendar", "gregorian")
+    val format = IcuDateFormat.getInstanceForSkeleton("yMMMd", locale)
+    // Gregorian before 1582 too, like java.time and the drop-down calendar; ICU switches to the
+    // Julian calendar there by default.
+    (format.calendar as? GregorianCalendar)?.gregorianChange = Date(Long.MIN_VALUE)
+    format.timeZone = IcuTimeZone.GMT_ZONE
+    return format.format(Date(date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()))
 }
 
 fun Context.tripStatusText(status: TripStatus): String = when (status) {
@@ -66,9 +83,10 @@ fun Context.eventTimeText(event: Event): String? {
     return getString(R.string.event_time_and_zone, timeOfDayText(time), zone.format(Date.from(start.toInstant())))
 }
 
-// An event's date, and its time when it has one, as one line: "07/06/2031, 2:30 PM JST".
+// An event's date, and its time when it has one, as one line: "Jul 6, 2031, 2:30 PM JST".
 fun Context.eventWhenText(event: Event): String =
-    eventTimeText(event)?.let { getString(R.string.event_date_and_time, event.date, it) } ?: event.date
+    eventTimeText(event)?.let { getString(R.string.event_date_and_time, dateText(event.date), it) }
+        ?: dateText(event.date)
 
 // ICU names zones by ID too, but writes fixed offsets as "GMT+05:00" rather than "+05:00".
 private fun icuTimeZone(zone: ZoneId): IcuTimeZone = when {

@@ -13,8 +13,8 @@ import com.example.vagor.entities.Vacation
 class VacationDetailActivity : AppCompatActivity() {
     private var editTitle: EditText? = null
     private var editTripDetails: EditText? = null
-    private var editStartDate: EditText? = null
-    private var editEndDate: EditText? = null
+    private var editStartDate: DateField? = null
+    private var editEndDate: DateField? = null
     private var buttonSave: Button? = null
     private var db: AppDatabase? = null
     private var buttonDelete: Button? = null
@@ -25,8 +25,8 @@ class VacationDetailActivity : AppCompatActivity() {
 
         editTitle = findViewById<EditText>(R.id.editTitle)
         editTripDetails = findViewById<EditText>(R.id.editTripDetails)
-        editStartDate = findViewById<EditText>(R.id.editStartDate)
-        editEndDate = findViewById<EditText>(R.id.editEndDate)
+        editStartDate = findViewById<DateField>(R.id.editStartDate)
+        editEndDate = findViewById<DateField>(R.id.editEndDate)
         buttonSave = findViewById<Button>(R.id.buttonSave)
         buttonDelete = findViewById<Button>(R.id.buttonDelete)
 
@@ -40,8 +40,8 @@ class VacationDetailActivity : AppCompatActivity() {
         if (vacationId != -1) {
             editTitle!!.setText(title)
             editTripDetails!!.setText(details)
-            editStartDate!!.setText(startDate)
-            editEndDate!!.setText(endDate)
+            editStartDate!!.date = startDate.orEmpty()
+            editEndDate!!.date = endDate.orEmpty()
         }
         // A new vacation has nothing to delete yet.
         if (vacationId == -1) {
@@ -51,7 +51,7 @@ class VacationDetailActivity : AppCompatActivity() {
         editStartDate!!.attachCalendarDropdown()
         // The end date can't be before the start date.
         editEndDate!!.attachCalendarDropdown(
-            earliest = { DateValidators.parseLocalDate(editStartDate!!.getText().toString()) }
+            earliest = { DateValidators.parseLocalDate(editStartDate!!.date) }
         )
 
         db = AppDatabase.open(getApplicationContext())
@@ -61,8 +61,8 @@ class VacationDetailActivity : AppCompatActivity() {
             View.OnClickListener setOnClickListener@{ _: View? ->
                 val updatedTitle = editTitle!!.getText().toString().trim { it <= ' ' }
                 val updatedDetails = editTripDetails!!.getText().toString().trim { it <= ' ' }
-                val updatedStartDate = editStartDate!!.getText().toString().trim { it <= ' ' }
-                val updatedEndDate = editEndDate!!.getText().toString().trim { it <= ' ' }
+                val updatedStartDate = editStartDate!!.date.trim { it <= ' ' }
+                val updatedEndDate = editEndDate!!.date.trim { it <= ' ' }
 
                 // Trip details are optional; everything else is required.
                 if (updatedTitle.isEmpty() || updatedStartDate.isEmpty() || updatedEndDate.isEmpty()) {
@@ -77,7 +77,7 @@ class VacationDetailActivity : AppCompatActivity() {
                 if (!DateValidators.isValidDate(updatedStartDate) || !DateValidators.isValidDate(updatedEndDate)) {
                     Toast.makeText(
                         this@VacationDetailActivity,
-                        R.string.dates_must_be_mmddyyyy,
+                        R.string.date_cant_be_read,
                         Toast.LENGTH_LONG
                     ).show()
                     return@setOnClickListener
@@ -140,8 +140,8 @@ class VacationDetailActivity : AppCompatActivity() {
                     val vacation = Vacation(
                         editTitle!!.getText().toString().trim { it <= ' ' },
                         editTripDetails!!.getText().toString().trim { it <= ' ' },
-                        editStartDate!!.getText().toString().trim { it <= ' ' },
-                        editEndDate!!.getText().toString().trim { it <= ' ' },
+                        editStartDate!!.date.trim { it <= ' ' },
+                        editEndDate!!.date.trim { it <= ' ' },
                         vacationId
                     )
 

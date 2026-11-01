@@ -1,5 +1,6 @@
 package com.example.vagor
 
+import com.example.vagor.entities.Event
 import java.time.Duration
 import java.time.LocalTime
 import java.time.ZoneId
@@ -67,4 +68,25 @@ object ReminderTimes {
     // An event's reminder is still worth having until the event starts.
     fun eventReminderMayBeDue(start: ZonedDateTime, nowMillis: Long): Boolean =
         nowMillis < start.toInstant().toEpochMilli()
+
+    // A posted event reminder is out of date this long after the event starts.
+    val EVENT_REMINDER_EXPIRY: Duration = Duration.ofHours(1)
+
+    // How long a 9:00 AM reminder posted now stays in the shade: until its day ends in [zone].
+    // Null once the day has ended, or when the date can't be read: a reminder that comes late is
+    // still posted, with no timeout of its own.
+    fun dateReminderTimeoutMillis(dateText: String, zone: ZoneId, nowMillis: Long): Long? {
+        val date = DateValidators.parseLocalDate(dateText) ?: return null
+        val dayEnd = date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+        return (dayEnd - nowMillis).takeIf { it > 0 }
+    }
+
+    // How long an event's reminder posted now stays in the shade: until an hour after the event
+    // starts, or, for an event saved before events had a time, until its day ends. Null as for
+    // dateReminderTimeoutMillis.
+    fun eventReminderTimeoutMillis(event: Event, zone: ZoneId, nowMillis: Long): Long? {
+        val start = EventTimes.startOf(event, zone) ?: return dateReminderTimeoutMillis(event.date, zone, nowMillis)
+        val expiry = start.toInstant().plus(EVENT_REMINDER_EXPIRY).toEpochMilli()
+        return (expiry - nowMillis).takeIf { it > 0 }
+    }
 }

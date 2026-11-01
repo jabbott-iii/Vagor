@@ -31,7 +31,8 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
 3. **Reminders**: system notifications for vacation start, vacation end and each event.
    Current: implemented. Automatic for every item: a notification around 9:00 AM local time on
    each vacation's start and end dates, and an hour before each event (asked for by the user on
-   2026-10-26). See "Reminders" below.
+   2026-10-26). A posted reminder leaves the shade once it's out of date (asked for on
+   2026-10-31). See "Reminders" below.
 4. **Sharing**: vacations and events can be shared with other people.
    Current: implemented as plain text through the Sharesheet. The vacation text lists its
    events with their dates and times, and each event has its own Share button, whose text adds
@@ -113,7 +114,8 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   `dao/`, `database/AppDatabase.kt`, `DateValidators.kt`, `Dashboard.kt` (plain-Kotlin dashboard
   order and trip status), `TripText.kt` (dates, times and status as display text),
   `EventTimes.kt` (plain-Kotlin event start times and order), `PickOnlyField.kt` (fields filled
-  only from a picker), `CalendarDropdown.kt` (the date fields' drop-down calendar),
+  only from a picker), `DateField.kt` (a date field: the stored date, shown the phone's way),
+  `CalendarDropdown.kt` (the date fields' drop-down calendar),
   `CalendarMonth.kt` (plain-Kotlin month grid for the calendar), `CalendarDayBackground.kt` (the
   calendar days' circles and rings, drawn to fit their cells), `TimeZonePicker.kt` (the event
   form's searchable time zone list, labelled from Android's ICU time zone names),
@@ -194,6 +196,15 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   `DateValidators.formatDate`; the save-time checks still run, because saved rows may hold older
   loose dates. Put new date or reminder math in plain Kotlin beside it so it can be unit tested
   (`java.time` is available at minSdk 26).
+- Dates are shown the way the phone writes them (asked for by the user on 2026-10-31): "Jul 6,
+  2031" in the US, "6 Jul 2031" in the UK. `dateText` in `TripText.kt` formats a stored date with
+  ICU's `yMMMd` skeleton, always in the Gregorian calendar (a Thai phone would otherwise show the
+  Buddhist-era year), and shows a date it can't read as it was stored. Everything a person reads
+  goes through it: screens, reminders, shared text and calendar descriptions. Never show a stored
+  date string directly. The date fields are `DateField`s: `date` holds the stored value, and the
+  text is only for show, so read and write `date`, never the text. A `DateField` keeps its date
+  across rotation itself. Instrumented tests set it with `setDate` and check it with `withDate`
+  (`DateFieldTesting.kt`).
 - Event times are stored as 24-hour `HH:mm` strings and time zones as IANA zone IDs such as
   `Asia/Tokyo`; parse them only through `DateValidators.parseLocalTime` and `parseZone`. The
   event form keeps the picked time and zone in fields of its own (saved across rotation) and
@@ -243,8 +254,8 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
   them set until they fire 30 days later or the app is uninstalled.
   Every instrumented run starts the app's process, which re-arms every stored trip's reminders
   as any start does (`VagorApplication`). `SettingsInstrumentedTest` opens the real home screen,
-  and it flips the dark mode setting and restores it. `CalendarDropdownInstrumentedTest` switches the app's language to Thai for one test
-  and back. The home flow, reminder, settings and event form tests grant the notification
+  and it flips the dark mode setting and restores it. `CalendarDropdownInstrumentedTest` switches the app's language to Thai, US English
+  and British English in two tests and back. The home flow, reminder, settings and event form tests grant the notification
   permission and leave it granted. `SettingsInstrumentedTest` opens Android's Alarms & reminders
   screen and leaves it with Back. The event form's tests of the exact alarm offer run only while
   exact alarms are off, as they are after a fresh install on Android 14+; never take
@@ -338,6 +349,14 @@ phone was off isn't shown late. Changing any of these is the user's call.
   zone changed; then a reminder already posted for it is dismissed, because it gives the old time.
   Opt-in reminders would have to be saved in the database, which is a schema change (see
   Local-only rules).
+- A posted reminder leaves the shade once it's out of date (`setTimeoutAfter`, asked for by the
+  user on 2026-10-31): a 9:00 AM one when its day ends on the phone, and an event's an hour after
+  the event starts (`ReminderTimes.dateReminderTimeoutMillis` and `eventReminderTimeoutMillis`).
+  One that Android delivers after that, held back by Doze for example, is still posted, with no
+  timeout of its own: the user chose not to skip late reminders. On the API 37 emulator Android
+  gives every notification without a timeout one of 72 hours anyway. The timeout is a duration
+  fixed when the reminder is posted, so a 9:00 AM one leaves at midnight in the zone the phone had
+  then, even if the phone's zone changes after.
 - Keep scheduling in `ReminderScheduler`. Detail screens call it on every save and delete.
 - Android lets an app hold 500 alarms at a time, and past that every set call throws, even one
   that replaces an alarm already set (`IllegalStateException`, or `SecurityException` on some

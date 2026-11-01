@@ -31,12 +31,13 @@ import java.util.Locale
 
 // Date fields are filled from a month calendar that drops down below the field, like Material 3's
 // docked date picker. They can't be typed into, so a picked date is always a valid MM/dd/yyyy
-// date. The calendar offers only days from earliest to latest when those are given.
+// date (DateField.date). The calendar offers only days from earliest to latest when those are
+// given.
 //
 // The app draws the calendar itself rather than using the framework CalendarView, which follows
 // the phone's calendar system (a Buddhist-era year in Thai, for example) and marks today by colour
 // alone. This one is always Gregorian, like the stored dates, and marks today with a ring.
-fun EditText.attachCalendarDropdown(earliest: () -> LocalDate? = { null }, latest: () -> LocalDate? = { null }) {
+fun DateField.attachCalendarDropdown(earliest: () -> LocalDate? = { null }, latest: () -> LocalDate? = { null }) {
     makePickOnly(context.getString(R.string.choose_date)) { showCalendarDropdown(earliest(), latest()) }
 }
 
@@ -44,7 +45,7 @@ fun EditText.attachCalendarDropdown(earliest: () -> LocalDate? = { null }, lates
 // pixels, so it's placed from the field's left edge (Gravity.LEFT) in either direction of text;
 // START would line up the right edges in a right-to-left language before adding the offset.
 @SuppressLint("InflateParams", "RtlHardcoded")
-private fun EditText.showCalendarDropdown(earliest: LocalDate?, latest: LocalDate?) {
+private fun DateField.showCalendarDropdown(earliest: LocalDate?, latest: LocalDate?) {
     // A screen reader can still activate the field behind an open calendar; don't open a second.
     if (!isAttachedToWindow || (getTag(R.id.calendar) as? PopupWindow)?.isShowing == true) return
 
@@ -57,7 +58,7 @@ private fun EditText.showCalendarDropdown(earliest: LocalDate?, latest: LocalDat
     }
     // An empty field opens on its earliest allowed day (the start date, or the vacation's first
     // day), or on today when it has none.
-    val selected = (DateValidators.parseLocalDate(text.toString()) ?: earliest ?: LocalDate.now()).coerceIn(first, last)
+    val selected = (DateValidators.parseLocalDate(date) ?: earliest ?: LocalDate.now()).coerceIn(first, last)
 
     val content = LayoutInflater.from(context).inflate(R.layout.popup_calendar, null)
     // Screen readers announce the calendar by the field's name when it appears.
@@ -82,7 +83,7 @@ private fun EditText.showCalendarDropdown(earliest: LocalDate?, latest: LocalDat
     )
 
     val month = MonthGrid(content, first, last, selected) { picked ->
-        setText(DateValidators.formatDate(picked))
+        date = DateValidators.formatDate(picked)
         // Not during the day's own click handling.
         post { popup.dismiss() }
     }

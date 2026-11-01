@@ -1,11 +1,13 @@
 package com.example.vagor
 
+import com.example.vagor.entities.Event
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.Duration
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
@@ -126,6 +128,55 @@ class ReminderScheduleTest {
 
         assertTrue(ReminderTimes.eventReminderMayBeDue(start, startMillis - 1))
         assertFalse(ReminderTimes.eventReminderMayBeDue(start, startMillis))
+    }
+
+    // A posted reminder leaves the shade once it's out of date.
+    @Test
+    fun aDateReminderLastsUntilItsDayEnds() {
+        val nineAm = ZonedDateTime.of(2026, 9, 16, 9, 0, 0, 0, zone).toInstant().toEpochMilli()
+        val midnight = ZonedDateTime.of(2026, 9, 17, 0, 0, 0, 0, zone).toInstant().toEpochMilli()
+
+        assertEquals(
+            Duration.ofHours(15).toMillis(),
+            ReminderTimes.dateReminderTimeoutMillis("09/16/2026", zone, nineAm)
+        )
+        assertEquals(1L, ReminderTimes.dateReminderTimeoutMillis("09/16/2026", zone, midnight - 1))
+        // One that comes after its day gets no timeout of its own.
+        assertNull(ReminderTimes.dateReminderTimeoutMillis("09/16/2026", zone, midnight))
+        assertNull(ReminderTimes.dateReminderTimeoutMillis("9/16/2026", zone, nineAm))
+    }
+
+    @Test
+    fun aDateReminderOnTheDayClocksGoBackLastsTheDaysExtraHour() {
+        val newYork = ZoneId.of("America/New_York")
+        val justAfterMidnight = ZonedDateTime.of(2026, 11, 1, 0, 30, 0, 0, newYork).toInstant().toEpochMilli()
+
+        assertEquals(
+            Duration.ofMinutes(24 * 60 + 30).toMillis(),
+            ReminderTimes.dateReminderTimeoutMillis("11/01/2026", newYork, justAfterMidnight)
+        )
+    }
+
+    @Test
+    fun anEventReminderLastsUntilAnHourAfterTheEventStarts() {
+        val tokyo = ZoneId.of("Asia/Tokyo")
+        val event = Event("Dinner", "09/16/2026", 1, time = "19:30", timeZone = "Asia/Tokyo")
+        val start = ZonedDateTime.of(2026, 9, 16, 19, 30, 0, 0, tokyo)
+
+        // Its own zone counts, not the phone's.
+        assertEquals(
+            Duration.ofHours(2).toMillis(),
+            ReminderTimes.eventReminderTimeoutMillis(event, zone, start.minusHours(1).toInstant().toEpochMilli())
+        )
+        assertNull(ReminderTimes.eventReminderTimeoutMillis(event, zone, start.plusHours(1).toInstant().toEpochMilli()))
+    }
+
+    @Test
+    fun anEventWithoutATimeHasItsReminderUntilItsDayEnds() {
+        val event = Event("Old event", "09/16/2026", 1)
+        val nineAm = ZonedDateTime.of(2026, 9, 16, 9, 0, 0, 0, zone).toInstant().toEpochMilli()
+
+        assertEquals(Duration.ofHours(15).toMillis(), ReminderTimes.eventReminderTimeoutMillis(event, zone, nineAm))
     }
 
     @Test

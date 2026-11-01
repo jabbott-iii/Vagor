@@ -75,13 +75,13 @@ class CalendarDropdownInstrumentedTest {
     @Test
     fun tappingADayFillsTheField() {
         ActivityScenario.launch(VacationDetailActivity::class.java).use {
-            onView(withId(R.id.editStartDate)).perform(replaceText("03/10/2030"))
+            onView(withId(R.id.editStartDate)).perform(setDate("03/10/2030"))
             onView(withId(R.id.editStartDate)).perform(click())
             day("10").check(matches(isSelected()))
 
             day("20").perform(click())
 
-            onView(withId(R.id.editStartDate)).check(matches(withText("03/20/2030")))
+            onView(withId(R.id.editStartDate)).check(matches(withDate("03/20/2030")))
             onView(withId(R.id.monthTitle)).check(doesNotExist())
         }
     }
@@ -89,21 +89,21 @@ class CalendarDropdownInstrumentedTest {
     @Test
     fun backClosesTheCalendarWithoutChangingTheDate() {
         ActivityScenario.launch(VacationDetailActivity::class.java).use {
-            onView(withId(R.id.editStartDate)).perform(replaceText("03/10/2030"))
+            onView(withId(R.id.editStartDate)).perform(setDate("03/10/2030"))
             onView(withId(R.id.editStartDate)).perform(click())
             onView(withId(R.id.monthTitle)).inRoot(isPlatformPopup()).check(matches(isDisplayed()))
 
             pressBack()
 
             onView(withId(R.id.monthTitle)).check(doesNotExist())
-            onView(withId(R.id.editStartDate)).check(matches(withText("03/10/2030")))
+            onView(withId(R.id.editStartDate)).check(matches(withDate("03/10/2030")))
         }
     }
 
     @Test
     fun monthButtonsMoveBetweenMonths() {
         ActivityScenario.launch(VacationDetailActivity::class.java).use {
-            onView(withId(R.id.editStartDate)).perform(replaceText("01/31/2030"))
+            onView(withId(R.id.editStartDate)).perform(setDate("01/31/2030"))
             onView(withId(R.id.editStartDate)).perform(click())
 
             onView(withId(R.id.nextMonth)).inRoot(isPlatformPopup()).perform(click())
@@ -112,14 +112,14 @@ class CalendarDropdownInstrumentedTest {
             onView(allOf(withText("29"), isDayCell())).inRoot(isPlatformPopup()).check(doesNotExist())
             day("14").perform(click())
 
-            onView(withId(R.id.editStartDate)).check(matches(withText("02/14/2030")))
+            onView(withId(R.id.editStartDate)).check(matches(withDate("02/14/2030")))
         }
     }
 
     @Test
     fun endDateCalendarStartsAtTheStartDate() {
         ActivityScenario.launch(VacationDetailActivity::class.java).use {
-            onView(withId(R.id.editStartDate)).perform(replaceText("03/10/2030"))
+            onView(withId(R.id.editStartDate)).perform(setDate("03/10/2030"))
             onView(withId(R.id.editEndDate)).perform(click())
 
             day("10").check(matches(allOf(isSelected(), isEnabled())))
@@ -131,13 +131,13 @@ class CalendarDropdownInstrumentedTest {
     @Test
     fun emptyEndDateOpensAtAPastStartDate() {
         ActivityScenario.launch(VacationDetailActivity::class.java).use {
-            onView(withId(R.id.editStartDate)).perform(replaceText("01/15/2020"))
+            onView(withId(R.id.editStartDate)).perform(setDate("01/15/2020"))
             onView(withId(R.id.editEndDate)).perform(click())
             day("15").check(matches(isSelected()))
 
             day("20").perform(click())
 
-            onView(withId(R.id.editEndDate)).check(matches(withText("01/20/2020")))
+            onView(withId(R.id.editEndDate)).check(matches(withDate("01/20/2020")))
         }
     }
 
@@ -160,7 +160,7 @@ class CalendarDropdownInstrumentedTest {
             onView(withId(R.id.nextMonth)).inRoot(isPlatformPopup()).check(matches(not(isDisplayed())))
 
             day("6").perform(click())
-            onView(withId(R.id.editEventDate)).check(matches(withText("07/06/2031")))
+            onView(withId(R.id.editEventDate)).check(matches(withDate("07/06/2031")))
         }
     }
 
@@ -265,7 +265,7 @@ class CalendarDropdownInstrumentedTest {
                 scenario.onActivity {
                     assertEquals("th", ConfigurationCompat.getLocales(it.resources.configuration)[0]?.language)
                 }
-                onView(withId(R.id.editStartDate)).perform(replaceText("03/10/2030"))
+                onView(withId(R.id.editStartDate)).perform(setDate("03/10/2030"))
                 onView(withId(R.id.editStartDate)).perform(click())
 
                 onView(withId(R.id.monthTitle)).inRoot(isPlatformPopup()).check { view, _ ->
@@ -274,11 +274,68 @@ class CalendarDropdownInstrumentedTest {
                 }
                 day("20").perform(click())
 
-                onView(withId(R.id.editStartDate)).check(matches(withText("03/20/2030")))
+                onView(withId(R.id.editStartDate)).check(matches(withDate("03/20/2030")))
+                onView(withId(R.id.editStartDate)).check { view, _ ->
+                    val shown = (view as TextView).text.toString()
+                    assertTrue("Field \"$shown\" should show 2030", shown.contains("2030"))
+                }
             }
         } finally {
             setAppLanguage(null)
             Locale.setDefault(original)
+        }
+    }
+
+    // Dates are shown the way the phone writes them, and still stored as MM/dd/yyyy.
+    @Test
+    fun datesAreShownInThePhonesFormat() {
+        class Format(val language: String, val picked: String, val range: String, val beforeJulianSwitch: String)
+        val formats = listOf(
+            Format("en-US", "Mar 20, 2030", "Jul 4, 2031 – Jul 9, 2031", "Oct 10, 1582"),
+            Format("en-GB", "20 Mar 2030", "4 Jul 2031 – 9 Jul 2031", "10 Oct 1582")
+        )
+        for (format in formats) {
+            val language = format.language
+            setAppLanguage(language)
+            try {
+                ActivityScenario.launch(VacationDetailActivity::class.java).use { scenario ->
+                    scenario.onActivity {
+                        assertEquals(Locale.forLanguageTag(language), it.displayLocale())
+                        val trip = Vacation("Trip", "", "07/04/2031", "07/09/2031")
+                        assertEquals(format.range, it.vacationDateRange(trip))
+                        // Gregorian like the stored dates, where ICU would switch to Julian.
+                        assertEquals(format.beforeJulianSwitch, it.dateText("10/10/1582"))
+                        // A date saved before dates were checked strictly is shown as it was saved.
+                        assertEquals("7/5/2031", it.dateText("7/5/2031"))
+                    }
+                    onView(withId(R.id.editStartDate)).perform(setDate("03/10/2030"))
+                    onView(withId(R.id.editStartDate)).perform(click())
+                    day("20").perform(click())
+
+                    onView(
+                        withId(R.id.editStartDate)
+                    ).check(matches(allOf(withText(format.picked), withDate("03/20/2030"))))
+                }
+            } finally {
+                setAppLanguage(null)
+            }
+        }
+    }
+
+    // The field keeps its date when the screen is recreated, as it is on rotation.
+    @Test
+    fun aPickedDateSurvivesRotation() {
+        ActivityScenario.launch(VacationDetailActivity::class.java).use { scenario ->
+            onView(withId(R.id.editStartDate)).perform(setDate("03/10/2030"))
+            onView(withId(R.id.editStartDate)).perform(click())
+            day("20").perform(click())
+
+            scenario.recreate()
+
+            onView(withId(R.id.editStartDate)).check { view, _ ->
+                assertEquals("03/20/2030", (view as DateField).date)
+                assertEquals(view.context.dateText("03/20/2030"), view.text.toString())
+            }
         }
     }
 
@@ -305,13 +362,16 @@ class CalendarDropdownInstrumentedTest {
     @Test
     fun dateFieldIsReadAsADropDownListThatCantBeTypedInto() {
         ActivityScenario.launch(VacationDetailActivity::class.java).use {
-            onView(withId(R.id.editStartDate)).perform(replaceText("03/10/2030"))
+            onView(withId(R.id.editStartDate)).perform(setDate("03/10/2030"))
             onView(withId(R.id.editStartDate)).check { view, _ ->
                 val info = view.createAccessibilityNodeInfo()
                 assertEquals(Spinner::class.java.name, info.className)
                 assertFalse(info.isEditable)
                 assertFalse(info.actionList.contains(AccessibilityNodeInfo.AccessibilityAction.ACTION_SET_TEXT))
-                assertEquals("${context.getString(R.string.start_date)}, 03/10/2030", info.contentDescription)
+                assertEquals(
+                    "${context.getString(R.string.start_date)}, ${view.context.dateText("03/10/2030")}",
+                    info.contentDescription
+                )
                 assertFalse(view.performAccessibilityAction(AccessibilityNodeInfo.ACTION_SET_TEXT, null))
             }
         }

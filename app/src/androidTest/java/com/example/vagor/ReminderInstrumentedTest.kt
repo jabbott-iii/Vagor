@@ -2,6 +2,7 @@ package com.example.vagor
 
 import android.Manifest
 import android.app.AlarmManager
+import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
@@ -25,7 +26,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.time.Duration
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
@@ -167,8 +170,10 @@ class ReminderInstrumentedTest {
         val vacationKey = ReminderKey(ReminderType.VACATION_START, vacation.id)
         val eventKey = ReminderKey(ReminderType.EVENT, event.id)
         val tags = listOf(vacationKey.toUriString(), eventKey.toUriString())
+        val before = System.currentTimeMillis()
         MyReceiver().onReceive(context, alarmIntentFor(vacationKey))
         MyReceiver().onReceive(context, alarmIntentFor(eventKey))
+        val after = System.currentTimeMillis()
 
         // The notification service posts and cancels asynchronously.
         val posted = awaitNotifications { active -> active.count { it.tag in tags } == 2 }.associateBy { it.tag }
@@ -191,6 +196,10 @@ class ReminderInstrumentedTest {
         )
         assertNotNull(vacationNotification.notification.contentIntent)
         assertNotNull(eventNotification.notification.contentIntent)
+        // Android removes each once its day ends: the vacation's today, and the event's, which has
+        // no time, tomorrow.
+        assertExpiresAt(endOfDay(0), vacationNotification.notification, before, after)
+        assertExpiresAt(endOfDay(1), eventNotification.notification, before, after)
 
         ReminderScheduler.cancelEvent(context, event.id)
         ReminderScheduler.cancelVacation(context, vacation.id)
@@ -205,10 +214,13 @@ class ReminderInstrumentedTest {
             insertEvent(vacation, daysFromNow(1), time = "19:30", zone = "Asia/Tokyo", details = "Table for two")
         val key = ReminderKey(ReminderType.EVENT, event.id)
 
+        val before = System.currentTimeMillis()
         MyReceiver().onReceive(context, alarmIntentFor(key))
+        val after = System.currentTimeMillis()
 
-        val posted = awaitNotifications { active -> active.any { it.tag == key.toUriString() } }
-            .single { it.tag == key.toUriString() }.notification.extras
+        val notification = awaitNotifications { active -> active.any { it.tag == key.toUriString() } }
+            .single { it.tag == key.toUriString() }.notification
+        val posted = notification.extras
         val partOf = context.getString(R.string.reminder_part_of_vacation, vacation.title)
         assertEquals(
             context.getString(R.string.event_starts_at, event.title, context.eventTimeText(event)),
@@ -219,8 +231,30 @@ class ReminderInstrumentedTest {
             context.getString(R.string.reminder_vacation_and_details, partOf, "Table for two"),
             posted.getCharSequence("android.bigText")?.toString()
         )
+        // Android removes it an hour after the event starts.
+        val start = EventTimes.startOf(event, ZoneId.systemDefault())!!
+        assertExpiresAt(start.plusHours(1).toInstant().toEpochMilli(), notification, before, after)
 
         ReminderScheduler.cancelEvent(context, event.id)
+        awaitNotifications { active -> active.none { it.tag == key.toUriString() } }
+    }
+
+    // One that comes after its day, held back by Doze for example, is still posted, with no
+    // timeout of its own.
+    @Test
+    fun aLateReminderIsPostedWithoutATimeout() {
+        val vacation = insertVacation(daysFromNow(-1), daysFromNow(2))
+        val key = ReminderKey(ReminderType.VACATION_START, vacation.id)
+
+        MyReceiver().onReceive(context, alarmIntentFor(key))
+
+        val posted = awaitNotifications { active -> active.any { it.tag == key.toUriString() } }
+            .single { it.tag == key.toUriString() }
+        // On the API 37 emulator Android gives every notification without a timeout one of 72 hours.
+        val timeout = posted.notification.timeoutAfter
+        assertTrue("Timeout $timeout ms", timeout == 0L || timeout >= Duration.ofHours(72).toMillis())
+
+        ReminderScheduler.cancelVacation(context, vacation.id)
         awaitNotifications { active -> active.none { it.tag == key.toUriString() } }
     }
 
@@ -331,6 +365,16 @@ class ReminderInstrumentedTest {
                 10 * 60 * 1000L,
                 pendingIntent
             )
+    }
+
+    // The phone's midnight at the end of the day [days] from today.
+    private fun endOfDay(days: Long): Long =
+        LocalDate.now().plusDays(days + 1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+    // [notification], posted between [before] and [after], is set to leave the shade at [expiry].
+    private fun assertExpiresAt(expiry: Long, notification: Notification, before: Long, after: Long) {
+        val timeout = notification.timeoutAfter
+        assertTrue("Timeout $timeout ms", timeout in (expiry - after)..(expiry - before))
     }
 
     private fun daysFromNow(days: Long): String =

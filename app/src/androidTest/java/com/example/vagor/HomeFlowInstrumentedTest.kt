@@ -82,8 +82,8 @@ class HomeFlowInstrumentedTest {
         ActivityScenario.launch(HomeActivity::class.java).use {
             onView(withId(R.id.buttonAddVacation)).perform(click())
             onView(withId(R.id.editTitle)).perform(replaceText(uniqueTitle))
-            onView(withId(R.id.editStartDate)).perform(replaceText(date(10)))
-            onView(withId(R.id.editEndDate)).perform(replaceText(date(12)))
+            onView(withId(R.id.editStartDate)).perform(setDate(date(10)))
+            onView(withId(R.id.editEndDate)).perform(setDate(date(12)))
             closeSoftKeyboard()
             onView(withId(R.id.buttonSave)).perform(click())
 
@@ -182,16 +182,16 @@ class HomeFlowInstrumentedTest {
             .putExtra("endDate", vacation.endDate)
 
         ActivityScenario.launch<VacationDetailActivity>(intent).use { scenario ->
-            onView(withId(R.id.editStartDate)).perform(replaceText(date(40)))
-            onView(withId(R.id.editEndDate)).perform(replaceText(date(42)))
+            onView(withId(R.id.editStartDate)).perform(setDate(date(40)))
+            onView(withId(R.id.editEndDate)).perform(setDate(date(42)))
             onView(withId(R.id.buttonSave)).perform(scrollTo(), click())
 
             assertEquals(vacation, db.vacationDAO().getVacationById(vacation.id))
             assertEquals(Lifecycle.State.RESUMED, scenario.state)
 
             // Shortened to the event's day, it still holds the event.
-            onView(withId(R.id.editStartDate)).perform(replaceText(date(31)))
-            onView(withId(R.id.editEndDate)).perform(replaceText(date(31)))
+            onView(withId(R.id.editStartDate)).perform(setDate(date(31)))
+            onView(withId(R.id.editEndDate)).perform(setDate(date(31)))
             onView(withId(R.id.buttonSave)).perform(scrollTo(), click())
 
             assertEquals(date(31), db.vacationDAO().getVacationById(vacation.id)?.endDate)
