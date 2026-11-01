@@ -12,9 +12,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -29,9 +27,7 @@ class VacationsFragment : Fragment(R.layout.fragment_vacations) {
     private var dashboardAdapter: DashboardAdapter? = null
     private val requestNotificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            if (!granted) {
-                Toast.makeText(requireContext(), R.string.reminders_need_notifications, Toast.LENGTH_LONG).show()
-            }
+            if (!granted) NotificationsOffDialog.show(parentFragmentManager)
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,7 +88,7 @@ class VacationsFragment : Fragment(R.layout.fragment_vacations) {
         notificationsChecked = true
         val context = requireContext()
         ReminderScheduler.ensureChannel(context)
-        if (NotificationManagerCompat.from(context).areNotificationsEnabled()) return
+        if (ReminderScheduler.notificationsOn(context)) return
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
@@ -100,7 +96,7 @@ class VacationsFragment : Fragment(R.layout.fragment_vacations) {
         ) {
             requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
-            Toast.makeText(context, R.string.reminders_need_notifications, Toast.LENGTH_LONG).show()
+            NotificationsOffDialog.show(parentFragmentManager)
         }
     }
 

@@ -269,6 +269,12 @@ class EventDetailActivity : AppCompatActivity() {
         outState.putString(STATE_TIME_ZONE, pickedZoneId)
     }
 
+    override fun onDestroy() {
+        db?.close()
+        db = null
+        super.onDestroy()
+    }
+
     // A clock opening at the picked time, or 9:00 AM, in the phone's 12- or 24-hour style. Its
     // keyboard button switches to typing the hour and minute.
     private fun showTimePicker() {

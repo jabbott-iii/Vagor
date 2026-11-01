@@ -120,7 +120,9 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   `CalendarInsert.kt` (the Add to Calendar intents, with their plain-Kotlin times in
   `CalendarTimes`), `ReminderSchedule.kt` (plain-Kotlin reminder times and
   identities), `ReminderScheduler.kt` (sets and cancels alarms), `ExactAlarmOffer.kt` (offers
-  Android's Alarms & reminders screen), `MyReceiver.kt` (the alarm
+  Android's Alarms & reminders screen), `NotificationsOff.kt` (the notifications-off dialog and
+  the way to Android's notification settings), `LicenseText.kt` (reflows the license text for
+  the Third-Party Licenses dialog), `MyReceiver.kt` (the alarm
   receiver; posts the notification), `ReminderRescheduleReceiver.kt`, `ThemeSettings.kt`,
   `VagorApplication.kt` (applies the saved theme before any screen and rebuilds the reminders in
   each new process) and `EdgeToEdge.kt`.
@@ -159,7 +161,8 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   its few events as plain rows in a `ScrollView`, so focus follows the screen. The code uses no Compose, ViewBinding,
   ViewModel, DI framework or coroutines. Don't introduce them without the user's approval.
 - Every Activity, Fragment or receiver that reads or writes data opens its own Room instance with
-  `AppDatabase.open()` (main-thread queries allowed), and DAOs are synchronous. Follow that
+  `AppDatabase.open()` (main-thread queries allowed) and closes it again (screens in `onDestroy`,
+  receivers in `finally`), and DAOs are synchronous. Follow that
   pattern in small changes. A shared instance or background threading is a refactor: propose it
   first.
 - Screens pass data through Intent extras with literal keys (`vacationId`, `title`, `details`,
@@ -190,9 +193,11 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   `SystemTimeZoneType.CANONICAL_LOCATION`, arrived later.
 - Rules enforced today: every field except trip details and event details is required (an
   event's time zone always has a value); vacation end date is on or after the start date;
-  an event's date falls within its vacation's start and end dates, inclusive; and a vacation
-  that has events can't be deleted. That last check exists only in `VacationDetailActivity`,
-  because `excursions.vacationId` has no foreign key.
+  an event's date falls within its vacation's start and end dates, inclusive, and an edited
+  vacation's new dates must still hold its events (`DateValidators.isOutsideVacation`; an event
+  with an old loose date can't be checked and doesn't block the save, added 2026-10-31); and a
+  vacation that has events can't be deleted. The last two checks exist only in
+  `VacationDetailActivity`, because `excursions.vacationId` has no foreign key.
 
 ## Build and test
 
@@ -222,7 +227,9 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
   leave a test trip behind. `CalendarInsertInstrumentedTest` catches the calendar intents with an
   `Instrumentation.ActivityMonitor`, so no calendar app opens.
   `MigrationInstrumentedTest` upgrades a database file of its own (`migration-test`) and deletes
-  it.
+  it. `ReminderLimitInstrumentedTest` sets 520 real event alarms, past Android's limit of 500, for
+  events that aren't in the database, and cancels them afterwards; a run killed partway leaves
+  them set until they fire 30 days later or the app is uninstalled.
   Every instrumented run starts the app's process, which re-arms every stored trip's reminders
   as any start does (`VagorApplication`). `SettingsInstrumentedTest` opens the real home screen,
   and it flips the dark mode setting and restores it. `CalendarDropdownInstrumentedTest` switches the app's language to Thai for one test
@@ -288,7 +295,12 @@ phone was off isn't shown late. Changing any of these is the user's call.
 
 - Post a `NotificationCompat` notification on an app notification channel (channels are required
   on every supported API level). Declare `POST_NOTIFICATIONS`, request it at runtime on API 33+
-  when the user sets a reminder, and check `areNotificationsEnabled()`. Tapping a vacation
+  when the user sets a reminder, and check `areNotificationsEnabled()`. While notifications are
+  off, for the app or only for the reminder channel (`ReminderScheduler.notificationsOn`), the
+  dashboard shows `NotificationsOffDialog` once per launch when there is a trip (on Android 13+
+  after asking for the permission, if it isn't granted), and the Settings tab shows a Notification
+  Settings button. Both open Android's notification settings for Vagor, or the reminder channel's
+  when only it is off. Not a toast: Android cuts toasts at two lines. Tapping a vacation
   reminder opens the vacation's page; tapping an event reminder opens the event, with the
   vacation's page and the dashboard behind it.
 - Only event reminders use exact alarms. `SCHEDULE_EXACT_ALARM` is denied by default for new
@@ -297,12 +309,15 @@ phone was off isn't shown late. Changing any of these is the user's call.
   allows it only for calendar and alarm-clock apps. After saving an event whose reminder can't
   be exact, `ExactAlarmOfferDialog` offers Alarms & reminders, once per launch; the Settings tab
   says whether event reminders are exact and opens the same screen.
-- Alarms are cleared on reboot and force stop. `ReminderRescheduleReceiver` rebuilds every
-  reminder from the database on `BOOT_COMPLETED`, `MY_PACKAGE_REPLACED`, `TIME_SET`,
-  `TIMEZONE_CHANGED` (dates saved without a time zone follow the phone's) and
-  `SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED` (sent when the user allows exact alarms).
-  `VagorApplication` does the same once in every new process (`ReminderScheduler.rebuildIfNeeded`),
-  and `HomeActivity` again on resume if exact alarms were allowed or taken away since. Taking
+- Alarms are cleared on reboot and force stop. `VagorApplication` rebuilds every reminder from
+  the database once in every new process (`ReminderScheduler.rebuildIfNeeded`), and `HomeActivity`
+  again on resume if exact alarms were allowed or taken away since. `ReminderRescheduleReceiver`
+  calls `rebuildIfNeeded` on `BOOT_COMPLETED` and `MY_PACKAGE_REPLACED`, which always start a new
+  process that `VagorApplication` has just rebuilt in, so it rebuilds once, not twice (changed
+  2026-10-31), and on `SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED` (sent when the user allows
+  exact alarms), which may reach a running process, where the exact-alarm state now differs, so
+  it rebuilds. On `TIME_SET` and `TIMEZONE_CHANGED` (dates saved without a time zone follow the
+  phone's) it always rebuilds, because they can reach a process that is already running. Taking
   exact alarms away sends nothing: Android deletes the exact alarms and kills the app (not a force
   stop), and the event reminders come back as `setWindow` the next time anything starts the app.
   Setting Vagor's battery use to Unrestricted also allows exact alarms, with no broadcast.
@@ -313,6 +328,13 @@ phone was off isn't shown late. Changing any of these is the user's call.
   Opt-in reminders would have to be saved in the database, which is a schema change (see
   Local-only rules).
 - Keep scheduling in `ReminderScheduler`. Detail screens call it on every save and delete.
+- Android lets an app hold 500 alarms at a time, and past that every set call throws, even one
+  that replaces an alarm already set (`IllegalStateException`, or `SecurityException` on some
+  Samsung phones). Uncaught, that crashed every start, since each start rebuilds the reminders, and
+  only clearing the app's storage (every trip) got out. Every alarm goes through
+  `ReminderScheduler.setAlarm`, which cancels the reminder's own old alarm and tries once more,
+  then leaves the reminder unset (fixed 2026-10-31, `ReminderLimitInstrumentedTest`). Which
+  reminders get the 500 places past the limit, and whether the user is told, is the user's call.
 - A PendingIntent's identity is its request code plus the Intent's action, data, type, component
   and categories. Extras don't count. Each reminder's identity is a data URI from `ReminderKey`,
   such as `vagor://reminder/vacation/<id>/start`, and the notification tag uses the same URI.

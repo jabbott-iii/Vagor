@@ -2,9 +2,13 @@ package com.example.vagor
 
 import android.Manifest
 import android.accessibilityservice.AccessibilityService
+import android.app.Activity
+import android.app.Instrumentation
 import android.content.Context
+import android.content.IntentFilter
 import android.os.Build
 import android.os.SystemClock
+import android.provider.Settings
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
@@ -124,6 +128,43 @@ class SettingsInstrumentedTest {
             )
             awaitState(scenario, Lifecycle.State.RESUMED)
             onView(withId(R.id.eventRemindersStatus)).check(matches(withText(status)))
+        }
+    }
+
+    @Test
+    fun notificationSettingsButtonShowsOnlyWhileNotificationsAreOff() {
+        ActivityScenario.launch(HomeActivity::class.java).use {
+            onView(withId(R.id.nav_settings)).perform(click())
+
+            val visibility = if (ReminderScheduler.notificationsOn(context)) Visibility.GONE else Visibility.VISIBLE
+            onView(withId(R.id.buttonNotificationSettings)).check(matches(withEffectiveVisibility(visibility)))
+        }
+    }
+
+    // The dashboard shows it when notifications are off. Open Settings asks for Android's
+    // notification settings for Vagor; the request is caught, so no settings screen opens.
+    @Test
+    fun notificationsOffDialogOpensNotificationSettings() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val monitor = Instrumentation.ActivityMonitor(
+            IntentFilter(Settings.ACTION_APP_NOTIFICATION_SETTINGS),
+            Instrumentation.ActivityResult(Activity.RESULT_CANCELED, null),
+            true
+        )
+        instrumentation.addMonitor(monitor)
+        try {
+            ActivityScenario.launch(HomeActivity::class.java).use { scenario ->
+                scenario.onActivity { NotificationsOffDialog.show(it.supportFragmentManager) }
+                onView(withText(R.string.notifications_off_title)).inRoot(isDialog()).check(matches(isDisplayed()))
+
+                onView(withText(R.string.open_settings)).inRoot(isDialog()).perform(click())
+
+                // Notifications are on in this test, so not only the channel is off: Vagor's own page.
+                assertTrue(instrumentation.checkMonitorHit(monitor, 1))
+                onView(withId(R.id.buttonAddVacation)).check(matches(isDisplayed()))
+            }
+        } finally {
+            instrumentation.removeMonitor(monitor)
         }
     }
 

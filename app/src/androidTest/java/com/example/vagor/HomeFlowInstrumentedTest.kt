@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.widget.ListView
+import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.closeSoftKeyboard
@@ -29,6 +30,7 @@ import org.hamcrest.Description
 import org.hamcrest.Matcher
 import org.hamcrest.TypeSafeMatcher
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -161,6 +163,35 @@ class HomeFlowInstrumentedTest {
             onView(withId(R.id.buttonSave)).perform(scrollTo(), click())
 
             onView(withId(R.id.vacationPageTripDetails)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+        }
+    }
+
+    // Moving or shortening a trip mustn't leave its events outside it.
+    @Test
+    fun aVacationCantBeMovedAwayFromItsEvents() {
+        val vacation = insertVacation(date(30), date(32))
+        db.eventDAO().insert(Event("Event-${UUID.randomUUID().toString().take(8)}", date(31), vacation.id))
+        val intent = Intent(context, VacationDetailActivity::class.java)
+            .putExtra("vacationId", vacation.id)
+            .putExtra("title", vacation.title)
+            .putExtra("details", vacation.details)
+            .putExtra("startDate", vacation.startDate)
+            .putExtra("endDate", vacation.endDate)
+
+        ActivityScenario.launch<VacationDetailActivity>(intent).use { scenario ->
+            onView(withId(R.id.editStartDate)).perform(replaceText(date(40)))
+            onView(withId(R.id.editEndDate)).perform(replaceText(date(42)))
+            onView(withId(R.id.buttonSave)).perform(scrollTo(), click())
+
+            assertEquals(vacation, db.vacationDAO().getVacationById(vacation.id))
+            assertEquals(Lifecycle.State.RESUMED, scenario.state)
+
+            // Shortened to the event's day, it still holds the event.
+            onView(withId(R.id.editStartDate)).perform(replaceText(date(31)))
+            onView(withId(R.id.editEndDate)).perform(replaceText(date(31)))
+            onView(withId(R.id.buttonSave)).perform(scrollTo(), click())
+
+            assertEquals(date(31), db.vacationDAO().getVacationById(vacation.id)?.endDate)
         }
     }
 

@@ -28,6 +28,7 @@
     <string name="vacation_saved">Vacation saved</string>
     <string name="vacation_updated">Vacation updated</string>
     <string name="cannot_delete_vacation_with_events">Cannot delete vacation with associated events</string>
+    <string name="events_outside_vacation_dates">Events are outside these dates: move or delete them first</string>
     <string name="vacation_deleted">Vacation deleted</string>
     <string name="share_vacation_details">Share vacation details</string>
     <string name="vacation_share_template">Vacation Title: %1$s\nStart Date: %2$s\nEnd Date: %3$s</string>
@@ -120,5 +121,7 @@
     <!-- How a date, time or time zone field is read out by screen readers: its name, then the
          picked value. -->
     <string name="picked_field_with_value">%1$s, %2$s</string>
+    <string name="notifications_off_title">Turn on notifications?</string>
+    <string name="notification_settings">Notification Settings</string>
     <string name="reminders_need_notifications">Notifications are off for Vagor, so trip reminders won\'t appear. You can turn them on in Android Settings.</string>
 </resources>

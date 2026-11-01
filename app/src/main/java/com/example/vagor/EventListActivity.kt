@@ -122,6 +122,12 @@ class EventListActivity : AppCompatActivity() {
         (eventRows?.findFocus()?.tag as? Int)?.let { outState.putInt("focusedEventId", it) }
     }
 
+    override fun onDestroy() {
+        db?.close()
+        db = null
+        super.onDestroy()
+    }
+
     // A vacation has a handful of events, so they are plain rows in the scrolling page.
     private fun showEvents() {
         val rows = eventRows!!

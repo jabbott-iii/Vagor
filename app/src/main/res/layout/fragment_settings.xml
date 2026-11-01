@@ -38,6 +38,15 @@
             android:layout_marginTop="16dp"
             android:textAppearance="?attr/textAppearanceBodyLarge" />
 
+        <!-- Shown only while notifications are off. -->
+        <Button
+            android:id="@+id/buttonNotificationSettings"
+            style="@style/Widget.Vagor.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/notification_settings" />
+
         <Button
             android:id="@+id/buttonAlarmsAndReminders"
             style="@style/Widget.Vagor.Button.Outlined"

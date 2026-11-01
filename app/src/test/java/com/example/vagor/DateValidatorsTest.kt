@@ -65,6 +65,17 @@ class DateValidatorsTest {
         assertFalse(DateValidators.isDateWithinVacation("09/17/2026", "09/18/2026", "09/16/2026"))
     }
 
+    // An edited vacation can't leave a readable event date outside it; an old loose date can't be
+    // checked, so it doesn't block the save.
+    @Test
+    fun anEventIsOutsideAVacationOnlyWhenItsDateIsReadableAndOutside() {
+        assertTrue(DateValidators.isOutsideVacation("09/15/2026", "09/16/2026", "09/18/2026"))
+        assertTrue(DateValidators.isOutsideVacation("09/19/2026", "09/16/2026", "09/18/2026"))
+        assertFalse(DateValidators.isOutsideVacation("09/16/2026", "09/16/2026", "09/18/2026"))
+        assertFalse(DateValidators.isOutsideVacation("09/18/2026", "09/16/2026", "09/18/2026"))
+        assertFalse(DateValidators.isOutsideVacation("9/19/2026", "09/16/2026", "09/18/2026"))
+    }
+
     @Test
     fun parseLocalDateReturnsTheCalendarDate() {
         assertEquals(LocalDate.of(2026, 9, 16), DateValidators.parseLocalDate("09/16/2026"))

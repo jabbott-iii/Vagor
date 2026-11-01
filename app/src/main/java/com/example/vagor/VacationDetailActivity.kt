@@ -90,6 +90,21 @@ class VacationDetailActivity : AppCompatActivity() {
                     return@setOnClickListener
                 }
 
+                // Moving or shortening a trip mustn't leave its events, and their reminders, outside
+                // it.
+                if (vacationId != -1 &&
+                    db!!.eventDAO().getEventsForVacation(vacationId).any {
+                        DateValidators.isOutsideVacation(it.date, updatedStartDate, updatedEndDate)
+                    }
+                ) {
+                    Toast.makeText(
+                        this@VacationDetailActivity,
+                        R.string.events_outside_vacation_dates,
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@setOnClickListener
+                }
+
                 if (vacationId == -1) {
                     val vacation = Vacation(updatedTitle, updatedDetails, updatedStartDate, updatedEndDate)
                     val newId = db!!.vacationDAO().insert(vacation).toInt()
@@ -136,5 +151,11 @@ class VacationDetailActivity : AppCompatActivity() {
                 }
             }
         )
+    }
+
+    override fun onDestroy() {
+        db?.close()
+        db = null
+        super.onDestroy()
     }
 }

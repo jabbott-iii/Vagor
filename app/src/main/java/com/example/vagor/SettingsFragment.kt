@@ -22,6 +22,10 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
             ThemeSettings.setDarkMode(requireContext(), isChecked)
         }
 
+        view.findViewById<Button>(R.id.buttonNotificationSettings).setOnClickListener {
+            requireContext().openNotificationSettings()
+        }
+
         // Before Android 12 there's no Alarms & reminders screen, and event reminders are always
         // exact.
         view.findViewById<Button>(R.id.buttonAlarmsAndReminders).apply {
@@ -52,11 +56,13 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
         super.onResume()
         // Back from Android's settings, notifications or exact alarms may have been turned on or off.
         val context = requireContext()
+        val notificationsOn = ReminderScheduler.notificationsOn(context)
         val status = when {
-            !ReminderScheduler.notificationsOn(context) -> R.string.reminders_need_notifications
+            !notificationsOn -> R.string.reminders_need_notifications
             ReminderScheduler.canScheduleExactAlarms(context) -> R.string.event_reminders_exact
             else -> R.string.event_reminders_inexact
         }
         requireView().findViewById<TextView>(R.id.eventRemindersStatus).setText(status)
+        requireView().findViewById<Button>(R.id.buttonNotificationSettings).isVisible = !notificationsOn
     }
 }

@@ -28,6 +28,15 @@ object DateValidators {
         return start != null && end != null && !end.isBefore(start)
     }
 
+    // For an edited vacation: an event whose date is readable and falls outside the new dates. An
+    // event saved with an old loose date can't be checked, and doesn't block the vacation's save.
+    fun isOutsideVacation(eventDate: String, vacationStart: String, vacationEnd: String): Boolean {
+        val event = parseLocalDate(eventDate)
+        val start = parseLocalDate(vacationStart)
+        val end = parseLocalDate(vacationEnd)
+        return event != null && start != null && end != null && (event.isBefore(start) || event.isAfter(end))
+    }
+
     fun isDateWithinVacation(eventDate: String, vacationStart: String, vacationEnd: String): Boolean {
         val event = parseLocalDate(eventDate)
         val start = parseLocalDate(vacationStart)

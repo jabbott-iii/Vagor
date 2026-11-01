@@ -57,30 +57,36 @@ object ReminderScheduler {
             }
             return
         }
-        val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
-        val pendingIntent = alarmIntent(context, key, PendingIntent.FLAG_UPDATE_CURRENT) ?: return
-        if (AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) {
-            try {
-                AlarmManagerCompat.setExactAndAllowWhileIdle(
-                    alarmManager,
+        setAlarm(context, key) { alarmManager, pendingIntent ->
+            if (!setExact(alarmManager, triggerAt, pendingIntent)) {
+                // Without exact alarms (Android 12 and later, until the user allows them): 50 to 60
+                // minutes before. Doze and Battery Saver can hold it until the phone wakes or Vagor
+                // is opened, which may be after the event has started.
+                alarmManager.setWindow(
                     AlarmManager.RTC_WAKEUP,
                     triggerAt,
+                    ReminderTimes.INEXACT_EVENT_WINDOW.toMillis(),
                     pendingIntent
                 )
-                return
-            } catch (_: SecurityException) {
-                // The permission was taken away since the check.
             }
         }
-        // Without exact alarms (Android 12 and later, until the user allows them): 50 to 60 minutes
-        // before. Doze and Battery Saver can hold it until the phone wakes or Vagor is opened, which
-        // may be after the event has started.
-        alarmManager.setWindow(
-            AlarmManager.RTC_WAKEUP,
-            triggerAt,
-            ReminderTimes.INEXACT_EVENT_WINDOW.toMillis(),
-            pendingIntent
-        )
+    }
+
+    // False when exact alarms aren't allowed, including when the permission was taken away since
+    // the check.
+    private fun setExact(alarmManager: AlarmManager, triggerAt: Long, pendingIntent: PendingIntent): Boolean {
+        if (!AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) return false
+        return try {
+            AlarmManagerCompat.setExactAndAllowWhileIdle(
+                alarmManager,
+                AlarmManager.RTC_WAKEUP,
+                triggerAt,
+                pendingIntent
+            )
+            true
+        } catch (_: SecurityException) {
+            false
+        }
     }
 
     // After the event form saves [event]. When its date, time or time zone changed, a reminder
@@ -151,17 +157,47 @@ object ReminderScheduler {
             }
             return
         }
+        setAlarm(context, key) { alarmManager, pendingIntent ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                // Android 12+ caps an inexact alarm's delay at an hour, and allow-while-idle lets it
+                // fire during Doze.
+                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
+            } else {
+                // Older versions may defer an inexact alarm by up to 75% of the time left until
+                // it's due, which is months for a trip planned far ahead, so cap the window at an
+                // hour. Doze can still hold it until the phone wakes.
+                alarmManager.setWindow(AlarmManager.RTC_WAKEUP, triggerAt, ONE_HOUR_MILLIS, pendingIntent)
+            }
+        }
+    }
+
+    // Android lets an app hold 500 alarms at a time. Past that, setting one throws, even one that
+    // would replace an alarm already set (IllegalStateException, or SecurityException on some
+    // Samsung phones). Uncaught, that would crash every start of the app, since each start rebuilds
+    // the reminders, and leave no way in to delete trips. So the reminder's own old alarm is
+    // cancelled, which frees a place, and it's tried once more; if that fails too, it stays unset.
+    private fun setAlarm(context: Context, key: ReminderKey, set: (AlarmManager, PendingIntent) -> Unit) {
         val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
-        val pendingIntent = alarmIntent(context, key, PendingIntent.FLAG_UPDATE_CURRENT) ?: return
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Android 12+ caps an inexact alarm's delay at an hour, and allow-while-idle lets it
-            // fire during Doze.
-            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
-        } else {
-            // Older versions may defer an inexact alarm by up to 75% of the time left until it's
-            // due, which is months for a trip planned far ahead, so cap the window at an hour.
-            // Doze can still hold it until the phone wakes.
-            alarmManager.setWindow(AlarmManager.RTC_WAKEUP, triggerAt, ONE_HOUR_MILLIS, pendingIntent)
+        if (trySet(context, key, alarmManager, set)) return
+        cancel(context, key, dismissPosted = false)
+        if (!trySet(context, key, alarmManager, set)) cancel(context, key, dismissPosted = false)
+    }
+
+    private fun trySet(
+        context: Context,
+        key: ReminderKey,
+        alarmManager: AlarmManager,
+        set: (AlarmManager, PendingIntent) -> Unit
+    ): Boolean {
+        val pendingIntent = alarmIntent(context, key, PendingIntent.FLAG_UPDATE_CURRENT) ?: return false
+        return try {
+            set(alarmManager, pendingIntent)
+            true
+        } catch (_: IllegalStateException) {
+            false
+        } catch (_: SecurityException) {
+            // Over the limit on a Samsung phone; setExact handles a missing permission itself.
+            false
         }
     }
 

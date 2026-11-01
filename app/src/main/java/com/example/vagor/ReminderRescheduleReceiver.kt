@@ -11,11 +11,18 @@ import com.example.vagor.database.AppDatabase
 class ReminderRescheduleReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
+            // These start a new process, whose VagorApplication has just rebuilt every reminder,
+            // or reach a running one, which rebuilds only if exact alarms were allowed since.
             Intent.ACTION_BOOT_COMPLETED,
             Intent.ACTION_MY_PACKAGE_REPLACED,
+            AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED -> {
+                ReminderScheduler.rebuildIfNeeded(context)
+                return
+            }
+
+            // A running process rebuilt before the clock or zone changed.
             Intent.ACTION_TIME_CHANGED,
-            Intent.ACTION_TIMEZONE_CHANGED,
-            AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED -> Unit
+            Intent.ACTION_TIMEZONE_CHANGED -> Unit
 
             else -> return
         }
