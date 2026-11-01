@@ -383,6 +383,16 @@ class EventFormInstrumentedTest {
         }
         assertTrue("Expected another app's screen on top, not $shown", shown != null && shown != context.packageName)
         automation.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
+        // Android handles the Back later. On a slow emulator the next test's screen could open first,
+        // and the Back would close it instead.
+        val leaveDeadline = SystemClock.uptimeMillis() + 5000
+        var front: CharSequence? = shown
+        while (SystemClock.uptimeMillis() < leaveDeadline) {
+            front = automation.rootInActiveWindow?.packageName
+            if (front != null && front != shown) break
+            SystemClock.sleep(100)
+        }
+        assertTrue("Back didn't leave $shown, $front is in front", front != null && front != shown)
     }
 
     @Test
