@@ -157,7 +157,12 @@ class TimeZonePickerDialog : DialogFragment() {
             )
             dismiss()
         }
-        search.doAfterTextChanged { adapter.filter(it.toString()) }
+        // Each search starts at its first match. Otherwise the list keeps the scroll that put the
+        // event's zone in view, and the first matches are hidden above it.
+        search.doAfterTextChanged {
+            adapter.filter(it.toString())
+            list.setSelection(0)
+        }
         // Opens with the event's zone in view.
         if (savedInstanceState == null) adapter.selectedPosition()?.let { list.setSelection(it) }
 

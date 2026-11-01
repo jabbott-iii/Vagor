@@ -11,7 +11,7 @@ Vagor is an offline Kotlin Android vacation planner, ported from `jabbott-iii/un
    ```
 4. Launch the `app` configuration on an emulator or Android device running Android 8.0+.
 
-To build a signed release bundle for Google Play, see [PLAY_RELEASE.md](PLAY_RELEASE.md).
+To build a signed release bundle and publish it on Google Play, see [PLAY_RELEASE.md](PLAY_RELEASE.md). The store listing's text, graphics and screenshots are in `fastlane/metadata/android/en-US/`.
 
 ## Features
 

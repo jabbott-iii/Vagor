@@ -153,6 +153,11 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   keep it one flat colour with no shadow. minSdk 26 always uses `mipmap-anydpi`, so there are no
   density PNGs. The Play icon and feature graphic (`fastlane/metadata/android/en-US/images/`)
   are drawn from the same paths: redraw them when the icon changes.
+- The store listing lives in `fastlane/metadata/android/en-US/` (fastlane's layout, though nothing
+  uses fastlane): the title, descriptions and release notes as text files, the Play graphics, and
+  six phone screenshots of invented trips (taken 2026-11-01 at 1080×1920). PLAY_RELEASE.md step 6
+  has the alt text and the way to retake them. Keep the listing true to what the app does, as with
+  the privacy policy, and retake a screenshot when the screen it shows changes.
 - Every button on a page is the same size (asked for by the user on 2026-10-26): full width,
   one above the other, styled `Widget.Vagor.Button` or `Widget.Vagor.Button.Outlined` with
   `layout_width="match_parent"` and `layout_height="wrap_content"`. The style sets one height
@@ -265,8 +270,11 @@ daemon. It needs an Android SDK with platform 37, found through `ANDROID_HOME` o
   `connectedDebugAndroidTest` run also uninstalls the app afterwards, which deletes its data.
 - Release signing reads the upload key only from the `VAGOR_UPLOAD_KEYSTORE`,
   `VAGOR_UPLOAD_KEYSTORE_PASSWORD`, `VAGOR_UPLOAD_KEY_ALIAS` and `VAGOR_UPLOAD_KEY_PASSWORD`
-  environment variables; without them `bundleRelease` is unsigned. Never commit a keystore or
-  password.
+  environment variables. With `VAGOR_UPLOAD_KEYSTORE` unset or blank, `bundleRelease` is unsigned
+  (as in CI); once it's set, a missing keystore or variable fails every build, debug builds and
+  tests included, rather than leaving the bundle unsigned (added 2026-11-01). Signed builds run with `--no-configuration-cache`
+  (PLAY_RELEASE.md step 3), which keeps the passwords out of `.gradle/configuration-cache`. Never
+  commit a keystore or password.
 - Release builds run R8 (`optimization { enable = true }`, turned on 2026-10-31): it shrinks,
   optimizes and obfuscates the code and removes unused resources. Debug builds and the
   instrumented tests don't use it, so check a change that relies on reflection, class names or
@@ -423,11 +431,13 @@ phone was off isn't shown late. Changing any of these is the user's call.
 - Finish with: files changed, commands run and their results, checks not run, assumptions, and
   open risks.
 
-## Known issues (as of 2026-10-25)
+## Known issues (as of 2026-11-01)
 
-- Not yet on Google Play. The remaining steps are Play Console work listed in PLAY_RELEASE.md:
-  hosting PRIVACY.md at a public URL, the upload key, Data safety and other declarations, store
-  assets, and a 12-tester, 14-day closed test for new personal developer accounts.
+- Not yet on Google Play. What remains is the developer's work in PLAY_RELEASE.md: the upload
+  key, hosting PRIVACY.md at a public URL, creating the app and answering Play Console's
+  declarations (trader status, App content, Data safety), entering the listing from
+  `fastlane/metadata/`, then an internal test, a 12-tester, 14-day closed test, and the
+  application for production access.
 - The system draws the launch window before any app code runs. On Android 8–11 it follows the
   system light/dark setting on every cold start, so a dark-mode user on a light-themed phone sees
   a brief light flash. On Android 12+ only the very first launch does; later launches match the

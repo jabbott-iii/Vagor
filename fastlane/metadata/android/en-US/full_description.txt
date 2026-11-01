@@ -1,0 +1,12 @@
+Vagor is a simple vacation planner that keeps everything on your phone.
+
+• Add vacations with start and end dates and your trip details.
+• Plan events on the days of each vacation, each with its time, time zone and details.
+• Pick dates from a drop-down calendar: an event's calendar offers only its vacation's days. Find any time zone by searching for a city or country.
+• See every trip at a glance, soonest first, with past trips kept below.
+• Get a reminder notification on the morning a vacation starts, the morning it ends, and about an hour before each event.
+• Share a vacation, with its events, or a single event as text through any app you choose.
+• Add a vacation or an event to Google Calendar or another calendar app.
+• Dark mode by default, with a switch for light mode, and a blue color scheme designed to stay readable for people with color blindness.
+
+Vagor has no account, no ads and no internet access. It never uploads your trips: they leave Vagor only when you share them, add them to a calendar app, or move to a new phone.

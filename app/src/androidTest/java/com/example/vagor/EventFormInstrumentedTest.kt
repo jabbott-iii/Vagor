@@ -129,8 +129,22 @@ class EventFormInstrumentedTest {
                 withId(R.id.editEventTimeZone)
             ).check(matches(withText(TimeZoneChoices.fieldText(context, "Asia/Tokyo"))))
 
-            // Accents and case don't matter, and a search with no match says so.
+            // The list opens scrolled to Tokyo, near its end, but a search starts at its first match.
             onView(withId(R.id.editEventTimeZone)).perform(scrollTo(), click())
+            onView(withId(R.id.timeZoneList)).inRoot(isDialog()).check { view, _ ->
+                val list = view as ListView
+                val tokyo = (0 until list.adapter.count).first {
+                    (list.adapter.getItem(it) as TimeZoneChoice).id == "Asia/Tokyo"
+                }
+                assertTrue(list.firstVisiblePosition > 0)
+                assertTrue(tokyo in list.firstVisiblePosition..list.lastVisiblePosition)
+            }
+            searchTimeZones("a")
+            onView(withId(R.id.timeZoneList)).inRoot(isDialog()).check { view, _ ->
+                assertEquals(0, (view as ListView).firstVisiblePosition)
+            }
+
+            // Accents and case don't matter, and a search with no match says so.
             searchTimeZones("SAO PAULO")
             onView(withId(R.id.timeZoneList)).inRoot(isDialog()).check { view, _ ->
                 assertEquals(1, (view as ListView).adapter.count)

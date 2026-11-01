@@ -33,3 +33,11 @@ replay_pid*
 # Release signing keys never go in git
 *.jks
 *.keystore
+*.p12
+*.pfx
+
+# Release outputs, wherever Android Studio's Generate Signed Bundle puts them
+*.aab
+*.apk
+*.idsig
+/app/release/
