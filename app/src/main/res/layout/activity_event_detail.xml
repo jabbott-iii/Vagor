@@ -2,6 +2,7 @@
 <!-- Scrolls so every field and button stays reachable in landscape and on small screens. -->
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true">
@@ -13,27 +14,33 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Add or edit, set in code, like the screen's title. -->
         <TextView
+            android:id="@+id/eventFormHeading"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/event_details"
+            android:accessibilityHeading="true"
             android:textSize="24sp"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp"
+            tools:targetApi="28"
+            tools:text="@string/add_event" />
 
         <EditText
             android:id="@+id/editEventTitle"
             android:layout_width="match_parent"
-            android:layout_height="57dp"
-            android:autofillHints="none"
+            android:layout_height="wrap_content"
+            android:minHeight="57dp"
+            android:importantForAutofill="no"
             android:hint="@string/event_title"
             android:inputType="text" />
 
         <EditText
             android:id="@+id/editEventDate"
             android:layout_width="match_parent"
-            android:layout_height="57dp"
+            android:layout_height="wrap_content"
+            android:minHeight="57dp"
             android:layout_marginTop="8dp"
-            android:autofillHints="none"
+            android:importantForAutofill="no"
             android:drawableEnd="@drawable/ic_calendar"
             android:hint="@string/event_date"
             android:inputType="date" />
@@ -43,9 +50,10 @@
         <EditText
             android:id="@+id/editEventTime"
             android:layout_width="match_parent"
-            android:layout_height="57dp"
+            android:layout_height="wrap_content"
+            android:minHeight="57dp"
             android:layout_marginTop="8dp"
-            android:autofillHints="none"
+            android:importantForAutofill="no"
             android:drawableEnd="@drawable/ic_schedule"
             android:hint="@string/event_time"
             android:inputType="time" />
@@ -54,9 +62,10 @@
         <EditText
             android:id="@+id/editEventTimeZone"
             android:layout_width="match_parent"
-            android:layout_height="57dp"
+            android:layout_height="wrap_content"
+            android:minHeight="57dp"
             android:layout_marginTop="8dp"
-            android:autofillHints="none"
+            android:importantForAutofill="no"
             android:drawableEnd="@drawable/ic_public"
             android:hint="@string/event_time_zone"
             android:inputType="text" />
@@ -68,7 +77,7 @@
             android:layout_height="wrap_content"
             android:minHeight="57dp"
             android:layout_marginTop="8dp"
-            android:autofillHints="none"
+            android:importantForAutofill="no"
             android:gravity="top|start"
             android:hint="@string/event_details_hint"
             android:inputType="textMultiLine|textCapSentences" />

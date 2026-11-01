@@ -3,12 +3,19 @@
     <!-- The drop-down calendar spans its field on phones in portrait, and is no wider than this
          in landscape or on tablets. Elevation and corner follow Material 3's docked date picker. -->
     <dimen name="calendar_dropdown_max_width">412dp</dimen>
+    <!-- Where a field is too narrow for seven days of calendar_day_min_size (a 360dp-wide phone,
+         or a larger display size), the calendar is wider than its field, up to the screen's width
+         less this on each side. -->
+    <dimen name="calendar_dropdown_screen_margin">8dp</dimen>
     <dimen name="calendar_dropdown_elevation">6dp</dimen>
     <dimen name="calendar_dropdown_corner">16dp</dimen>
     <!-- A day in the drop-down calendar: a 48dp-tall touch target with a circle up to 36dp
          across (smaller when the column is narrower; see calendarDayBackground). In sp so the
          cell and its circle grow with the day number when the font size is larger. -->
     <dimen name="calendar_day_height">48sp</dimen>
+    <!-- Android's smallest touch target: a day is never narrower, where the screen allows, or
+         shorter, even at a font size below 100%. -->
+    <dimen name="calendar_day_min_size">48dp</dimen>
     <dimen name="calendar_day_circle">36sp</dimen>
     <dimen name="calendar_weekday_height">32sp</dimen>
     <dimen name="calendar_today_ring_width">2dp</dimen>

@@ -156,6 +156,17 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   `layout_width="match_parent"` and `layout_height="wrap_content"`. The style sets one height
   (`@dimen/button_height`), which grows with the font size. Only the floating Add Vacation and Add
   Event buttons differ (`Widget.Vagor.AddButton`).
+- Every screen but `HomeActivity` sets its own title, which TalkBack announces when the screen
+  opens: Add Vacation or Edit Vacation, Add Event or Edit Event, and the vacation's title on its
+  page. Each form's heading shows the same words and, like every heading, sets
+  `accessibilityHeading`. Never give `HomeActivity` an `android:label`: on the launcher activity it
+  would rename the app's icon.
+- Text fields are `wrap_content` with `minHeight="57dp"`, never a fixed height, so they grow with
+  the font size, and set `importantForAutofill="no"`, so autofill services leave trip text alone.
+  Touch targets are at least 48dp each way. The calendar's days are at least 48dp tall at any font
+  size, and the calendar is wider than its field where the field is too narrow for seven 48dp
+  days (a 360dp-wide phone), up to the screen's width less 8dp on each side; on narrower screens
+  the days are as wide as that allows.
 - UI is XML layouts, `AppCompatActivity` (plus a `Fragment` for each home screen tab),
   `findViewById`, and `ListView` with `ArrayAdapter` for the dashboard. The vacation page shows
   its few events as plain rows in a `ScrollView`, so focus follows the screen. The code uses no Compose, ViewBinding,

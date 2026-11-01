@@ -1,10 +1,13 @@
 package com.example.vagor
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.widget.ListView
+import android.widget.TextView
+import androidx.core.view.ViewCompat
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -204,6 +207,46 @@ class HomeFlowInstrumentedTest {
         val intent = Intent(context, EventDetailActivity::class.java).putExtra("vacationId", vacation.id)
         ActivityScenario.launch<EventDetailActivity>(intent).use {
             onView(withId(R.id.buttonDeleteEvent)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+        }
+    }
+
+    // TalkBack announces each screen by its title; a form's heading says the same and is a heading.
+    @Test
+    fun eachScreenHasItsOwnTitle() {
+        ActivityScenario.launch(VacationDetailActivity::class.java).use {
+            assertTitle(it, R.string.add_vacation, R.id.vacationFormHeading)
+        }
+        val vacation = insertVacation(date(30), date(32))
+        val event = Event("Event-${UUID.randomUUID().toString().take(8)}", date(31), vacation.id)
+        val eventId = db.eventDAO().insert(event).toInt()
+        val editVacation = Intent(context, VacationDetailActivity::class.java)
+            .putExtra("vacationId", vacation.id)
+            .putExtra("title", vacation.title)
+            .putExtra("details", vacation.details)
+            .putExtra("startDate", vacation.startDate)
+            .putExtra("endDate", vacation.endDate)
+        ActivityScenario.launch<VacationDetailActivity>(editVacation).use {
+            assertTitle(it, R.string.edit_vacation, R.id.vacationFormHeading)
+        }
+        val page = Intent(context, EventListActivity::class.java).putExtra("vacationId", vacation.id)
+        ActivityScenario.launch<EventListActivity>(page).use { scenario ->
+            scenario.onActivity { assertEquals(vacation.title, it.title.toString()) }
+        }
+        val newEvent = Intent(context, EventDetailActivity::class.java).putExtra("vacationId", vacation.id)
+        ActivityScenario.launch<EventDetailActivity>(newEvent).use {
+            assertTitle(it, R.string.add_event, R.id.eventFormHeading)
+        }
+        ActivityScenario.launch<EventDetailActivity>(Intent(newEvent).putExtra("eventId", eventId)).use {
+            assertTitle(it, R.string.edit_event, R.id.eventFormHeading)
+        }
+    }
+
+    private fun <A : Activity> assertTitle(scenario: ActivityScenario<A>, title: Int, headingId: Int) {
+        scenario.onActivity { activity ->
+            val heading = activity.findViewById<TextView>(headingId)
+            assertEquals(context.getString(title), activity.title.toString())
+            assertEquals(context.getString(title), heading.text.toString())
+            assertTrue(ViewCompat.isAccessibilityHeading(heading))
         }
     }
 

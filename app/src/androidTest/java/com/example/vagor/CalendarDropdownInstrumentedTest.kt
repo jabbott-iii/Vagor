@@ -7,10 +7,12 @@ import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.LocaleList
 import android.view.View
+import android.view.ViewGroup
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Spinner
 import android.widget.TextView
@@ -18,6 +20,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.ConfigurationCompat
 import androidx.core.os.LocaleListCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.children
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
@@ -51,6 +54,7 @@ import org.junit.runner.RunWith
 import java.time.LocalDate
 import java.util.Locale
 import java.util.UUID
+import kotlin.math.abs
 
 // Uses the app's vacation_database but deletes only the rows it inserts.
 @RunWith(AndroidJUnit4::class)
@@ -157,6 +161,53 @@ class CalendarDropdownInstrumentedTest {
 
             day("6").perform(click())
             onView(withId(R.id.editEventDate)).check(matches(withText("07/06/2031")))
+        }
+    }
+
+    // Android's smallest touch target is 48dp each way, at every font size. On a 360dp-wide phone
+    // the field is too narrow for seven of those, so the calendar is wider than its field and
+    // centred under it. Narrower screens (CI's emulator is 320dp wide) can't fit them, and the
+    // calendar is as wide as allowed.
+    @Test
+    fun daysAreAtLeast48dpEachWayWhereTheScreenAllows() {
+        val density = context.resources.displayMetrics.density
+        val touchTarget = (48 * density).toInt()
+        ActivityScenario.launch(VacationDetailActivity::class.java).use { scenario ->
+            var screenDp = 0f
+            var screenWidth = 0
+            var fieldWidth = 0
+            val fieldLocation = IntArray(2)
+            scenario.onActivity {
+                val screen = Rect()
+                it.window.decorView.getWindowVisibleDisplayFrame(screen)
+                screenWidth = screen.width()
+                screenDp = screenWidth / density
+                val field = it.findViewById<View>(R.id.editStartDate)
+                fieldWidth = field.width
+                field.getLocationOnScreen(fieldLocation)
+            }
+            onView(withId(R.id.editStartDate)).perform(click())
+
+            onView(withId(R.id.days)).inRoot(isPlatformPopup()).check { view, _ ->
+                val days = (view as ViewGroup).children.flatMap { (it as ViewGroup).children }.toList()
+                assertEquals(CalendarMonth.CELLS, days.size)
+                days.forEach { day ->
+                    assertTrue("A day is ${day.height / density}dp tall", day.height >= touchTarget)
+                    if (screenDp >= 360) assertTrue("A day is ${day.width / density}dp wide", day.width >= touchTarget)
+                }
+                val popup = view.rootView
+                if (screenDp < 360) {
+                    val margin = context.resources.getDimensionPixelSize(R.dimen.calendar_dropdown_screen_margin)
+                    assertEquals(screenWidth - 2 * margin, popup.width)
+                    assertTrue(popup.width > fieldWidth)
+                }
+                if (popup.width > fieldWidth) {
+                    val popupLocation = IntArray(2)
+                    popup.getLocationOnScreen(popupLocation)
+                    val centredLeft = fieldLocation[0] - (popup.width - fieldWidth) / 2
+                    assertTrue("Not centred under the field", abs(popupLocation[0] - centredLeft) <= 1)
+                }
+            }
         }
     }
 

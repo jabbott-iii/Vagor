@@ -40,8 +40,10 @@ fun EditText.attachCalendarDropdown(earliest: () -> LocalDate? = { null }, lates
     makePickOnly(context.getString(R.string.choose_date)) { showCalendarDropdown(earliest(), latest()) }
 }
 
-// A popup's content has no parent view to inflate into.
-@SuppressLint("InflateParams")
+// A popup's content has no parent view to inflate into. A wider popup's offset is in screen
+// pixels, so it's placed from the field's left edge (Gravity.LEFT) in either direction of text;
+// START would line up the right edges in a right-to-left language before adding the offset.
+@SuppressLint("InflateParams", "RtlHardcoded")
 private fun EditText.showCalendarDropdown(earliest: LocalDate?, latest: LocalDate?) {
     // A screen reader can still activate the field behind an open calendar; don't open a second.
     if (!isAttachedToWindow || (getTag(R.id.calendar) as? PopupWindow)?.isShowing == true) return
@@ -60,8 +62,8 @@ private fun EditText.showCalendarDropdown(earliest: LocalDate?, latest: LocalDat
     val content = LayoutInflater.from(context).inflate(R.layout.popup_calendar, null)
     // Screen readers announce the calendar by the field's name when it appears.
     ViewCompat.setAccessibilityPaneTitle(content, hint)
-    val width = minOf(width, resources.getDimensionPixelSize(R.dimen.calendar_dropdown_max_width))
-    val popup = PopupWindow(content, width, ViewGroup.LayoutParams.WRAP_CONTENT, true)
+    val popupWidth = calendarWidth(content)
+    val popup = PopupWindow(content, popupWidth, ViewGroup.LayoutParams.WRAP_CONTENT, true)
     popup.inputMethodMode = PopupWindow.INPUT_METHOD_NOT_NEEDED
     popup.elevation = resources.getDimension(R.dimen.calendar_dropdown_elevation)
     popup.setBackgroundDrawable(
@@ -92,7 +94,7 @@ private fun EditText.showCalendarDropdown(earliest: LocalDate?, latest: LocalDat
     }
     // Fit again whenever the screen's layout changes, such as when the keyboard closes.
     val refit = View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
-        if (popup.isShowing) popup.update(this, width, fittedHeight(content, width))
+        if (popup.isShowing) popup.update(this, popupWidth, fittedHeight(content, popupWidth))
     }
     addOnAttachStateChangeListener(closeWithField)
     rootView.addOnLayoutChangeListener(refit)
@@ -105,10 +107,34 @@ private fun EditText.showCalendarDropdown(earliest: LocalDate?, latest: LocalDat
 
     // An explicit height, rather than wrap_content, lets the popup open above the field when
     // there's no room below.
-    popup.height = fittedHeight(content, width)
-    popup.showAsDropDown(this)
+    popup.height = fittedHeight(content, popupWidth)
+    if (popupWidth > width) {
+        // Centred under the field.
+        popup.showAsDropDown(this, (width - popupWidth) / 2, 0, Gravity.TOP or Gravity.LEFT)
+    } else {
+        // Lined up with the field's start.
+        popup.showAsDropDown(this)
+    }
     // Keyboard and D-pad users start on the picked day, once the popup's window is attached.
     if (!isInTouchMode) content.post { month.focusSelectedDay() }
+}
+
+// The field's width, up to calendar_dropdown_max_width. Where that's too narrow for 48dp days, as
+// wide as they need, up to the screen's width less a margin; on the narrowest screens (about 320dp
+// wide) the days still come out a little narrower. The screen margin never makes it narrower than
+// the field; only the max width does, in landscape and on tablets.
+private fun EditText.calendarWidth(content: View): Int {
+    val calendar = content.findViewById<View>(R.id.calendar)
+    val roomy = 7 * resources.getDimensionPixelSize(R.dimen.calendar_day_min_size) +
+        calendar.paddingLeft + calendar.paddingRight
+    val visible = Rect()
+    getWindowVisibleDisplayFrame(visible)
+    val screen = visible.width() - 2 * resources.getDimensionPixelSize(R.dimen.calendar_dropdown_screen_margin)
+    return minOf(
+        maxOf(width, roomy),
+        maxOf(width, screen),
+        resources.getDimensionPixelSize(R.dimen.calendar_dropdown_max_width)
+    )
 }
 
 // The whole calendar when the screen is tall enough (the popup goes below the field if it fits
@@ -159,12 +185,18 @@ private class MonthGrid(
             weekdays.addView(label, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f))
         }
 
+        // 48sp grows with the font size, but is less than 48dp below 100%.
+        val dayHeight = maxOf(
+            context.resources.getDimensionPixelSize(R.dimen.calendar_day_height),
+            context.resources.getDimensionPixelSize(R.dimen.calendar_day_min_size)
+        )
         val inflater = LayoutInflater.from(context)
         val rows = content.findViewById<LinearLayout>(R.id.days)
         repeat(CalendarMonth.CELLS / 7) {
             val row = LinearLayout(context)
             repeat(7) {
                 val day = inflater.inflate(R.layout.item_calendar_day, row, false) as TextView
+                day.layoutParams.height = dayHeight
                 row.addView(day)
                 days += day
             }

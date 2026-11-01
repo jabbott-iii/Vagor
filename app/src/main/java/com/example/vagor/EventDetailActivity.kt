@@ -6,6 +6,7 @@ import android.text.format.DateFormat
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.vagor.database.AppDatabase
@@ -60,6 +61,7 @@ class EventDetailActivity : AppCompatActivity() {
             finish()
             return
         }
+        showScreenTitle(isNew = saved == null)
 
         if (saved != null) {
             editEventTitle!!.setText(saved.title)
@@ -273,6 +275,12 @@ class EventDetailActivity : AppCompatActivity() {
         db?.close()
         db = null
         super.onDestroy()
+    }
+
+    // TalkBack announces each screen by its title; the heading shows the same words.
+    private fun showScreenTitle(isNew: Boolean) {
+        setTitle(if (isNew) R.string.add_event else R.string.edit_event)
+        findViewById<TextView>(R.id.eventFormHeading).text = title
     }
 
     // A clock opening at the picked time, or 9:00 AM, in the phone's 12- or 24-hour style. Its

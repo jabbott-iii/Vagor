@@ -107,6 +107,8 @@ class EventListActivity : AppCompatActivity() {
             return
         }
         vacation = current
+        // TalkBack announces the page by its title.
+        title = current.title
         titleView!!.text = current.title
         datesView!!.text = vacationDateRange(current)
         detailsView!!.text = current.details

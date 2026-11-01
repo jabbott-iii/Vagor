@@ -1,9 +1,14 @@
 package com.example.vagor
 
+import android.content.Context
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -50,6 +55,10 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
                 .setPositiveButton(android.R.string.ok, null)
                 .show()
         }
+
+        val packageInfo = requireContext().ownPackageInfo()
+        view.findViewById<TextView>(R.id.appVersion).text =
+            getString(R.string.app_version, packageInfo.versionName, PackageInfoCompat.getLongVersionCode(packageInfo))
     }
 
     override fun onResume() {
@@ -65,4 +74,12 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
         requireView().findViewById<TextView>(R.id.eventRemindersStatus).setText(status)
         requireView().findViewById<Button>(R.id.buttonNotificationSettings).isVisible = !notificationsOn
     }
+}
+
+// Android 13 replaced getPackageInfo's Int flags with PackageInfoFlags.
+private fun Context.ownPackageInfo(): PackageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    packageManager.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0))
+} else {
+    @Suppress("DEPRECATION")
+    packageManager.getPackageInfo(packageName, 0)
 }

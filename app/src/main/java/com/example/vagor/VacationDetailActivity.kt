@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.vagor.database.AppDatabase
@@ -34,6 +35,7 @@ class VacationDetailActivity : AppCompatActivity() {
         val details = getIntent().getStringExtra("details")
         val startDate = getIntent().getStringExtra("startDate")
         val endDate = getIntent().getStringExtra("endDate")
+        showScreenTitle(isNew = vacationId == -1)
 
         if (vacationId != -1) {
             editTitle!!.setText(title)
@@ -157,5 +159,11 @@ class VacationDetailActivity : AppCompatActivity() {
         db?.close()
         db = null
         super.onDestroy()
+    }
+
+    // TalkBack announces each screen by its title; the heading shows the same words.
+    private fun showScreenTitle(isNew: Boolean) {
+        setTitle(if (isNew) R.string.add_vacation else R.string.edit_vacation)
+        findViewById<TextView>(R.id.vacationFormHeading).text = title
     }
 }

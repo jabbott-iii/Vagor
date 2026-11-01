@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- CalendarDropdown.kt makes the height at least calendar_day_min_size. -->
 <TextView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="0dp"

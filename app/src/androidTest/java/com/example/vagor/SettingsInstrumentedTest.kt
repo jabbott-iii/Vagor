@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.SystemClock
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -189,6 +190,20 @@ class SettingsInstrumentedTest {
                 .check(
                     matches(withText(containsString("TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION")))
                 )
+        }
+    }
+
+    // For reporting a problem: the version name and code, as Google Play shows them.
+    @Test
+    fun settingsShowsTheAppVersion() {
+        @Suppress("DEPRECATION")
+        val info = context.packageManager.getPackageInfo(context.packageName, 0)
+        val version = "Version ${info.versionName} (${PackageInfoCompat.getLongVersionCode(info)})"
+
+        ActivityScenario.launch(HomeActivity::class.java).use {
+            onView(withId(R.id.nav_settings)).perform(click())
+
+            onView(withId(R.id.appVersion)).perform(scrollTo()).check(matches(withText(version)))
         }
     }
 

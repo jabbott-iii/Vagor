@@ -2,6 +2,7 @@
 <!-- Scrolls so every field and button stays reachable in landscape and on small screens. -->
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true">
@@ -13,18 +14,23 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Add or edit, set in code, like the screen's title. -->
         <TextView
+            android:id="@+id/vacationFormHeading"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/vacation_details"
+            android:accessibilityHeading="true"
             android:textSize="24sp"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="8dp"
+            tools:targetApi="28"
+            tools:text="@string/add_vacation" />
 
         <EditText
             android:id="@+id/editTitle"
             android:layout_width="match_parent"
-            android:layout_height="57dp"
-            android:autofillHints="none"
+            android:layout_height="wrap_content"
+            android:minHeight="57dp"
+            android:importantForAutofill="no"
             android:hint="@string/vacation_title"
             android:inputType="text" />
 
@@ -35,7 +41,7 @@
             android:layout_height="wrap_content"
             android:minHeight="57dp"
             android:layout_marginTop="8dp"
-            android:autofillHints="none"
+            android:importantForAutofill="no"
             android:gravity="top|start"
             android:hint="@string/trip_details"
             android:inputType="textMultiLine|textCapSentences" />
@@ -43,9 +49,10 @@
         <EditText
             android:id="@+id/editStartDate"
             android:layout_width="match_parent"
-            android:layout_height="57dp"
+            android:layout_height="wrap_content"
+            android:minHeight="57dp"
             android:layout_marginTop="8dp"
-            android:autofillHints="none"
+            android:importantForAutofill="no"
             android:drawableEnd="@drawable/ic_calendar"
             android:hint="@string/start_date"
             android:inputType="date" />
@@ -53,9 +60,10 @@
         <EditText
             android:id="@+id/editEndDate"
             android:layout_width="match_parent"
-            android:layout_height="57dp"
+            android:layout_height="wrap_content"
+            android:minHeight="57dp"
             android:layout_marginTop="8dp"
-            android:autofillHints="none"
+            android:importantForAutofill="no"
             android:drawableEnd="@drawable/ic_calendar"
             android:hint="@string/end_date"
             android:inputType="date" />
