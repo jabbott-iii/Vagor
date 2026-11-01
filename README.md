@@ -23,7 +23,7 @@ To build a signed release bundle for Google Play, see [PLAY_RELEASE.md](PLAY_REL
 - **Calendar date entry** → every date field opens a month calendar that drops down below it; an event's calendar offers only its vacation's days
 - **Time and time zone entry** → an event's time comes from a clock in the phone's 12- or 24-hour style, and its time zone from a searchable list that starts on the phone's zone
 - **Reminders** → a notification around 9:00 AM local time on the day each vacation starts and ends, and an hour before each event
-- **Settings tab** → a dark mode switch (dark is the default), whether event reminders are exact (with a button to Android's Alarms & reminders screen), and the privacy policy
+- **Settings tab** → a dark mode switch (dark is the default), whether event reminders are exact (with a button to Android's Alarms & reminders screen), the privacy policy, and the third-party licenses
 - **Theme** → a blue Material 3 colour scheme chosen for colour-blind users; every text colour meets WCAG AA contrast in light and dark mode
 - **Add to Calendar** → opens Google Calendar's new-event screen (or another calendar app's when Google Calendar isn't installed) filled in with a vacation, all day over its dates, or an event at its time in its time zone; the calendar app saves it, and Vagor needs no calendar permission
 - **Persistence** → Room database storing vacations and events on the device only
@@ -38,4 +38,4 @@ To build a signed release bundle for Google Play, see [PLAY_RELEASE.md](PLAY_REL
 
 ## License
 
-Vagor is proprietary software: copyright (c) 2026 Joseph Anthony Abbott III, all rights reserved. See [LICENSE](LICENSE). The third-party software it includes keeps its own licenses, listed in [NOTICE](NOTICE).
+Vagor is proprietary software: copyright (c) 2026 Joseph Anthony Abbott III, all rights reserved. See [LICENSE](LICENSE). The third-party software it includes keeps its own licenses, listed in [NOTICE](NOTICE) and in the app under Settings > Third-Party Licenses.

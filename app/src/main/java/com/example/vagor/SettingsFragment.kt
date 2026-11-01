@@ -36,6 +36,16 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
                 .setPositiveButton(android.R.string.ok, null)
                 .show()
         }
+
+        // The bundled libraries' Apache License asks for its text to go with the app.
+        view.findViewById<Button>(R.id.buttonThirdPartyLicenses).setOnClickListener {
+            val license = resources.openRawResource(R.raw.apache_license_2_0).bufferedReader().use { it.readText() }
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.third_party_licenses)
+                .setMessage(getString(R.string.third_party_licenses_text) + "\n\n" + reflowParagraphs(license))
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+        }
     }
 
     override fun onResume() {

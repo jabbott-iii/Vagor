@@ -89,8 +89,9 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
   `backup_rules.xml` and `data_extraction_rules.xml`); a direct device-to-device transfer to a new
   phone is still allowed.
 - The privacy policy exists twice: PRIVACY.md and `privacy_policy_text` in strings.xml. Change
-  both together, and keep them true to what the app does. Its privacy contact is the public GitHub
-  Issues page (picked as the default on 2026-10-25; the user may want an email address instead).
+  both together, and keep them true to what the app does. Its privacy contact is
+  jabbottpublicsupport@gmail.com, chosen by the user on 2026-10-31 when GitHub Issues turned out to
+  be off; the Play listing's contact email is the same address.
 - All user data lives in the Room database file `vacation_database`, and there is no other copy.
   Never rename that file, never use `fallbackToDestructiveMigration`, and never clear tables
   outside tests. For a schema change, bump `AppDatabase.version`, add a `Migration` to
@@ -359,8 +360,14 @@ phone was off isn't shown late. Changing any of these is the user's call.
   after the first Play upload a new ID is a different app.
 - `local.properties` (machine-specific `sdk.dir`) is tracked in git even though its own header
   says it shouldn't be. Don't commit changes to it.
-- Don't add open-source license text to the project. When a library that ships in the app is
-  added, add it and its license to `NOTICE`.
+- Vagor itself is proprietary: don't put its own code under an open-source license. The only
+  third-party license text the app ships is the Apache License 2.0 in
+  `res/raw/apache_license_2_0.txt`
+  (added 2026-10-31), because the bundled libraries' license asks for it to go with the app; the
+  Settings tab shows it under Third-Party Licenses. When a library, icon or other third-party
+  material that ships in the app is added, add it to `NOTICE` and to `third_party_licenses_text`
+  in strings.xml (`ThirdPartyLicensesTest` checks they list the same things); one under another
+  license also needs that license's text added.
 - Finish with: files changed, commands run and their results, checks not run, assumptions, and
   open risks.
 

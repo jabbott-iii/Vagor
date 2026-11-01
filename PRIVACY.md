@@ -1,6 +1,6 @@
 # Vagor Privacy Policy
 
-Effective October 27, 2026
+Effective October 31, 2026
 
 Vagor is a vacation planner made by Joseph Anthony Abbott III. This policy explains how Vagor
 handles your information. The same text is in the app under Settings > Privacy Policy.
@@ -59,5 +59,4 @@ policy is published, with a new effective date.
 
 ## Contact
 
-For privacy questions, open an issue at https://github.com/jabbott-iii/Vagor/issues. Issues are
-public, so don't include personal details in them.
+For privacy questions, email jabbottpublicsupport@gmail.com.

@@ -69,8 +69,8 @@ Console by hand.
 Play needs the policy at a public, non-PDF URL as well as in the app. Publish
 [PRIVACY.md](PRIVACY.md) as a web page (GitHub Pages works) and keep it identical to the in-app
 text (`privacy_policy_text` in `app/src/main/res/values/strings.xml`). The policy's privacy contact
-is the repository's public GitHub Issues page; to use an email address instead, change the Contact
-section in both copies.
+is jabbottpublicsupport@gmail.com, the same address as the store listing's contact email; to
+change it, change the Contact section in both copies.
 
 ## 4. Play Console: App content
 

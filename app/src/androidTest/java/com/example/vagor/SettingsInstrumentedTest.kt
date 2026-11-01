@@ -25,6 +25,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import org.hamcrest.Matchers.containsString
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -133,6 +134,20 @@ class SettingsInstrumentedTest {
             onView(withId(R.id.buttonPrivacyPolicy)).perform(scrollTo(), click())
 
             onView(withText(R.string.privacy_policy)).inRoot(isDialog()).check(matches(isDisplayed()))
+        }
+    }
+
+    @Test
+    fun thirdPartyLicensesOpenFromSettingsWithTheLicenseText() {
+        ActivityScenario.launch(HomeActivity::class.java).use {
+            onView(withId(R.id.nav_settings)).perform(click())
+            onView(withId(R.id.buttonThirdPartyLicenses)).perform(scrollTo(), click())
+
+            onView(withText(R.string.third_party_licenses)).inRoot(isDialog()).check(matches(isDisplayed()))
+            onView(withText(containsString("Material Components for Android"))).inRoot(isDialog())
+                .check(
+                    matches(withText(containsString("TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION")))
+                )
         }
     }
 
