@@ -9,9 +9,18 @@ Block-level HTML comments like this one are stripped before Claude reads the fil
 Vagor is an offline Android vacation planner written in Kotlin: a single `:app` module. Its
 application ID (the Play and device identity) is `io.github.jabbott_iii.vagor`; the Kotlin package
 and `namespace` are still `com.example.vagor`. It runs entirely on the phone, with no backend and no
-accounts. It's proprietary, all rights reserved by Joseph Anthony Abbott III (`LICENSE`; made
-proprietary on 2026-10-31 at the user's request, Apache 2.0 before), and `NOTICE` lists the
-third-party software that ships in the app.
+accounts. It's proprietary, all rights reserved by Joseph Anthony Abbott III (made proprietary on
+2026-10-31 at the user's request, Apache 2.0 before), and `NOTICE` lists the third-party software
+that ships in the app. `LICENSE` is the Vagor Perpetual End-User License Agreement, copied from the
+user's Denarii Dolor app on 2026-11-07 at their request and changed to fit Vagor, mainly: it drops
+Denarii Dolor's encryption, PIN and wipe function, exported reports and financial advice; says
+instead that Vagor gives data only to the app the user shares it with or their calendar app, that
+the receiving app's terms then apply, that it turns off cloud backup and can't recover lost data
+except from a device-to-device transfer, and that it's a planning aid only, whose reminders can be
+late or stopped; and says where its third-party notices are. The GitHub view-and-fork exception the
+old LICENSE had is now in README's License section. Vagor is to be sold on Google Play for US$1,
+like Denarii Dolor (decided with the user on 2026-11-07), so the agreement's license fee, refund and
+liability cap apply as written, and PLAY_RELEASE.md creates the app as paid.
 
 ## Product requirements
 
@@ -92,7 +101,9 @@ code now say **events**, but the Room table keeps its old name `excursions` (see
 - The privacy policy exists twice: PRIVACY.md and `privacy_policy_text` in strings.xml. Change
   both together, and keep them true to what the app does. Its privacy contact is
   jabbottpublicsupport@gmail.com, chosen by the user on 2026-10-31 when GitHub Issues turned out to
-  be off; the Play listing's contact email is the same address.
+  be off; the Play listing's contact email is the same address. `LICENSE` also says how the app
+  handles data (section 5) and that its reminders can be late or stopped (section 6): keep those
+  true too.
 - All user data lives in the Room database file `vacation_database`, and there is no other copy.
   Never rename that file, never use `fallbackToDestructiveMigration`, and never clear tables
   outside tests. For a schema change, bump `AppDatabase.version`, add a `Migration` to
@@ -467,13 +478,13 @@ phone was off isn't shown late. Changing any of these is the user's call.
 - Finish with: files changed, commands run and their results, checks not run, assumptions, and
   open risks.
 
-## Known issues (as of 2026-11-01)
+## Known issues (as of 2026-11-07)
 
 - Not yet on Google Play. What remains is the developer's work in PLAY_RELEASE.md: the upload
-  key, hosting PRIVACY.md at a public URL, creating the app and answering Play Console's
-  declarations (trader status, App content, Data safety), entering the listing from
-  `fastlane/metadata/`, then an internal test, a 12-tester, 14-day closed test, and the
-  application for production access.
+  key, hosting PRIVACY.md and LICENSE at public URLs, a payments profile, creating the app as paid
+  at US$1 and answering Play Console's declarations (trader status, App content, Data safety),
+  entering the listing from `fastlane/metadata/`, then an internal test, a 12-tester, 14-day closed
+  test (closed testers must buy the app), and the application for production access.
 - The system draws the launch window before any app code runs. On Android 8–11 it follows the
   system light/dark setting on every cold start, so a dark-mode user on a light-themed phone sees
   a brief light flash. On Android 12+ only the very first launch does; later launches match the

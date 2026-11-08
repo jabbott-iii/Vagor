@@ -4,7 +4,8 @@ This is the checklist for Vagor's first Google Play release and every one after 
 holds what a release needs: the code, the signing setup, the privacy policy, and the store
 listing's text, graphics and screenshots (`fastlane/metadata/android/en-US/`). The steps below
 happen in a terminal and in Play Console, and only the developer can do them. Play's rules were
-last checked on 2026-10-31.
+last checked on 2026-10-31, and its rules for selling a paid app on 2026-11-07. Vagor is sold for
+US$1, like Denarii Dolor.
 
 ## Already in the app
 
@@ -140,7 +141,7 @@ after the upload with `make -f Makefile.txt push-tag VERSION=v1.0.0`, or delete 
 later on: it tags whatever HEAD is by then. The Makefile only tags; there's no release workflow,
 so nothing is built or uploaded from a tag.
 
-## 4. Publish the privacy policy
+## 4. Publish the privacy policy and the license agreement
 
 Play needs the policy at a public, non-PDF URL as well as in the app. Publish
 [PRIVACY.md](PRIVACY.md) as a web page and keep it identical to the in-app text
@@ -148,29 +149,109 @@ Play needs the policy at a public, non-PDF URL as well as in the app. Publish
 jabbottpublicsupport@gmail.com, the same address as the store listing's contact email; to change
 it, change the Contact section in both copies.
 
+Publish [LICENSE](LICENSE), Vagor's end-user license agreement, too, as an exact copy named
+`LICENSE.txt`: GitHub Pages serves a `.txt` file as plain text, which browsers show, but a file with
+no extension may be downloaded instead (a Markdown copy would turn its numbered sections into
+lists). Update the copy whenever LICENSE changes. If you declare yourself a trader (step 5), Play
+asks for a terms of service link for each app, and this is Vagor's.
+
 GitHub Pages works, but on 2026-10-31 `https://jabbott-iii.github.io/` redirected to
 `jabbott.dev`, so a Pages site for this repository would be served at `https://jabbott.dev/Vagor/`.
-Open the URL you enter in Play Console in a private window to check that it shows the policy.
+Open each URL you enter in Play Console in a private window to check that it shows the text
+instead of downloading a file.
 
 ## 5. Create the app and answer its declarations
 
-**Create the app:** app name `Vagor: Vacation Planner` (from `title.txt`), default language English
-(United States) – en-US, App (not a game), and **Free**. A free app can never become paid.
+**Payments profile** (Play Console > Settings, then Payments profile under Monetization; Google's
+help pages give other paths too, and the live Console may differ). Set it up first: the app's price
+can't be set without it, and closed testers can't buy the app until there's a price. Start early.
+Verifying the bank account can take up to 5 days, and once the profile is set up Google emails the
+steps of an identity check: usually a government ID, plus proof of address if the ID's address
+differs from the profile's. Review typically takes 2 to 3 business days once Google has every
+document it asked for. There are no payouts until both are done. An account that already sells an
+app already has a payments profile: check that it's verified.
 
-**Trader status:** Play Console asks every active developer account for this declaration once: a new
-account when it's created, an existing one by 2027-02-01. The answer must reflect whether you act
-commercially as a trader, and misstating it can get the account suspended. A personal account
-that declares itself a trader must give a contact phone number, and from 2027-03-01 Google Play
-shows it with the account's address. For a non-trader, Play tells users where trader status
-must be shown (the EEA and the UK, for example) that consumer protection law doesn't apply to
-their dealings with the developer. An account that doesn't distribute apps in the EEA or the UK
-can declare non-trader.
+- A legal name, which buyers see on their receipts, and a physical address: not a PO box. The
+  profile's country can never be changed.
+- **The address is public.** Once an account sells anything, Google Play shows the payments
+  profile's full address, whether or not you declare yourself a trader.
+- Public business information: a website, the product category, a customer support email
+  (jabbottpublicsupport@gmail.com) and the name on buyers' card statements, which follows
+  `GOOGLE*` and can be at most 14 characters.
+- US tax information: an IRS Form W-9, with your SSN if you file as an individual or sole
+  proprietor.
+- A US bank account (checking or savings), verified by a test deposit of less than US$1 or
+  instantly.
+- Payouts come once a month, around the 15th, for the month before, once at least US$1 is owed.
+
+**Create the app:** app name `Vagor: Vacation Planner` (from `title.txt`), default language English
+(United States) – en-US, App (not a game), and **Paid**. The price applies to every track, so
+choose Paid even though the first upload is only a test. A free app can never become paid: charging
+for it would need a new package name, which is a new app, and Vagor's `applicationId` never changes.
+
+**Price** (Monetize with Play > Products > App pricing):
+
+- Set the default price to US$1.00 (Play's US range is US$0.05 to US$999.99) and choose the
+  countries. Paid apps reach only the countries where Play lets buyers pay. Read Trader status below
+  first: an account can declare non-trader only if none of its apps is distributed in the EEA or
+  the UK. Play converts the price
+  to each country's currency with its own rounding, and adds tax where prices must include it (the
+  EU and the UK, for example), so other countries' prices won't be exactly a dollar. You can change
+  any country's price with its pencil icon.
+- Tax and compliance: for the EEA, classify Vagor as Digital Content or as a Service. Buyers can get
+  a refund on a Service for 14 days after buying it.
+- Google charges and pays sales tax in Arizona and most other US states, and VAT in the EU and the
+  UK, so you don't collect it there. US buyers pay the tax on top of the price.
+- You, not Google, are the merchant of record everywhere except the EEA, the UK and the other
+  places on Google's merchant of record list, which doesn't include the US (Developer Distribution
+  Agreement 3.4). Google's tax page leaves VAT to the developer in some countries, such as
+  Switzerland and Tanzania, and in Colombia and Peru for developers outside them. Only the US, the
+  EU, the UK and those four were checked (2026-11-07), so read a country's entry on that page
+  before choosing it, or leave the country out.
+- Google's fee on a sale to a US buyer, since 2026-06-30: 10% plus a 5% billing fee on the first
+  US$1M of earnings a year, about 85 cents of each dollar to you; otherwise the standard 20% plus
+  5%, about 75 cents. Google's fee table links the first-US$1M rate to its 15% service fee tier
+  page, and neither says whether that tier's enrollment is still needed, so enroll before the first
+  sale (a payments profile, an Account Group in Play Console, and the tier's Terms of Service), then
+  check the Service Fee % column in the first earnings report. Australia, Japan, the EEA and the UK
+  have the same fees. The other countries move to the new fee structure later (Korea on
+  2026-12-31, the rest by 2027-09-30), and Google hasn't given their billing fee yet; until then
+  their first US$1M is charged 15% for accounts in that tier.
+
+**Refunds.** A buyer can cancel within two hours of buying, and ask Google for a refund within 48
+hours; a refund Google gives takes the app off their phone. After 48 hours Google sends them to you.
+Play makes you responsible for your own refund policy. LICENSE mentions refunds only in 10.3, which
+says that ending a license brings no refund unless the law or the platform's refund policy requires
+one, so it leaves your refund policy open. You can refund an order in full from Play apps order
+management (Manage account > Play apps order management), but never partly. A refund costs you
+what the sale paid you (Google returns its fee); after a payout it comes out of a later one, and it
+can't be reversed. If refunds leave your balance negative for 48 hours, Google debits the bank
+account that receives your payouts. For orders after 2026-08-03 a chargeback costs you the price,
+less Google's fee, plus the bank's chargeback fee, which Google doesn't state and which may be more
+than a US$1 sale brings in. Decide your refund policy and record it here with its date. It isn't
+decided yet.
+
+**Trader status:** Play Console asks every active developer account for this declaration, which
+covers every app on the account: a new account when it's created, an existing one by 2027-02-01.
+It's under EEA and UK consumer law, and the answer must reflect whether you act for purposes of a
+trade or business. Misstating it can get the account suspended. Google won't decide it for you, and
+suggests a legal professional if you're unsure. Among its signs of a trader is a profit-seeking
+motive, which includes selling paid apps "on a regular or commercial basis", so selling Vagor in the
+EEA or the UK may make you one. A personal account that declares itself a trader must give a contact
+phone number. Play also asks for each app's terms of service link (LICENSE's URL from step 4) and
+for a self-certification that the apps comply with the law. From 2027-03-01 Google Play shows a
+trader's phone number, address and terms link to users everywhere, and in the EEA and the UK names
+the trader instead of Google in "Offered by". For a non-trader, Play tells users where trader status
+must be shown (the EEA and the UK, for example) that consumer protection law doesn't apply to their
+dealings with the developer. An account that doesn't distribute apps in the EEA or the UK can
+declare non-trader. If an account that declared non-trader shows signs of being a trader, Google may
+ask it to confirm or update its status, and may remove its apps if it doesn't answer in time.
 
 **App content** (Policy and programs > App content):
 
 | Section | Answer |
 | --- | --- |
-| Privacy policy | The public URL from step 4 |
+| Privacy policy | The privacy policy's public URL from step 4 |
 | App access | All functionality is available without special access (no login) |
 | Ads | No ads |
 | Content rating | Complete the questionnaire. Vagor is a planning utility with no violence, sexual content, gambling or other mature content. It has no chat or other way for users to reach each other inside the app; Share hands text to apps the user picks |
@@ -190,6 +271,9 @@ can declare non-trader.
   - Sharing is only the user's own tap on Share, which opens Android's share menu, or on Add to
     Calendar, which hands one vacation or event to a calendar app. Play exempts transfers the user
     starts and expects ("User-initiated action" in Play's Data safety help).
+  - Buying Vagor happens in Google Play before it's installed, and Vagor never sees the purchase.
+    Play doesn't ask an app to declare payment data that a service such as Google Play's billing
+    system collects directly, when the app never accesses it.
 - Recheck these answers if Vagor ever adds a library that uses the network, analytics, crash
   reporting, or ads.
 
@@ -212,7 +296,7 @@ check in CLAUDE.md and a NOTICE entry. Record the decision and its date here whe
 - **Contact email:** jabbottpublicsupport@gmail.com. Play shows it on the listing, and it's also
   the privacy contact. A website is optional (the privacy policy page works); a phone number is
   optional (required on a personal account that declares itself a trader) and is shown publicly
-  too.
+  too. Play also shows the payments profile's address, because the app is paid.
 
 **Store listing text.** Paste each field from `fastlane/metadata/android/en-US/`. The files follow
 fastlane's layout, though nothing here uses fastlane; they have no trailing newline, and they're in
@@ -296,6 +380,7 @@ the `<en-US>` and `</en-US>` tags (500 characters at most). Users see the produc
 notes as "What's new".
 
 1. **Internal testing.** Create a release on the Internal testing track and upload the bundle.
+   Internal testers install the paid app free.
    - The first upload sets up Play App Signing. Keep the default, a Google-generated app signing
      key; don't export and upload your own. Play then signs the app, and your key from step 1 is
      only the upload key.
@@ -313,6 +398,20 @@ notes as "What's new".
    - Invite at least 12 testers, by email list or Google Group, and keep at least 12 opted in for
      14 days in a row. A tester who opts out and back in starts their 14 days again, so invite a
      few extra.
+   - Closed testers must buy the app, so each tester pays Vagor's price (US$1 plus any sales tax in
+     the US, the converted local price elsewhere): say so in the invitation. Invite only people in
+     the countries you chose under Price in step 5, since a paid app can't be bought anywhere else.
+     Play counts testers who are opted in, but it can ask for more testing when testers use the app
+     too little, and its help doesn't say whether one who opts in without buying counts. A tester
+     who doesn't buy can't use Vagor, so invite people who will buy, install and use it during the
+     14 days. Someone who opted in to the internal test can't join the closed test until they opt
+     out of the internal one. A tester who bought Vagor during the test should still have it once
+     it's in production, since Play lets buyers reinstall what they bought (Play's help implies this
+     but doesn't say it outright).
+   - Promo codes (up to 500 a quarter) give the paid app free, but Play's help doesn't say whether
+     they work before the app is in production; try one before relying on them. Don't refund
+     testers during the 14 days: a refund Google gives takes the app off their phone, and Play's
+     help doesn't say whether one from Order management does.
    - Give the track's feedback channel as jabbottpublicsupport@gmail.com. Keep notes on what testers
      report and what you fix (each fix is a new upload with a higher `versionCode`): the
      production application asks for both.
@@ -320,8 +419,8 @@ notes as "What's new".
 3. **Apply for production.** After the 14 days, choose Apply for production on the Dashboard. The
    application asks about the closed test (how testers were found, how they used the app, their
    feedback and how it was collected), about the app, and about its readiness (what changed
-   because of the test). Review usually takes seven days or less; if it isn't approved, the closed
-   test goes on.
+   because of the test). Review usually takes seven days or less. If it isn't approved (for too
+   few opted-in testers or too little use of the app, for example), the closed test goes on.
 4. **Production.** Create a production release with the tested bundle. A first release can't be a
    staged rollout, and it goes through Play's review before it appears on the store.
 
@@ -372,7 +471,19 @@ These are the developer's to do; none of them blocks a release.
 - Exact alarm permissions: https://support.google.com/googleplay/android-developer/answer/16558241
 - US state age laws and Play Age Signals: https://support.google.com/googleplay/android-developer/answer/16569691
 - Store settings (contact details, category, tags): https://support.google.com/googleplay/android-developer/answer/9859152 and https://support.google.com/googleplay/android-developer/answer/9859673
-- Free and paid apps: https://support.google.com/googleplay/android-developer/answer/6334373
+- Free and paid apps, and setting the price: https://support.google.com/googleplay/android-developer/answer/6334373 and https://support.google.com/googleplay/android-developer/answer/10463498
+- Price ranges by country: https://play.google.com/supported-locations
+- Payments profile, bank account and merchant verification: https://support.google.com/googleplay/android-developer/answer/7161426, https://support.google.com/googleplay/android-developer/answer/7162811, https://support.google.com/googleplay/android-developer/answer/13628312 and https://support.google.com/paymentscenter/answer/7159033
+- The public address of a developer who sells apps: https://support.google.com/googleplay/android-developer/answer/13634081
+- US tax information: https://support.google.com/googleplay/android-developer/answer/7163598
+- Sales tax and VAT: https://support.google.com/googleplay/android-developer/answer/138000
+- Merchant of record: https://support.google.com/googleplay/android-developer/answer/7645364 and the Developer Distribution Agreement, https://play.google/developer-distribution-agreement.html
+- Service fees: https://support.google.com/googleplay/android-developer/answer/112622, https://support.google.com/googleplay/android-developer/answer/16954621 and the 15% tier's enrollment, https://support.google.com/googleplay/android-developer/answer/10632485
+- Payouts: https://support.google.com/googleplay/android-developer/answer/137997
+- Refunds and order management: https://support.google.com/googleplay/android-developer/answer/2741495 and Google Play's refund policy for buyers, https://support.google.com/googleplay/answer/15574908
+- Chargebacks: https://support.google.com/googleplay/android-developer/answer/17068375
+- Paid apps on test tracks: https://support.google.com/googleplay/android-developer/answer/9845334
+- Promo codes: https://support.google.com/googleplay/android-developer/answer/6321495
 - Store listing graphics, screenshots and alt text: https://support.google.com/googleplay/android-developer/answer/9866151
 - Icon specifications: https://developer.android.com/distribute/google-play/resources/icon-design-specifications
 - Android vitals: https://developer.android.com/topic/performance/vitals

@@ -1,6 +1,6 @@
 # Vagor Privacy Policy
 
-Effective October 31, 2026
+Effective November 7, 2026
 
 Vagor is a vacation planner made by Joseph Anthony Abbott III. This policy explains how Vagor
 handles your information. The same text is in the app under Settings > Privacy Policy.
@@ -39,10 +39,25 @@ the internet.
 Vagor turns off Android cloud backup, so your trips aren't copied to Google Drive. If you move to a
 new phone with a direct device-to-device transfer, Android may copy Vagor's data to the new phone.
 
+## Google Play
+
+If you get Vagor from Google Play, Google handles your download under its Privacy Policy
+(https://policies.google.com/privacy) and your purchase under the Google Payments Privacy Notice
+(https://payments.google.com/payments/apis-secure/get_legal_document?ldo=0&ldt=privacynotice&ldl=en),
+which lets Google share some of your information with the developer you buy from. Google gives the
+developer a record of each sale, such as its order number and price, the phone model, and the
+buyer's city, postal code and country, and statistics such as install counts. The developer can find
+a sale's record from the buyer's email address. If you ask Google for a refund, Google may give the
+developer information about your request. If you have agreed to share usage and diagnostics data
+with Google, Google may also give the developer crash and performance reports for Vagor, which
+describe the error, the app version and the device model, not your trips. The developer uses this
+information only to fulfill and refund orders, meet tax and legal obligations, and fix problems in
+Vagor.
+
 ## Keeping and deleting your information
 
-Your information stays on your device until you delete it. Delete a vacation or event in the app,
-or uninstall Vagor or clear its storage in Android Settings to remove all of it.
+The trips and settings Vagor stores stay on your device until you delete them. Delete a vacation or
+event in the app, or uninstall Vagor or clear its storage in Android Settings to remove all of them.
 
 ## Security
 
@@ -59,4 +74,6 @@ policy is published, with a new effective date.
 
 ## Contact
 
-For privacy questions, email jabbottpublicsupport@gmail.com.
+For privacy questions, email jabbottpublicsupport@gmail.com. If you email the developer, the
+developer receives your email address and whatever you choose to include, uses them only to answer
+you.

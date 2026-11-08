@@ -1,21 +1,221 @@
-Vagor
+VAGOR
+PERPETUAL END-USER LICENSE AGREEMENT
+
+Version 1.0, effective November 7, 2026
+
 Copyright (c) 2026 Joseph Anthony Abbott III. All rights reserved.
 
-This software, including its source code, documentation, images and the other files in this
-repository (the "Software"), is proprietary and is owned by Joseph Anthony Abbott III.
+This Perpetual End-User License Agreement (the "Agreement") is a legal
+agreement between you, the individual or entity that obtains a license to the
+Software ("you"), and Joseph Anthony Abbott III (the "Licensor"). It governs
+your use of the Vagor application, including its executable code, any updates
+the Licensor provides to you, and its documentation (together, the
+"Software").
 
-No license is granted to use, copy, modify, merge, publish, distribute, sublicense or sell the
-Software, or to make works based on it, in whole or in part, without the prior written permission
-of Joseph Anthony Abbott III. The only exception is the license that GitHub's Terms of Service give
-other GitHub users while this repository is public on GitHub: to view it and to fork it on GitHub.
-That exception does not cover any other use.
+BY INSTALLING, COPYING OR USING THE SOFTWARE, YOU AGREE TO THIS AGREEMENT. IF
+YOU DO NOT AGREE, DO NOT INSTALL OR USE THE SOFTWARE.
 
-Third-party software that the Software uses or includes remains under its own license. See NOTICE.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
-NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+1. LICENSE GRANT
 
-To ask for permission, email jabbottpublicsupport@gmail.com.
+1.1 Subject to your payment of the applicable license fee and your compliance
+    with this Agreement, the Licensor grants you a perpetual, worldwide,
+    non-exclusive, non-transferable and non-sublicensable license to install
+    and use the Software, in executable form only, on devices that you own or
+    control, for your own personal or internal business purposes.
+
+1.2 "Perpetual" means that the license has no expiration date. It ends only if
+    it is terminated under Section 10.
+
+1.3 The license covers the version of the Software you licensed and any
+    updates the Licensor chooses to provide to you, unless an update comes
+    with different terms. The Licensor is not obligated to provide updates,
+    support or maintenance.
+
+1.4 If you obtained the Software through an app store or another distribution
+    platform, you must also follow that platform's usage rules. Where those
+    rules conflict with this Agreement, they govern to the extent of the
+    conflict, and only for the Software as obtained from that platform.
+
+
+2. RESTRICTIONS
+
+Except as expressly permitted by this Agreement or by applicable law that
+cannot be waived, you may not:
+
+  (a) copy the Software, except for the copies made automatically when you
+      install or run it on your devices;
+  (b) modify, translate or adapt the Software, or create derivative works
+      based on it;
+  (c) reverse engineer, decompile or disassemble the Software, or otherwise
+      attempt to derive its source code;
+  (d) sell, resell, rent, lease, lend, sublicense, distribute, publish or
+      otherwise make the Software available to any third party, including as
+      a hosted or shared service;
+  (e) remove, alter or obscure any copyright, trademark or other proprietary
+      notice in the Software;
+  (f) circumvent, disable or interfere with any security or licensing feature
+      of the Software; or
+  (g) use the Software in violation of any applicable law.
+
+
+3. OWNERSHIP
+
+3.1 The Software is licensed, not sold. The Licensor and the Licensor's
+    licensors keep all right, title and interest in and to the Software and
+    all copies of it, including all copyrights, trademarks and other
+    intellectual property rights.
+
+3.2 This Agreement grants you no rights to the Software's source code, and no
+    rights to the Licensor's names, logos or trademarks.
+
+3.3 All rights not expressly granted in this Agreement are reserved by the
+    Licensor.
+
+
+4. THIRD-PARTY COMPONENTS
+
+The Software includes open-source components that are licensed to you under
+their own licenses. They are listed in the Software under Settings >
+Third-Party Licenses, and in the NOTICE file that accompanies its source code.
+Those licenses govern your use of those components, and nothing in this
+Agreement limits the rights they grant you.
+
+
+5. YOUR DATA
+
+5.1 The Software stores the information you enter only on your device, and
+    does not transmit it to the Licensor. The Licensor does not collect,
+    access or store your data. The Software gives your data to another app
+    only when you share it, and then only to the app you choose, or when you
+    add it to a calendar, and then only to your calendar app (Google
+    Calendar, if it is installed).
+
+5.2 You are responsible for your data. The Software turns off Android cloud
+    backup and does not back up your data. If you lose or replace your
+    device, delete the Software or its data, or delete a vacation or event,
+    neither you nor the Licensor can recover that data, except from a copy
+    that Android made in a direct device-to-device transfer to a new device.
+
+5.3 Text you share from the Software, and vacations or events you add to a
+    calendar, are handled by the app that receives them, under that app's own
+    terms. You are responsible for them.
+
+
+6. PLANNING AID ONLY
+
+The Software is a personal planning tool. It does not book travel or check
+your plans against any outside source. Its reminders depend on Android and on
+your device's notification, alarm and battery settings, which can delay them
+or stop them, for example after the Software has gone unused for a while. Do
+not rely on the Software as your only record or reminder of a booking,
+departure or other commitment.
+
+
+7. DISCLAIMER OF WARRANTIES
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE SOFTWARE IS PROVIDED
+"AS IS" AND "AS AVAILABLE", WITH ALL FAULTS AND WITHOUT WARRANTY OF ANY KIND.
+THE LICENSOR DISCLAIMS ALL WARRANTIES, WHETHER EXPRESS, IMPLIED OR STATUTORY,
+INCLUDING ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, TITLE, NON-INFRINGEMENT AND ACCURACY, AND ANY WARRANTY THAT THE
+SOFTWARE WILL BE UNINTERRUPTED, ERROR-FREE OR FREE OF DATA LOSS.
+
+
+8. LIMITATION OF LIABILITY
+
+8.1 TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSOR WILL NOT BE
+    LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY OR
+    PUNITIVE DAMAGES, OR FOR ANY LOSS OF DATA, PROFITS, REVENUE OR SAVINGS,
+    ARISING OUT OF OR RELATING TO THE SOFTWARE OR THIS AGREEMENT, EVEN IF THE
+    LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+8.2 TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSOR'S TOTAL
+    LIABILITY ARISING OUT OF OR RELATING TO THE SOFTWARE OR THIS AGREEMENT WILL
+    NOT EXCEED THE AMOUNT YOU PAID FOR YOUR LICENSE TO THE SOFTWARE.
+
+8.3 Some jurisdictions do not allow the exclusion of certain warranties or the
+    limitation of certain damages, so some of the exclusions and limitations
+    above may not apply to you.
+
+
+9. CONSUMER RIGHTS
+
+Nothing in this Agreement limits any rights you have under consumer protection
+laws that cannot be waived or limited by contract.
+
+
+10. TERMINATION
+
+10.1 Your license terminates automatically, without notice, if you breach
+     Section 2. If you materially breach any other part of this Agreement, the
+     Licensor may terminate your license by notice to you if you do not cure
+     the breach within 30 days after receiving that notice.
+
+10.2 When your license terminates, you must stop using the Software and delete
+     all copies of it in your possession or control.
+
+10.3 Sections 2 through 9 and 11 through 14 survive termination. Termination
+     does not entitle you to a refund, except where applicable law or the
+     refund policy of the platform you obtained the Software from requires
+     one.
+
+
+11. EXPORT AND SANCTIONS
+
+You may not export, re-export or transfer the Software except in compliance
+with the export control and sanctions laws of the United States and of the
+jurisdiction in which you obtained it. You represent that you are not located
+in a country, and are not named on a list, that prohibits you from receiving
+the Software under those laws.
+
+
+12. U.S. GOVERNMENT END USERS
+
+The Software and its documentation are "commercial computer software" and
+"commercial computer software documentation" as those terms are used in
+48 C.F.R. 12.212 and 48 C.F.R. 227.7202. Consistent with 48 C.F.R. 12.212 and
+48 C.F.R. 227.7202-1 through 227.7202-4, U.S. Government end users acquire the
+Software with only the rights granted to all other end users under this
+Agreement.
+
+
+13. GOVERNING LAW AND VENUE
+
+This Agreement is governed by the laws of the State of Arizona, United States
+of America, without regard to its conflict-of-laws rules. The United Nations
+Convention on Contracts for the International Sale of Goods does not apply.
+The state and federal courts located in Maricopa County, Arizona, have
+exclusive jurisdiction over any dispute arising out of or relating to this
+Agreement or the Software, and you and the Licensor consent to their personal
+jurisdiction. The Licensor may nonetheless seek injunctive or other equitable
+relief in any court of competent jurisdiction to protect the Licensor's
+intellectual property rights.
+
+
+14. GENERAL
+
+14.1 Entire agreement. This Agreement is the entire agreement between you and
+     the Licensor regarding the Software, and it supersedes any prior or
+     contemporaneous understanding regarding its subject matter.
+
+14.2 Severability. If any provision of this Agreement is held unenforceable,
+     it will be enforced to the maximum extent permissible, and the remaining
+     provisions will remain in full force and effect.
+
+14.3 No waiver. A failure or delay by the Licensor in enforcing any provision
+     of this Agreement is not a waiver of that provision or of the right to
+     enforce it later.
+
+14.4 Assignment. You may not assign or transfer this Agreement or your license,
+     whether by operation of law or otherwise, without the Licensor's prior
+     written consent, and any attempt to do so is void. The Licensor may
+     assign or transfer this Agreement, including in connection with a sale
+     or transfer of the Software or of the Licensor's rights in it.
+
+14.5 Future versions. The Licensor may offer future versions of the Software
+     under different terms. The terms you accepted continue to govern the
+     version you licensed.
+
+14.6 Contact. Questions about this Agreement may be sent to the Licensor using
+     the contact details published with the Software's distribution listing.

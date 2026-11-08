@@ -39,4 +39,6 @@ To build a signed release bundle and publish it on Google Play, see [PLAY_RELEAS
 
 ## License
 
-Vagor is proprietary software: copyright (c) 2026 Joseph Anthony Abbott III, all rights reserved. See [LICENSE](LICENSE). The third-party software it includes keeps its own licenses, listed in [NOTICE](NOTICE) and in the app under Settings > Third-Party Licenses.
+Proprietary. Copyright (c) 2026 Joseph Anthony Abbott III. All rights reserved.
+
+Vagor is licensed to buyers under the [Vagor Perpetual End-User License Agreement](LICENSE): a perpetual, non-transferable license to install and use the app on devices they own or control. The source code is not licensed to anyone, except for the license GitHub's Terms of Service give other GitHub users while this repository is public: to view it and to fork it on GitHub. For any other use, ask for permission at jabbottpublicsupport@gmail.com. The third-party software the app includes keeps its own licenses, listed in [NOTICE](NOTICE) and in the app under Settings > Third-Party Licenses.
